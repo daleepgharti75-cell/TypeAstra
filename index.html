@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Type Astra - Typing & Steno Portal</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+    <style>
+        :root { 
+            --bg-dark: #3b4b5e; 
+            --interface-top: #cbd5e1;
+            --test-sidebar: #e8f0e1; 
+            --test-bg: #eaf0e6; 
+            --steno-cream: #f4f0e6; 
+            --steno-purple: #6366f1; 
+            --type-orange: #d97706;
+            --type-green: #22c55e;
+            --danger-red: #c0392b; 
+        }
+
+        body { background-color: var(--bg-dark); color: #2b2b2b; font-family: Arial, Helvetica, sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 95vh; -webkit-font-smoothing: antialiased; overflow: hidden; }
+        
+        .app-view { display: none !important; width: 100%; max-width: 1200px; height: 100%; }
+        .app-view.active-view { display: flex !important; flex-direction: column; }
+        
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; transition: opacity 0.5s; }
+        .loader-spinner { border: 6px solid #f3f3f3; border-top: 6px solid var(--steno-purple); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* LOGIN SCREEN */
+        .login-container { background: #cbd5e1; padding: 40px; border-radius: 4px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); gap: 20px; margin: 10vh auto; border: 1px solid #94a3b8; }
+        .login-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+        .login-row label { font-size: 1.1rem; color: #1e293b; width: 120px; text-align: left; }
+        .login-input { border: 1px solid #94a3b8; padding: 6px 10px; font-size: 1.1rem; border-radius: 2px; flex-grow: 1; }
+        .enter-btn { background: #cbd5e1; border: 1px solid #94a3b8; padding: 6px 30px; cursor: pointer; border-radius: 2px; margin-left: 135px; font-size: 1rem; font-weight: bold;}
+        .enter-btn:hover { background: #b4c6dd; }
+
+        /* DASHBOARD & LOGOUT */
+        .dashboard-main-title { color: white; text-align: center; margin-bottom: 25px; font-size: 2.2rem; font-weight: bold; letter-spacing: 1px; }
+        .logout-btn { position: absolute; top: 15px; right: 20px; background: var(--danger-red); color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.95rem; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background 0.3s; z-index: 100; }
+        .logout-btn:hover { background: #900; }
+        .dashboard-box { background: #ffffff; border-radius: 6px; padding: 20px 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); margin-bottom: 20px; text-align: left; border: 1px solid #cbd5e1; }
+        .dashboard-box h2 { margin-top: 0; font-size: 1.2rem; color: #475569; border-bottom: 1px solid #cbd5e1; padding-bottom: 8px; margin-bottom: 15px; font-weight: bold; }
+        .icon-grid { display: flex; gap: 30px; flex-wrap: wrap; }
+        .icon-card { display: flex; flex-direction: column; align-items: center; width: 100px; cursor: pointer; transition: transform 0.2s; }
+        .icon-card:hover { transform: translateY(-3px); }
+        .icon-graphic { color: white; width: 55px; height: 55px; border-radius: 6px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; text-align: center; font-weight: bold; font-size: 0.75rem; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+        .icon-label { font-size: 0.85rem; margin-top: 8px; text-align: center; color: #475569; font-weight: bold; }
+        
+        .bg-purple { background: var(--steno-purple); }
+        .bg-orange { background: var(--type-orange); }
+        .bg-green { background: var(--type-green); }
+
+        /* STENO LIST SCREEN */
+        .steno-list-header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 15px 20px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .steno-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.95rem;}
+        .steno-table th, .steno-table td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #e2e8f0; }
+        .steno-table th { background: #475569; color: white; font-weight: bold; text-transform: uppercase; font-size: 0.85rem; }
+        .steno-table tr:hover { background: #f8fafc; }
+        .steno-table td:nth-child(3) { text-align: left; font-weight: bold; color: #1e293b; }
+        .action-flex { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+        /* EXAM TOP BAR */
+        .exam-top-bar { background: var(--interface-top); padding: 8px 15px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: bold; z-index: 10; position: relative; color: #1e293b; border: 1px solid #94a3b8; border-bottom: none; }
+        .candidate-text { color: #1d4ed8; font-weight: bold; }
+        .action-btn-mini { background: white; border: 1px solid #94a3b8; padding: 6px 12px; cursor: pointer; font-size: 0.85rem; font-weight: bold; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 5px; color: #334155; }
+        .action-btn-mini:hover { background: #f1f5f9; }
+        .admin-only { display: none !important; }
+
+        /* EXAM MAIN WRAPPER */
+        .exam-outer-wrapper { background: #fff; padding: 10px; border-radius: 0 0 6px 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); display: flex; flex-direction: row; gap: 10px; width: 100%; height: calc(100vh - 75px); box-sizing: border-box; border: 1px solid #94a3b8; }
+        
+        .exam-left-main { flex: 1; min-width: 0; background: white; border-radius: 4px; padding: 10px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+        
+        .exam-right-sidebar { width: 280px; flex-shrink: 0; background: var(--test-sidebar); border-radius: 4px; padding: 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%; overflow-y: auto; overflow-x: hidden; border: 1px solid #cbd5e1; box-sizing: border-box; }
+
+        /* SIDEBAR TIMER */
+        .timer-title { font-weight: bold; font-size: 1.1rem; color: #1e293b; text-align: center; margin-bottom: -5px; }
+        .circular-timer { width: 130px; height: 130px; border-radius: 50%; background: #bbf7d0; border: 5px solid #4ade80; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); margin: 0 auto; flex-shrink: 0; }
+        .time-text { font-size: 2.2rem; font-weight: bold; color: #0f172a; letter-spacing: 1px; }
+        .hide-timer-btn { width: 100%; background: white; border: 1px solid #94a3b8; color: #475569; padding: 6px; font-size: 0.85rem; font-weight: bold; border-radius: 3px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; justify-content: center; align-items: center; gap: 5px; }
+
+        /* AUDIO CONSOLE */
+        .audio-dedicated-window { display:none; background: #f0f5e9; border: 1px solid #b5d596; padding: 12px 15px; border-radius: 4px; box-sizing: border-box; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .audio-win-title { font-weight: normal; color: #334155; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+        .audio-controls-row { display: flex; align-items: center; justify-content: flex-start; gap: 15px; width: 100%; flex-wrap: wrap; }
+        .audio-native-bar { flex-grow: 1; height: 35px; min-width: 250px;}
+
+        /* TYPING WINDOWS */
+        .display-window { flex: 1.6; overflow-y: auto; text-align: justify; line-height: 2.2rem; letter-spacing: 0.5px; color: #333; padding: 15px; border: 1px solid #cbd5e1; outline: none; background: #fafafa; border-radius: 4px; }
+        .custom-divider { text-align: center; border-bottom: 1px solid #94a3b8; line-height: 0.1em; margin: 15px 0; flex-shrink: 0; }
+        .custom-divider span { background: white; padding: 0 10px; color: #475569; font-size: 0.85rem; font-weight: bold; }
+        .input-window { flex: 0.8; width: 100%; box-sizing: border-box; resize: none; outline: none; font-family: inherit; color: #000; background: #fafafa; border: 1px solid #cbd5e1; line-height: 2.2rem; padding: 15px; border-radius: 4px; }
+        
+        /* STENO MODE BIG CANVAS */
+        .steno-input-expanded { flex: 1 !important; height: auto !important; font-size: 1.7rem !important; padding: 30px !important; background-color: var(--steno-cream) !important; border: 1px solid #b5d596 !important; border-radius: 4px !important; box-shadow: inset 0 2px 6px rgba(0,0,0,0.05) !important; overflow-y: auto !important; resize: none; line-height: 2.8rem !important; color: #1e293b !important; }
+        
+        /* SIDEBAR BOXES */
+        .sidebar-panel-box { width: 100%; background: transparent; padding: 0; box-sizing: border-box; flex-shrink: 0; border-top: 1px solid #cbd5e1; padding-top: 10px;}
+        .sidebar-panel-box label { font-size: 0.85rem; font-weight: bold; color: #334155; display: block; margin-bottom: 5px; }
+        .sidebar-select { width: 100%; padding: 8px; border: 1px solid #94a3b8; border-radius: 3px; font-weight: normal; font-family: Arial, sans-serif; font-size: 0.9rem; color: #1e293b; background: white;}
+        
+        .exam-action-btn { width: 100%; padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 4px; cursor: pointer; border: 1px solid #94a3b8; background: #f8fafc; color: #2563eb; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: auto; flex-shrink: 0;}
+        .exam-action-btn:hover { background: #e2e8f0; }
+
+        /* DICTATION AUDIO SCREEN */
+        .dictation-wrapper { background: #fff; padding: 50px; border-radius: 8px; border: 3px solid var(--steno-purple); box-shadow: 0 15px 35px rgba(0,0,0,0.2); max-width: 600px; margin: 10vh auto; text-align: center; width: 100%; }
+        .pulse-mic { font-size: 4rem; animation: pulse 1.5s infinite; margin-bottom: 20px; }
+        @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+
+        .font-kruti { font-family: 'Kruti Dev 010', 'Devlys 010', sans-serif; font-size: 1.8rem; }
+        .font-mangal { font-family: 'Nirmala UI', 'Mangal', sans-serif; font-size: 1.7rem; }
+        .font-english { font-family: Arial, sans-serif; font-size: 1.35rem; }
+
+        /* MODAL & REPORT */
+        .custom-matter-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 5000; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 6px; width: 550px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: left; }
+        .modal-textarea { width: 100%; height: 150px; margin-top: 10px; padding: 10px; box-sizing: border-box; resize: none; border: 1px solid #cbd5e1; outline: none; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        .modal-btn { padding: 6px 16px; border: none; cursor: pointer; border-radius: 3px; font-weight: bold; }
+        
+        .report-view { background: #ffffff; padding: 30px; border-radius: 8px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.25); border: 1px solid #cbd5e1; width: 100%; box-sizing: border-box; margin: auto;}
+        .report-header { display: flex; align-items: center; gap: 10px; font-size: 1.5rem; font-weight: bold; color: #1e293b; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+        .report-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 1rem; }
+        .report-table th, .report-table td { border: 1px solid #cbd5e1; padding: 12px; text-align: center;}
+        .report-table th { background: #3b5998; color: white; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+        .speed-number { font-size: 1.5rem; font-weight: bold; color: #2563eb; }
+        .net-speed-number { font-size: 1.5rem; font-weight: bold; color: #16a34a; }
+        .accuracy-number { font-size: 1.5rem; font-weight: bold; color: #475569; }
+        .metric-number { font-size: 1.4rem; font-weight: bold; color: #ea580c; }
+        .review-heading { text-align: left; font-weight: bold; font-size: 1.1rem; margin: 30px 0 10px 0; color: #334155; }
+        .review-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; max-height: 250px; overflow-y: auto; text-align: left; border-radius: 6px; line-height: 3.5rem; }
+        .word-block { display: inline-block; margin-right: 14px; font-size: inherit; }
+        .rev-correct { color: #16a34a; font-weight: normal; }
+        .rev-wrong-text { color: #dc2626 !important; font-weight: bold; display: inline; }
+        .rev-expected-word { color: #2563eb !important; font-weight: normal; display: inline; font-family: inherit !important; }
+    </style>
+</head>
+<body>
+
+    <div id="loadingOverlay">
+        <div class="loader-spinner"></div>
+        <h2 id="loadingText">Syncing with Cloud Database...</h2>
+    </div>
+
+    <div class="login-container app-view" id="loginScreen">
+        <div style="text-align: center; margin-bottom: -10px; font-weight:bold; color:var(--danger-red);">Student Login</div>
+        <div class="login-row"><label for="studentName">Name</label><input type="text" id="studentName" class="login-input" placeholder="e.g. Rahul"></div>
+        <div class="login-row"><label for="rollNumber">Roll Number</label><input type="password" id="rollNumber" class="login-input" placeholder="Roll Number"></div>
+        <button class="enter-btn" onclick="handleLoginSubmit()">Enter Portal</button>
+    </div>
+
+    <div class="app-view" id="dashboardScreen" style="position: relative;">
+        <button class="logout-btn" onclick="handleLogout()">🚪 Logout</button>
+        <div style="margin: auto; width:100%;">
+            <div class="dashboard-main-title">Type Astra</div>
+            
+            <div class="dashboard-box">
+                <h2>Stenography Audio Transcription</h2>
+                <div class="icon-grid">
+                    <div class="icon-card" onclick="launchApplicationConsole('EN', 'STENO')"><div class="icon-graphic bg-purple"><div>🎧</div><div>EN</div><div>✍️</div><div>St</div></div><div class="icon-label">English Steno</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic bg-purple"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Steno</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'STENO')"><div class="icon-graphic bg-purple"><div>🎧</div><div>म</div><div>✍️</div><div>St</div></div><div class="icon-label">Mangal Steno</div></div>
+                </div>
+            </div>
+
+            <div class="dashboard-box">
+                <h2>Typing Test</h2>
+                <div class="icon-grid">
+                    <div class="icon-card" onclick="launchApplicationConsole('EN', 'TYPE')"><div class="icon-graphic bg-orange"><div>A</div><div>B</div><div>C</div><div>D</div></div><div class="icon-label">English Tests</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic bg-orange"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Tests</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'TYPE')"><div class="icon-graphic bg-green"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Mangal Tests</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-view" id="stenoSelectionScreen">
+        <div style="margin: auto; width:100%;">
+            <div class="steno-list-header">
+                <h2 style="margin:0; color:#1e293b;">Select Stenography Dictation</h2>
+                <div style="display:flex; gap:10px;">
+                    <button class="action-btn-mini admin-only-btn" style="color:#2563eb;" onclick="openUploadModal('ADD')">➕ Add New Dictation</button>
+                    <button class="action-btn-mini" onclick="exitToDashboard()">🔙 Dashboard</button>
+                </div>
+            </div>
+            <div id="stenoListContainer"></div>
+        </div>
+    </div>
+
+    <div class="app-view" id="dictationScreen">
+        <div class="dictation-wrapper">
+            <div class="pulse-mic">🎙️</div>
+            <h2 style="color:var(--steno-purple);">Dictation in Progress...</h2>
+            <p style="color:#475569; font-size:1.1rem; margin-bottom: 30px;">Please concentrate and take down your shorthand notes. Transcription will start automatically once the dictation ends.</p>
+            <audio id="mainDictationAudio" controls style="width: 100%; height: 50px; outline: none;"></audio>
+            <br>
+            <button class="action-btn-mini" style="margin: 30px auto 0 auto; background:#f1f5f9; padding: 10px 20px;" onclick="skipDictationAndTranscribe()">⏩ Skip & Go to Transcription Window</button>
+        </div>
+    </div>
+
+    <div class="app-view" id="examConsoleScreen">
+        
+        <div class="exam-top-bar">
+            <span>Candidate: <span id="barName" class="candidate-text">--</span> (Roll: <span id="barRoll" class="candidate-text">--</span>)</span>
+            
+            <div style="display:flex; gap:10px;" id="typingTopControls">
+                <button class="action-btn-mini admin-only-btn" onclick="openUploadModal('ADD')">➕ Add Custom Track</button>
+                <button class="action-btn-mini admin-only-btn" style="color:#c0392b;" onclick="openUploadModal('EDIT')">✏️ Edit Track</button>
+                <button class="action-btn-mini admin-only-btn" style="color:#c0392b;" onclick="deleteActiveExercise()">❌ Delete Track</button>
+                <button class="action-btn-mini" onclick="exitToDashboard()">🔙 Dashboard</button>
+            </div>
+            
+            <div id="stenoTopControls" style="display:none; gap:10px;">
+                <button class="action-btn-mini" onclick="abortStenoTest()">❌ Abort Exam</button>
+            </div>
+        </div>
+
+        <div class="exam-outer-wrapper">
+            <div class="exam-left-main">
+                
+                <div class="display-window" id="displayParagraphFrame"></div>
+                <div class="custom-divider" id="typeDivider"><span>Type the above texts below</span></div>
+                <textarea class="input-window" id="typingAreaInput" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
+            </div>
+
+            <div class="exam-right-sidebar">
+                
+                <div style="text-align: center; width:100%; flex-shrink: 0;">
+                    <div class="timer-title">Remaining Time</div><br>
+                    <div class="circular-timer"><span id="clockLabel" class="time-text">10:00</span></div><br>
+                    <button class="hide-timer-btn" onclick="toggleTimerVisibility()">👁️ Hide / Show Timer</button>
+                </div>
+
+                <div class="sidebar-panel-box" id="durationPanelBox">
+                    <label>Duration</label>
+                    <select id="timeSelector" class="sidebar-select" onchange="modifyDurationConfig()"></select>
+                </div>
+
+                <div class="sidebar-panel-box" id="exercisePanelBox">
+                    <label>Select Exercise</label>
+                    <select id="exerciseSelector" class="sidebar-select" onchange="loadSelectedExercisePattern()"></select>
+                </div>
+
+                <div class="sidebar-panel-box">
+                    <label>Evaluation Mode</label>
+                    <select id="examTargetSelector" class="sidebar-select" onchange="autoSetExamTimer()"></select>
+                </div>
+
+                <div class="sidebar-panel-box">
+                    <label>Backspace</label>
+                    <select id="bkspControl" class="sidebar-select">
+                        <option value="FULL">Full Allowed</option>
+                        <option value="DISABLE" selected>Deactivated</option>
+                    </select>
+                </div>
+
+                <div style="width: 100%; margin-top: auto; flex-shrink: 0; display:flex; flex-direction:column; gap:5px;">
+                    <button class="exam-action-btn" onclick="finishEvaluationTest()">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-matter-modal" id="customMatterModal">
+        <div class="modal-box">
+            <h3 id="modalBoxTitle">Add New Exercise</h3>
+            <label style="font-size:0.85rem; font-weight:bold; color:#334155;">Exercise Name (English Only):</label>
+            <input type="text" id="customExerciseNameInput" style="font-family: Arial, sans-serif !important; width:100%; padding:6px; margin:5px 0; border:1px solid #cbd5e1; box-sizing:border-box;">
+            
+            <div id="stenoExtraFields" style="display:none; flex-wrap: wrap; gap:10px; margin-top:10px;">
+                <div style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold;">Test Date:</label><input type="date" id="customDate" style="width:100%; padding:4px;"></div>
+                <div style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold;">Dict Time:</label><input type="text" id="customDictTime" style="width:100%; padding:4px;" placeholder="10 Min"></div>
+                <div style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold;">Speed(WPM):</label><input type="number" id="customSpeed" style="width:100%; padding:4px;" placeholder="80"></div>
+                <div style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold;">Duration:</label><input type="number" id="customDuration" style="width:100%; padding:4px;" placeholder="50"></div>
+            </div>
+
+            <div id="modalAudioSection" style="margin-top:10px; display:none; background:#f8fafc; padding:10px; border-radius:4px; border:1px solid #cbd5e1;">
+                <label style="font-size:0.85rem; font-weight:bold; color:#1d4ed8;">Option 1: Paste Audio Link (Fastest)</label>
+                <input type="text" id="customAudioUrlInput" placeholder="Paste link from Firebase Storage / Drive..." style="width:100%; padding:6px; margin:5px 0 10px 0; border:1px solid #cbd5e1; box-sizing:border-box;">
+                
+                <label style="font-size:0.85rem; font-weight:bold; color:#475569;">Option 2: Upload File (Takes time)</label>
+                <input type="file" id="customAudioFileInput" accept="audio/*" style="width:100%; margin-top:5px; font-size:0.85rem;">
+            </div>
+
+            <label style="font-size:0.85rem; font-weight:bold; color:#334155; margin-top:10px; display:block;">Exercise Matter / Paragraph:</label>
+            <textarea class="modal-textarea" id="customMatterTextArea" style="margin-top:5px;" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn" id="modalCancelBtn" style="background:#e2e8f0; color:#334155;" onclick="closeCustomMatterModal()">Cancel</button>
+                <button class="modal-btn" id="modalSaveBtn" style="background:#3b5998; color:white;" onclick="saveExerciseManagerAction()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-view" id="analysisReportScreen">
+        <div style="margin: auto; width:100%;">
+            <div class="report-view" id="reportViewPanel">
+                <div class="report-header"><span>🏁 Official Examination Evaluation Summary</span></div>
+                <p style="text-align:left; font-size:1.05rem; margin-top:-5px; color:#475569;">
+                    <strong>Candidate:</strong> <span id="resName">--</span> &nbsp;|&nbsp; 
+                    <strong>Roll ID:</strong> <span id="resRoll">--</span> &nbsp;|&nbsp;
+                    <strong>Exam Rule:</strong> <span id="resMethod" style="color:#2563eb; font-weight:bold;">--</span>
+                </p>
+                <table class="report-table">
+                    <thead id="reportTableHead"></thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+                <div class="review-heading">Text Processing Review (Mistakes in Red, Right target in Blue):</div>
+                <div class="review-box" id="textReviewLogBox"></div>
+                <button class="router-btn" onclick="exitResultScreen()" style="margin-top:25px; padding:10px 20px; font-weight:bold; cursor:pointer; background:#cbd5e1; border:1px solid #94a3b8; border-radius:4px;">🔙 Go Back</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// 🎯 FIREBASE CONFIGURATION
+const firebaseConfig = {
+    apiKey: "AIzaSyCO5SMAgLOI487Jq31F0wv4UFsDIR2AvWc",
+    authDomain: "typeastra-8fa16.firebaseapp.com",
+    databaseURL: "https://typeastra-8fa16-default-rtdb.firebaseio.com",
+    projectId: "typeastra-8fa16",
+    storageBucket: "typeastra-8fa16.firebasestorage.app",
+    messagingSenderId: "419734717016",
+    appId: "1:419734717016:web:e260cf53a46a040709802d"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+let exerciseDatabaseBank = { EN: [], HI_KRUTI: [], HI_MANGAL: [] };
+const completedTests = { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} };
+
+let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
+let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
+let studentIdentity = { name: "", roll: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
+let currentFontSize = 1.4;
+let isAdmin = false; 
+
+const displayWindow = document.getElementById('displayParagraphFrame');
+const typeDivider = document.getElementById('typeDivider');
+const typingAreaInput = document.getElementById('typingAreaInput');
+const clockLabel = document.getElementById('clockLabel');
+const modalTextArea = document.getElementById('customMatterTextArea');
+const modalNameInput = document.getElementById('customExerciseNameInput');
+const exerciseSelector = document.getElementById('exerciseSelector');
+const examTargetSelector = document.getElementById('examTargetSelector');
+const dictationAudioPlayer = document.getElementById('mainDictationAudio');
+const timeSelector = document.getElementById('timeSelector');
+
+function hideAllScreens() { 
+    document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
+}
+
+async function fetchDatabaseFromCloud() {
+    let safetyTimer = setTimeout(() => {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        hideAllScreens();
+        document.getElementById('loginScreen').classList.add('active-view');
+    }, 4000);
+
+    try {
+        const snapshot = await db.collection("exercises").get();
+        clearTimeout(safetyTimer);
+        
+        exerciseDatabaseBank = { EN: [], HI_KRUTI: [], HI_MANGAL: [] };
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if(exerciseDatabaseBank[data.language]) exerciseDatabaseBank[data.language].push({ id: doc.id, ...data });
+        });
+        
+        document.getElementById('loadingOverlay').style.display = 'none';
+        hideAllScreens();
+        document.getElementById('loginScreen').classList.add('active-view');
+    } catch (error) {
+        clearTimeout(safetyTimer);
+        console.error("Firebase Error:", error);
+        document.getElementById('loadingOverlay').style.display = 'none';
+        hideAllScreens();
+        document.getElementById('loginScreen').classList.add('active-view');
+    }
+}
+window.onload = fetchDatabaseFromCloud;
+
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey) {
+        if (e.key === '+' || e.key === '=') { e.preventDefault(); changeFontSize(0.1); } 
+        else if (e.key === '-' || e.key === '_') { e.preventDefault(); changeFontSize(-0.1); } 
+        else if (e.key === '0') { e.preventDefault(); resetFontSize(); }
+    }
+});
+function changeFontSize(delta) { currentFontSize = Math.min(Math.max(currentFontSize + delta, 0.8), 3.0); applyFont(); }
+function resetFontSize() { currentFontSize = 1.4; applyFont(); }
+function applyFont() {
+    document.getElementById('displayParagraphFrame').style.fontSize = currentFontSize + 'rem';
+    document.getElementById('typingAreaInput').style.fontSize = currentFontSize + 'rem';
+}
+
+function handleLoginSubmit() {
+    const nameInput = document.getElementById('studentName').value.trim();
+    const rollInput = document.getElementById('rollNumber').value.trim();
+    if (!nameInput || !rollInput) return alert("Please enter Name and Roll Number!");
+    
+    studentIdentity = { name: nameInput, roll: rollInput };
+    if(nameInput.toLowerCase() === "admin" && rollInput === "admin123") { isAdmin = true; } else { isAdmin = false; }
+
+    const adminBtns = document.querySelectorAll('.admin-only-btn');
+    adminBtns.forEach(btn => { if(isAdmin) btn.classList.remove('admin-only'); else btn.classList.add('admin-only'); });
+
+    document.getElementById('barName').innerText = nameInput;
+    document.getElementById('barRoll').innerText = isAdmin ? "Admin Mode" : rollInput;
+    
+    hideAllScreens();
+    document.getElementById('dashboardScreen').classList.add('active-view');
+}
+
+function handleLogout() {
+    studentIdentity = { name: "", roll: "" };
+    isAdmin = false;
+    document.getElementById('studentName').value = "";
+    document.getElementById('rollNumber').value = "";
+    hideAllScreens();
+    document.getElementById('loginScreen').classList.add('active-view');
+}
+
+function exitToDashboard() {
+    clearInterval(coreTimerLoop); dictationAudioPlayer.pause(); 
+    hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
+}
+function exitResultScreen() {
+    hideAllScreens();
+    if (currentMode === 'STENO') { document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); } 
+    else { document.getElementById('dashboardScreen').classList.add('active-view'); }
+}
+function abortStenoTest() {
+    if(confirm("Are you sure you want to abort this test?")) {
+        clearInterval(coreTimerLoop); hideAllScreens();
+        document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList();
+    }
+}
+
+function updateEvaluationModes() {
+    examTargetSelector.innerHTML = currentMode === 'STENO' ? `
+        <option value="RAJ_HC">Raj. High Court Steno</option>
+        <option value="SSC_STENO">SSC Steno Standard</option>
+    ` : `
+        <option value="RAJ_HC">Raj. High Court Rule</option>
+        <option value="SSC_STENO">SSC CHSL Standard</option>
+        <option value="RPSC_LDC">RPSC LDC Rule</option>
+        <option value="RRB_NTPC">RRB NTPC (5% Rule)</option>
+        <option value="UPSSSC">UPSSSC Exam</option>
+        <option value="UP_POLICE">UP Police (85% Acc.)</option>
+    `;
+}
+
+function launchApplicationConsole(lang, mode) {
+    activeLanguage = lang; currentMode = mode; hideAllScreens();
+    
+    displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':lang==='HI_MANGAL'?'font-mangal':'font-english');
+    typingAreaInput.className = 'input-window ' + (lang==='HI_KRUTI'?'font-kruti':lang==='HI_MANGAL'?'font-mangal':'font-english');
+    updateEvaluationModes();
+
+    if (mode === 'STENO') {
+        document.getElementById('stenoSelectionScreen').classList.add('active-view');
+        renderStenoList();
+    } else {
+        document.getElementById('examConsoleScreen').classList.add('active-view');
+        applyUIMode('TYPE'); 
+        buildExerciseDropdownOptions(); 
+        timeSelector.value = "10";
+        initializeExamEngine();
+    }
+}
+
+function applyUIMode(mode) {
+    if (mode === 'STENO') {
+        timeSelector.innerHTML = `<option value="1">1 Minute</option><option value="2">2 Minutes</option><option value="5">5 Minutes</option><option value="10">10 Minutes</option><option value="15">15 Minutes</option><option value="20">20 Minutes</option><option value="30">30 Minutes</option><option value="40">40 Minutes</option><option value="50">50 Minutes</option><option value="60">60 Minutes</option>`;
+        document.getElementById('typingTopControls').style.display = 'none'; 
+        document.getElementById('stenoTopControls').style.display = 'flex'; 
+        document.getElementById('durationPanelBox').style.display = 'none'; 
+        document.getElementById('exercisePanelBox').style.display = 'none';
+        
+        typingAreaInput.classList.add('steno-input-expanded'); 
+        displayWindow.style.display = 'none'; 
+        typeDivider.style.display = 'none'; 
+    } else {
+        timeSelector.innerHTML = `<option value="1">1 Minute</option><option value="2">2 Minutes</option><option value="5">5 Minutes</option><option value="10" selected>10 Minutes</option><option value="15">15 Minutes</option><option value="20">20 Minutes</option><option value="30">30 Minutes</option>`;
+        document.getElementById('typingTopControls').style.display = 'flex'; 
+        document.getElementById('stenoTopControls').style.display = 'none'; 
+        document.getElementById('durationPanelBox').style.display = 'block'; 
+        document.getElementById('exercisePanelBox').style.display = 'block';
+        
+        typingAreaInput.classList.remove('steno-input-expanded'); 
+        displayWindow.style.display = 'block'; 
+        typeDivider.style.display = 'block'; 
+    }
+}
+
+function renderStenoList() {
+    const container = document.getElementById('stenoListContainer'); container.innerHTML = '';
+    const list = exerciseDatabaseBank[activeLanguage] || [];
+    if(list.length === 0) { container.innerHTML = `<p style="text-align:center; color:#475569;">No Dictations available in Cloud. Please Ask Admin to add tests.</p>`; return; }
+
+    let html = `<table class="steno-table"><thead><tr>
+        <th style="width:50px;">S.No.</th><th>Test Date</th><th>Test Name</th><th>Dict. Time</th><th>Speed</th><th>Duration</th><th>Action</th>
+    </tr></thead><tbody>`;
+
+    list.forEach((ex, index) => {
+        let hasTaken = completedTests[activeLanguage] && completedTests[activeLanguage][index];
+        let actionHTML = hasTaken ? `
+            <button class="action-btn-mini" style="background:#e0f2fe; color:#2563eb;" onclick="startDictationPhase(${index})">🔄 Restart</button>
+            <button class="action-btn-mini" style="background:#dcfce7; color:#16a34a;" onclick="viewStenoResult(${index})">👁️ View Answer</button>
+        ` : `<button class="action-btn-mini" style="background:#e0f2fe; color:#2563eb;" onclick="startDictationPhase(${index})">🎧 Start Transcription</button>`;
+
+        if(isAdmin) {
+            actionHTML += `
+                <button class="action-btn-mini" style="color:#d97706;" onclick="editStenoTest(${index})">✏️</button>
+                <button class="action-btn-mini" style="color:#dc2626;" onclick="deleteStenoTest(${index})">❌</button>
+            `;
+        }
+        
+        html += `<tr><td style="font-weight:bold;">${index + 1}</td><td>${ex.date || 'N/A'}</td><td>${ex.name}</td><td>${ex.dictTime || '-'}</td><td>${ex.speed ? ex.speed + ' WPM' : '-'}</td><td>${ex.duration ? ex.duration + ' Min' : '-'}</td><td class="action-flex">${actionHTML}</td></tr>`;
+    });
+    html += `</tbody></table>`; container.innerHTML = html;
+}
+
+// 🎯 SMART AUDIO LINK CONVERTER
+function getDirectAudioUrl(url) {
+    if (!url) return "";
+    if (url.includes("drive.google.com/file/d/")) {
+        const match = url.match(/\/d\/(.+?)\//);
+        if (match && match[1]) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+    return url; 
+}
+
+function startDictationPhase(index) {
+    selectedStenoIndex = index; 
+    const activeObject = exerciseDatabaseBank[activeLanguage][index];
+    
+    if(!activeObject.audio) {
+        enterStenoTranscriptionPhase(index);
+        return;
+    }
+
+    hideAllScreens(); 
+    document.getElementById('dictationScreen').classList.add('active-view');
+    
+    const finalAudioLink = getDirectAudioUrl(activeObject.audio);
+    dictationAudioPlayer.src = finalAudioLink;
+    dictationAudioPlayer.load();
+
+    dictationAudioPlayer.onerror = function() {
+        alert("⚠️ Audio link is invalid or blocked. Skipping directly to transcription window.");
+        skipDictationAndTranscribe();
+    };
+
+    dictationAudioPlayer.onended = function() {
+        enterStenoTranscriptionPhase(selectedStenoIndex);
+    };
+}
+
+function skipDictationAndTranscribe() {
+    dictationAudioPlayer.pause();
+    enterStenoTranscriptionPhase(selectedStenoIndex);
+}
+
+// 🎯 NEW: AUTO START TIMER FOR STENO PHASE
+function enterStenoTranscriptionPhase(index) {
+    hideAllScreens(); 
+    document.getElementById('examConsoleScreen').classList.add('active-view');
+    applyUIMode('STENO'); 
+
+    const activeObject = exerciseDatabaseBank[activeLanguage][index];
+    sourceWords = activeObject.text.split(/\s+/);
+    timeSelector.value = activeObject.duration || 50; 
+    modifyDurationConfig();
+
+    clearInterval(coreTimerLoop); 
+    pointerIdx = 0; secondsCounter = 0; strokeCounter = 0; studentSubmissionLogs = [];
+    clockLabel.style.opacity = '1'; clockLabel.style.color = '#000';
+    typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
+
+    // 🎯 Timer starts immediately when transcription window opens
+    liveSystemRunning = true; 
+    executeTimerCountdownLoop();
+}
+
+function autoSetExamTimer() {
+    if (currentMode !== 'STENO') return; 
+    const activeObject = exerciseDatabaseBank[activeLanguage][selectedStenoIndex];
+    if(activeObject && activeObject.duration) timeSelector.value = activeObject.duration;
+    else { const times = { "RAJ_HC": 30, "SSC_STENO": 50 }; timeSelector.value = times[document.getElementById('examTargetSelector').value] || 50; }
+    modifyDurationConfig(); 
+}
+
+function buildExerciseDropdownOptions() {
+    exerciseSelector.innerHTML = '';
+    const list = exerciseDatabaseBank[activeLanguage] || [];
+    list.forEach((ex, index) => { const option = document.createElement('option'); option.value = index; option.innerText = ex.name; exerciseSelector.appendChild(option); });
+}
+function loadSelectedExercisePattern() { initializeExamEngine(); }
+
+function initializeExamEngine() {
+    clearInterval(coreTimerLoop); liveSystemRunning = false; pointerIdx = 0; secondsCounter = 0; strokeCounter = 0; studentSubmissionLogs = [];
+    clockLabel.style.opacity = '1'; clockLabel.style.color = '#000';
+
+    const activeObject = exerciseDatabaseBank[activeLanguage][parseInt(exerciseSelector.value) || 0];
+    if(!activeObject) return;
+
+    applyUIMode('TYPE'); 
+    displayWindow.innerText = activeObject.text;
+    sourceWords = activeObject.text.split(/\s+/); modifyDurationConfig();
+    typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
+}
+
+function openUploadModal(mode) {
+    if(!isAdmin) return alert("Only Admin can add or edit tests!");
+
+    currentManagerMode = mode;
+    modalTextArea.className = 'modal-textarea ' + (activeLanguage==='HI_KRUTI'?'font-kruti':activeLanguage==='HI_MANGAL'?'font-mangal':'font-english');
+    document.getElementById('customAudioFileInput').value = "";
+    document.getElementById('customAudioUrlInput').value = "";
+    document.getElementById('modalSaveBtn').innerText = "Save Changes"; document.getElementById('modalSaveBtn').disabled = false;
+    
+    if (currentMode === 'STENO') { 
+        document.getElementById('modalAudioSection').style.display = 'block'; document.getElementById('stenoExtraFields').style.display = 'flex';
+        document.getElementById('customDate').value = new Date().toISOString().split('T')[0]; document.getElementById('customDictTime').value = "10 Min"; document.getElementById('customSpeed').value = "80"; document.getElementById('customDuration').value = "50";
+    } else { 
+        document.getElementById('modalAudioSection').style.display = 'none'; document.getElementById('stenoExtraFields').style.display = 'none';
+    }
+    
+    if (mode === 'ADD') {
+        document.getElementById('modalBoxTitle').innerText = currentMode==='STENO' ? "Add New Cloud Dictation" : "Add New Cloud Exercise";
+        modalNameInput.value = `New Track ${exerciseDatabaseBank[activeLanguage].length + 1}`; modalTextArea.value = "";
+    } else if (mode === 'EDIT') {
+        const selectedIdx = currentMode === 'STENO' ? selectedStenoIndex : (parseInt(exerciseSelector.value) || 0);
+        const currentActive = exerciseDatabaseBank[activeLanguage][selectedIdx];
+        if(!currentActive) return alert("No exercise to edit!");
+        
+        document.getElementById('modalBoxTitle').innerText = "Edit Cloud Details"; modalNameInput.value = currentActive.name; modalTextArea.value = currentActive.text;
+        
+        if (currentMode === 'STENO') {
+            document.getElementById('customDate').value = currentActive.date || ""; document.getElementById('customDictTime').value = currentActive.dictTime || "";
+            document.getElementById('customSpeed').value = currentActive.speed || ""; document.getElementById('customDuration').value = currentActive.duration || "";
+            document.getElementById('customAudioUrlInput').value = currentActive.audio || ""; 
+        }
+    }
+    document.getElementById('customMatterModal').style.display = 'flex';
+}
+
+function editStenoTest(index) { selectedStenoIndex = index; openUploadModal('EDIT'); }
+
+async function deleteStenoTest(index) {
+    if(!isAdmin) return;
+    if (confirm(`Are you sure you want to delete: "${exerciseDatabaseBank[activeLanguage][index].name}"?`)) {
+        const docId = exerciseDatabaseBank[activeLanguage][index].id;
+        await db.collection("exercises").doc(docId).delete();
+        exerciseDatabaseBank[activeLanguage].splice(index, 1);
+        renderStenoList();
+    }
+}
+async function deleteActiveExercise() {
+    if(!isAdmin) return;
+    const selectedIdx = parseInt(exerciseSelector.value); if (isNaN(selectedIdx)) return;
+    if (confirm(`Are you sure you want to delete: "${exerciseDatabaseBank[activeLanguage][selectedIdx].name}"?`)) {
+        const docId = exerciseDatabaseBank[activeLanguage][selectedIdx].id;
+        await db.collection("exercises").doc(docId).delete();
+        exerciseDatabaseBank[activeLanguage].splice(selectedIdx, 1);
+        buildExerciseDropdownOptions(); exerciseSelector.value = Math.max(0, selectedIdx - 1); initializeExamEngine();
+    }
+}
+
+function closeCustomMatterModal() { document.getElementById('customMatterModal').style.display = 'none'; }
+
+async function saveExerciseManagerAction() {
+    const nameVal = modalNameInput.value.trim(); const textVal = modalTextArea.value.trim();
+    if (nameVal === "" || textVal === "") return alert("Fields cannot be empty!");
+    
+    const saveBtn = document.getElementById('modalSaveBtn');
+    saveBtn.innerText = "Saving to Cloud..."; saveBtn.disabled = true;
+
+    try {
+        let audioUrl = document.getElementById('customAudioUrlInput').value.trim(); 
+        const fileInput = document.getElementById('customAudioFileInput');
+        const selectedIdx = currentMode === 'STENO' ? selectedStenoIndex : parseInt(exerciseSelector.value);
+        
+        if (currentManagerMode === 'EDIT' && exerciseDatabaseBank[activeLanguage][selectedIdx]) {
+            if(!audioUrl && fileInput.files.length === 0) { audioUrl = exerciseDatabaseBank[activeLanguage][selectedIdx].audio || ""; }
+        }
+
+        if (fileInput.files.length > 0) {
+            saveBtn.innerText = "Uploading Audio...";
+            const file = fileInput.files[0];
+            const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
+            const snapshot = await storageRef.put(file);
+            audioUrl = await snapshot.ref.getDownloadURL();
+        }
+
+        const dataObj = {
+            language: activeLanguage, name: nameVal, text: textVal, audio: audioUrl,
+            date: document.getElementById('customDate').value || "",
+            dictTime: document.getElementById('customDictTime').value || "",
+            speed: document.getElementById('customSpeed').value || "",
+            duration: document.getElementById('customDuration').value || ""
+        };
+
+        saveBtn.innerText = "Writing Data...";
+        if (currentManagerMode === 'ADD') {
+            const docRef = await db.collection("exercises").add(dataObj);
+            exerciseDatabaseBank[activeLanguage].push({ id: docRef.id, ...dataObj });
+            if(currentMode !== 'STENO') exerciseSelector.value = exerciseDatabaseBank[activeLanguage].length - 1;
+        } else if (currentManagerMode === 'EDIT') {
+            const docId = exerciseDatabaseBank[activeLanguage][selectedIdx].id;
+            await db.collection("exercises").doc(docId).update(dataObj);
+            exerciseDatabaseBank[activeLanguage][selectedIdx] = { id: docId, ...dataObj };
+        }
+        
+        saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; closeCustomMatterModal();
+        if(currentMode === 'STENO') renderStenoList(); else { buildExerciseDropdownOptions(); initializeExamEngine(); }
+    } catch(e) {
+        console.error(e);
+        alert("Error saving: Please check Firebase rules or internet.");
+        saveBtn.innerText = "Save Changes"; saveBtn.disabled = false;
+    }
+}
+
+function modifyDurationConfig() {
+    if(!liveSystemRunning) {
+        let selectedMins = parseInt(timeSelector.value);
+        if(isNaN(selectedMins) || selectedMins <= 0) {
+            selectedMins = (currentMode === 'STENO') ? 50 : 10;
+        }
+        totalTargetSeconds = selectedMins * 60; 
+        clockLabel.innerText = `${selectedMins.toString().padStart(2, '0')}:00`;
+    }
+}
+
+function toggleTimerVisibility() { clockLabel.style.opacity = (clockLabel.style.opacity === '0') ? '1' : '0'; }
+
+typingAreaInput.addEventListener('mousedown', function(e) { if (currentMode === 'STENO') setTimeout(() => { this.selectionStart = this.selectionEnd = this.value.length; }, 0); });
+typingAreaInput.addEventListener('click', function(e) { if (currentMode === 'STENO') this.selectionStart = this.selectionEnd = this.value.length; });
+
+typingAreaInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && document.getElementById('bkspControl').value === 'DISABLE') return e.preventDefault();
+    if (currentMode === 'STENO') {
+        const blockedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'];
+        if (blockedKeys.includes(e.key)) { e.preventDefault(); return; }
+    }
+    
+    // Normal typing mode starts on first keypress
+    if(!liveSystemRunning) { liveSystemRunning = true; executeTimerCountdownLoop(); }
+    
+    if (e.key === ' ') {
+        const currentTokens = typingAreaInput.value.trim().split(/\s+/);
+        const lastTypedWord = currentTokens[currentTokens.length - 1];
+        if (lastTypedWord) {
+            const expectedWord = sourceWords[pointerIdx];
+            if (expectedWord) { studentSubmissionLogs.push({ typed: lastTypedWord, expected: expectedWord }); pointerIdx++; }
+        }
+        if (pointerIdx >= sourceWords.length) finishEvaluationTest();
+    } else if (e.key.length === 1) { strokeCounter++; }
+});
+
+function executeTimerCountdownLoop() {
+    coreTimerLoop = setInterval(() => {
+        secondsCounter++; let remaining = totalTargetSeconds - secondsCounter;
+        if (remaining <= 0) { clearInterval(coreTimerLoop); finishEvaluationTest(); 
+        } else {
+            let m = Math.floor(remaining / 60).toString().padStart(2, '0'); let s = (remaining % 60).toString().padStart(2, '0'); clockLabel.innerText = `${m}:${s}`;
+            if (currentMode === 'STENO' && remaining <= 300) clockLabel.style.color = '#e74c3c'; else clockLabel.style.color = '#000';
+        }
+    }, 1000);
+}
+
+function viewStenoResult(index) {
+    let res = completedTests[activeLanguage][index]; if(!res) return;
+    document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th></tr>`;
+    document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:#2563eb;">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td class="accuracy-number">${res.accuracy}%</td></tr>`;
+    document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
+    document.getElementById('textReviewLogBox').className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
+    document.getElementById('resName').innerText = studentIdentity.name; document.getElementById('resRoll').innerText = studentIdentity.roll; document.getElementById('resMethod').innerText = res.examRule;
+    hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
+}
+
+function finishEvaluationTest() {
+    typingAreaInput.disabled = true; clearInterval(coreTimerLoop); 
+    const finalTokens = typingAreaInput.value.trim().split(/\s+/);
+    if (finalTokens.length > studentSubmissionLogs.length) {
+        const lastWord = finalTokens[finalTokens.length - 1]; const expectedWord = sourceWords[pointerIdx];
+        if (lastWord && expectedWord) studentSubmissionLogs.push({ typed: lastWord, expected: expectedWord });
+    }
+
+    function normalizeHindi(word) {
+        if (!word) return "";
+        let w = word;
+        const krutiAltMap = {
+            "ä": "Dr", "Ø": "dz", "Á": "iz", "Ë": "=z", "¯": "=z", "²": "K", "±": "Jz", "ã": "}", "°": "}", "â": "|", "Î": ")", "»": "'V", "¼": "'B", "ê": "V~V", "ë": "M~M", "ô": "Dd", "ÿ": "g~e", "«": "#", "¬": "$", "¡": "W", "¢": "Q", "¥": "Y"
+        };
+        for (let altChar in krutiAltMap) { w = w.split(altChar).join(krutiAltMap[altChar]); }
+        return w;
+    }
+
+    let fullMistakesCount = 0, halfMistakesCount = 0;
+    const reviewContainer = document.getElementById('textReviewLogBox'); reviewContainer.innerHTML = '';
+    reviewContainer.className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
+
+    studentSubmissionLogs.forEach(log => {
+        const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
+        let normTyped = activeLanguage === 'HI_KRUTI' ? normalizeHindi(log.typed) : log.typed;
+        let normExpected = activeLanguage === 'HI_KRUTI' ? normalizeHindi(log.expected) : log.expected;
+
+        if(normTyped === normExpected) { 
+            wordBlock.innerText = log.expected; wordBlock.className += ' rev-correct'; 
+        } else {
+            if (normTyped.toLowerCase() === normExpected.toLowerCase() || Math.abs(normTyped.length - normExpected.length) <= 1) halfMistakesCount++; else fullMistakesCount++;
+            const wrongSpan = document.createElement('span'); wrongSpan.className = 'rev-wrong-text'; wrongSpan.innerText = log.typed;
+            const expectedSpan = document.createElement('span'); expectedSpan.className = 'rev-expected-word'; expectedSpan.innerText = log.expected;
+            wordBlock.appendChild(wrongSpan); wordBlock.appendChild(document.createTextNode(' ')); wordBlock.appendChild(expectedSpan);
+        }
+        reviewContainer.appendChild(wordBlock);
+    });
+
+    let omittedWordsCount = 0;
+    if (sourceWords.length > studentSubmissionLogs.length) { omittedWordsCount = sourceWords.length - studentSubmissionLogs.length; fullMistakesCount += omittedWordsCount; }
+
+    let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
+    let selectedExamType = document.getElementById('examTargetSelector').value;
+    let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
+
+    const tableHead = document.getElementById('reportTableHead'); const tableBody = document.getElementById('reportTableBody');
+
+    if (currentMode === 'STENO') {
+        let totalWords = sourceWords.length; let errorPercentage = (totalErrorsCalculated / totalWords) * 100; let accuracy = Math.max(0, 100 - errorPercentage);
+        let ruleText = (selectedExamType === "RAJ_HC") ? "Rajasthan High Court Steno" : "SSC Steno Standard";
+        tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th></tr>`;
+        tableBody.innerHTML = `<tr><td class="metric-number">${totalWords}</td><td class="metric-number" style="color:#2563eb;">${studentSubmissionLogs.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td class="accuracy-number">${accuracy.toFixed(2)}%</td></tr>`;
+        document.getElementById('resMethod').innerText = ruleText;
+        completedTests[activeLanguage][selectedStenoIndex] = { totalWords: totalWords, typedWords: studentSubmissionLogs.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
+    } else {
+        let grossWords = strokeCounter / 5; let grossWPM = Math.round(grossWords / minutesElapsed); let netWPM = 0, accuracy = 0;
+        if (selectedExamType === "RAJ_HC") { netWPM = Math.round(grossWPM - (totalErrorsCalculated / minutesElapsed)); accuracy = Math.round(((strokeCounter - (totalErrorsCalculated * 5)) / strokeCounter) * 100); document.getElementById('resMethod').innerText = "Rajasthan High Court Typing Mode"; } 
+        else if (selectedExamType === "SSC_STENO") { netWPM = Math.round((studentSubmissionLogs.length - totalErrorsCalculated) / minutesElapsed); accuracy = Math.round(((studentSubmissionLogs.length - totalErrorsCalculated) / studentSubmissionLogs.length) * 100); document.getElementById('resMethod').innerText = "SSC (CHSL) Typing Standard"; } 
+        else if (selectedExamType === "RPSC_LDC") { let dynamicStrokes = strokeCounter - (totalErrorsCalculated * 5); if (dynamicStrokes < 0) dynamicStrokes = 0; netWPM = Math.round((dynamicStrokes / 5) / minutesElapsed); accuracy = Math.round((dynamicStrokes / strokeCounter) * 100); document.getElementById('resMethod').innerText = "RPSC LDC Mode"; } 
+        else if (selectedExamType === "RRB_NTPC") { let exemptedErrors = Math.floor(grossWords * 0.05); let penaltyErrors = Math.max(0, totalErrorsCalculated - exemptedErrors); netWPM = Math.round((grossWords - (penaltyErrors * 10)) / minutesElapsed); accuracy = Math.round(((grossWords - totalErrorsCalculated) / grossWords) * 100); document.getElementById('resMethod').innerText = "RRB NTPC Rule"; }
+        else if (selectedExamType === "UPSSSC") { netWPM = Math.round((grossWords - totalErrorsCalculated) / minutesElapsed); accuracy = Math.round(((grossWords - totalErrorsCalculated) / grossWords) * 100); document.getElementById('resMethod').innerText = "UPSSSC Exam Standard"; }
+        else if (selectedExamType === "UP_POLICE") { netWPM = Math.round((grossWords - totalErrorsCalculated) / minutesElapsed); accuracy = Math.round(((grossWords - totalErrorsCalculated) / grossWords) * 100); document.getElementById('resMethod').innerText = "UP Police Rule"; }
+        if(netWPM < 0) netWPM = 0; if(accuracy < 0 || strokeCounter === 0) accuracy = 0;
+        tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes</th><th>❌ Full Mistake</th><th>⚠️ Half Mistake</th><th>📊 Total Errors</th></tr>`;
+        tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${strokeCounter}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td></tr>`;
+    }
+    document.getElementById('resName').innerText = studentIdentity.name; document.getElementById('resRoll').innerText = studentIdentity.roll;
+    hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
+}
+</script>
+</body>
+</html>
