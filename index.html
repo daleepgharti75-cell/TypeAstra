@@ -59,7 +59,6 @@
         .dashboard-main-title { text-align: center; margin-bottom: 30px; font-size: 2.5rem; font-weight: 800; background: linear-gradient(90deg, #1e293b, #4f46e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .top-btn { position: absolute; top: 15px; color: white; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s; z-index: 100; }
         
-        /* Specific Button Colors */
         .btn-red { right: 20px; background: #dc2626; } .btn-red:hover { background: #b91c1c; transform: translateY(-2px); }
         .btn-grey { right: 130px; background: #64748b; } .btn-grey:hover { background: #475569; transform: translateY(-2px); }
         .btn-dark { right: 265px; background: #334155; } .btn-dark:hover { background: #1e293b; transform: translateY(-2px); }
@@ -170,7 +169,7 @@
         .word-block { display: inline-block; margin-right: 14px; font-size: inherit; }
         .rev-correct { color: var(--active-theme-color); font-weight: 800; }
         .rev-wrong-text { color: var(--danger) !important; font-weight: bold; display: inline; text-decoration: underline;}
-        .rev-expected-word { color: var(--active-theme-color) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: line-through; opacity: 0.8;}
+        .rev-expected-word { color: var(--text-muted) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: line-through; opacity: 0.6;}
     </style>
 </head>
 <body>
@@ -181,6 +180,7 @@
     </div>
 
     <div class="login-container app-view" id="loginScreen">
+        
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
             <p class="login-sub">Student Login</p>
@@ -434,13 +434,13 @@ const timeSelector = document.getElementById('timeSelector');
 function setAppTheme(lang, mode) {
     let color, grad;
     if (mode === 'STENO') {
-        if(lang === 'EN') { color = '#0ea5e9'; grad = 'linear-gradient(135deg, #0284c7, #38bdf8)'; } // Deep Ocean
-        else if(lang === 'HI_KRUTI') { color = '#f97316'; grad = 'linear-gradient(135deg, #ea580c, #fb923c)'; } // Saffron
-        else if(lang === 'HI_MANGAL') { color = '#8b5cf6'; grad = 'linear-gradient(135deg, #7c3aed, #a78bfa)'; } // Royal Purple
+        if(lang === 'EN') { color = '#0ea5e9'; grad = 'linear-gradient(135deg, #0284c7, #38bdf8)'; } 
+        else if(lang === 'HI_KRUTI') { color = '#ea580c'; grad = 'linear-gradient(135deg, #ea580c, #fb923c)'; } 
+        else if(lang === 'HI_MANGAL') { color = '#7c3aed'; grad = 'linear-gradient(135deg, #7c3aed, #a78bfa)'; } 
     } else {
-        if(lang === 'EN') { color = '#10b981'; grad = 'linear-gradient(135deg, #059669, #34d399)'; } // Jade Green
-        else if(lang === 'HI_KRUTI') { color = '#eab308'; grad = 'linear-gradient(135deg, #ca8a04, #facc15)'; } // Ochre Yellow
-        else if(lang === 'HI_MANGAL') { color = '#e11d48'; grad = 'linear-gradient(135deg, #be123c, #fb7185)'; } // Ruby Crimson
+        if(lang === 'EN') { color = '#059669'; grad = 'linear-gradient(135deg, #059669, #34d399)'; } 
+        else if(lang === 'HI_KRUTI') { color = '#ca8a04'; grad = 'linear-gradient(135deg, #ca8a04, #facc15)'; } 
+        else if(lang === 'HI_MANGAL') { color = '#be123c'; grad = 'linear-gradient(135deg, #be123c, #fb7185)'; } 
     }
     document.documentElement.style.setProperty('--active-theme-color', color);
     document.documentElement.style.setProperty('--active-theme-grad', grad);
@@ -695,8 +695,8 @@ function showHistory() {
         html += `<tr>
             <td style="font-weight:600; color:var(--text-dark);">${h.date}</td>
             <td style="color:var(--text-muted);">${h.name}</td>
-            <td><span style="font-weight:bold; color:var(--text-dark);">${h.mode}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${h.rule})</span></td>
-            <td style="color:var(--text-dark); font-weight:bold;">${h.speed}</td>
+            <td><span style="font-weight:bold; color:var(--primary);">${h.mode}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${h.rule})</span></td>
+            <td style="color:var(--primary); font-weight:bold;">${h.speed}</td>
             <td style="font-weight:bold; color:var(--text-dark);">${h.acc}</td>
             <td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${h.marks}</td>
         </tr>`;
@@ -738,7 +738,6 @@ function updateEvaluationModes() {
 function launchApplicationConsole(lang, mode) {
     activeLanguage = lang; currentMode = mode; 
     
-    // 🎯 APPLY THEME DYNAMICALLY
     setAppTheme(lang, mode);
     
     hideAllScreens();
@@ -793,7 +792,6 @@ function renderStenoList() {
         let hasTaken = completedTests[activeLanguage] && completedTests[activeLanguage][index];
         let startText = currentMode === 'STENO' ? '🎧 Start Transcription' : '⌨️ Start Typing';
         
-        // 🎯 DYNAMIC BUTTON CLASSES APPLIED
         let actionHTML = hasTaken ? `
             <button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">🔄 Restart</button>
             <button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary); border:1px solid var(--secondary);" onclick="viewStenoResult(${index})">👁️ View Answer</button>
@@ -884,27 +882,6 @@ function autoSetExamTimer() {
     if(activeObject && activeObject.duration) timeSelector.value = activeObject.duration;
     else { const times = { "RAJ_HC": 30, "SSC_STENO": 50 }; timeSelector.value = times[document.getElementById('examTargetSelector').value] || (currentMode === 'STENO' ? 50 : 10); }
     modifyDurationConfig(); 
-}
-
-function buildExerciseDropdownOptions() {
-    exerciseSelector.innerHTML = '';
-    const list = exerciseDatabaseBank[currentMode][activeLanguage] || [];
-    list.forEach((ex, index) => { const option = document.createElement('option'); option.value = index; option.innerText = ex.name; exerciseSelector.appendChild(option); });
-}
-function loadSelectedExercisePattern() { initializeExamEngine(); }
-
-function initializeExamEngine() {
-    clearInterval(coreTimerLoop); liveSystemRunning = false; secondsCounter = 0; strokeCounter = 0;
-    clockLabel.style.opacity = '1'; clockLabel.style.color = 'var(--text-dark)';
-
-    const activeObject = exerciseDatabaseBank[currentMode][activeLanguage][parseInt(exerciseSelector.value) || 0];
-    if(!activeObject) return;
-
-    applyUIMode('TYPE'); 
-    displayWindow.innerText = activeObject.text;
-    sourceWords = deepClean(activeObject.text).split(/\s+/); 
-    modifyDurationConfig();
-    typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
 }
 
 function openUploadModal(mode) {
@@ -1082,6 +1059,7 @@ function viewStenoResult(index) {
     hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
 }
 
+// 🎯 100% ACCURATE OMISSION LOGIC FIXED
 function finishEvaluationTest() {
     typingAreaInput.disabled = true; clearInterval(coreTimerLoop); 
     
@@ -1127,7 +1105,7 @@ function finishEvaluationTest() {
                         for(let skip = 0; skip < lookahead; skip++) {
                              fullMistakesCount++;
                              const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                             mBlock.innerHTML = `<span class="rev-expected-word" style="text-decoration:line-through;">${sourceWords[s + skip]}</span>`;
+                             mBlock.innerHTML = `<span class="rev-expected-word">${sourceWords[s + skip]}</span>`;
                              reviewContainer.appendChild(mBlock);
                         }
                         s += lookahead;
@@ -1176,6 +1154,15 @@ function finishEvaluationTest() {
         t++;
     }
 
+    // 🎯 OMISSION LOOP (Fix for 100% Accuracy when blank)
+    while(s < sourceWords.length) {
+        fullMistakesCount++;
+        const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
+        wordBlock.innerHTML = `<span class="rev-expected-word" style="color:var(--text-muted) !important;">${sourceWords[s]}</span>`;
+        reviewContainer.appendChild(wordBlock);
+        s++;
+    }
+
     let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
     let selectedExamType = document.getElementById('examTargetSelector').value;
     let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
@@ -1191,6 +1178,7 @@ function finishEvaluationTest() {
     if (currentMode === 'STENO') {
         let totalWords = sourceWords.length; 
         let errorPercentage = (totalErrorsCalculated / totalWords) * 100; 
+        errorPercentage = Math.min(100, errorPercentage); // Cap at 100%
         let accuracy = Math.max(0, 100 - errorPercentage);
         
         let ruleText = (selectedExamType === "RAJ_HC") ? "Rajasthan High Court Steno" : "SSC Steno Standard";
@@ -1210,6 +1198,7 @@ function finishEvaluationTest() {
         
         histSpeed = "-"; histAcc = accuracy.toFixed(2) + "%"; histMarks = finalMarksStr;
     } else {
+        // ACTUAL TYPING TEST CALCULATION
         let grossWords = actualStrokes / 5; 
         let grossWPM = Math.round(grossWords / minutesElapsed); 
         
@@ -1218,6 +1207,7 @@ function finishEvaluationTest() {
         
         let accuracy = 0;
         if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
+        if (accuracy < 0 || actualStrokes === 0) accuracy = 0;
         
         let typingMarks = Math.min(50, Math.max(0, netWPM * 0.75)).toFixed(2);
         
