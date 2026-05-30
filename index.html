@@ -329,8 +329,8 @@ const storage = firebase.storage();
 let exerciseDatabaseBank = { EN: [], HI_KRUTI: [], HI_MANGAL: [] };
 const completedTests = { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} };
 
-let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], secondsCounter = 0, totalTargetSeconds = 600;
-let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0;
+let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
+let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
 let studentIdentity = { name: "", roll: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
 let currentFontSize = 1.4;
 let isAdmin = false; 
@@ -573,11 +573,10 @@ function enterStenoTranscriptionPhase(index) {
     modifyDurationConfig();
 
     clearInterval(coreTimerLoop); 
-    secondsCounter = 0; strokeCounter = 0; 
+    pointerIdx = 0; secondsCounter = 0; strokeCounter = 0; studentSubmissionLogs = [];
     clockLabel.style.opacity = '1'; clockLabel.style.color = '#000';
     typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
 
-    // 🎯 Timer starts immediately when transcription window opens
     liveSystemRunning = true; 
     executeTimerCountdownLoop();
 }
@@ -598,7 +597,7 @@ function buildExerciseDropdownOptions() {
 function loadSelectedExercisePattern() { initializeExamEngine(); }
 
 function initializeExamEngine() {
-    clearInterval(coreTimerLoop); liveSystemRunning = false; secondsCounter = 0; strokeCounter = 0; 
+    clearInterval(coreTimerLoop); liveSystemRunning = false; pointerIdx = 0; secondsCounter = 0; strokeCounter = 0; studentSubmissionLogs = [];
     clockLabel.style.opacity = '1'; clockLabel.style.color = '#000';
 
     const activeObject = exerciseDatabaseBank[activeLanguage][parseInt(exerciseSelector.value) || 0];
@@ -745,7 +744,15 @@ typingAreaInput.addEventListener('keydown', (e) => {
     }
     
     if(!liveSystemRunning) { liveSystemRunning = true; executeTimerCountdownLoop(); }
-    if (e.key.length === 1) { strokeCounter++; }
+    if (e.key === ' ') {
+        const currentTokens = typingAreaInput.value.trim().split(/\s+/);
+        const lastTypedWord = currentTokens[currentTokens.length - 1];
+        if (lastTypedWord) {
+            const expectedWord = sourceWords[pointerIdx];
+            if (expectedWord) { studentSubmissionLogs.push({ typed: lastTypedWord, expected: expectedWord }); pointerIdx++; }
+        }
+        if (pointerIdx >= sourceWords.length) finishEvaluationTest();
+    } else if (e.key.length === 1) { strokeCounter++; }
 });
 
 function executeTimerCountdownLoop() {
@@ -761,26 +768,34 @@ function executeTimerCountdownLoop() {
 
 function viewStenoResult(index) {
     let res = completedTests[activeLanguage][index]; if(!res) return;
-    document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th></tr>`;
-    document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:#2563eb;">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td class="accuracy-number">${res.accuracy}%</td></tr>`;
+    document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks</th></tr>`;
+    document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:#2563eb;">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td class="accuracy-number">${res.accuracy}%</td><td style="font-size:1.4rem; font-weight:bold; color:#16a34a;">${res.marks || 0} / 100</td></tr>`;
     document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
     document.getElementById('textReviewLogBox').className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
     document.getElementById('resName').innerText = studentIdentity.name; document.getElementById('resRoll').innerText = studentIdentity.roll; document.getElementById('resMethod').innerText = res.examRule;
     hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
 }
 
-// 🎯 FIX 1 & 2: SMART AUTO-SYNC ALGORITHM & UNREACHED WORD PENALTY REMOVAL
+// 🎯 SMART AUTO-SYNC ALGORITHM, PENALTY FIX & MARKS COLUMN & WORD CLEANER
 function finishEvaluationTest() {
     typingAreaInput.disabled = true; clearInterval(coreTimerLoop); 
     
     let rawTypedText = typingAreaInput.value.trim();
     let typedTokens = rawTypedText === "" ? [] : rawTypedText.split(/\s+/);
     
-    let actualStrokes = Math.max(strokeCounter, rawTypedText.length); // Precise stroke count
+    let actualStrokes = Math.max(strokeCounter, rawTypedText.length);
 
+    // 🎯 MS WORD CLEANER INCLUDED
     function normalizeHindi(word) {
         if (!word) return "";
         let w = word;
+        
+        w = w.replace(/[\u200B-\u200D\uFEFF\xA0]/g, ""); // Remove Invisible Spaces
+        w = w.replace(/[‘´`]/g, "'");  // Fix Smart Quotes
+        w = w.replace(/[’]/g, "'");   
+        w = w.replace(/[“”]/g, '"');  
+        w = w.replace(/[–—]/g, "-");   // Fix Long Dashes
+
         const krutiAltMap = {
             "ä": "Dr", "Ø": "dz", "Á": "iz", "Ë": "=z", "¯": "=z", "²": "K", "±": "Jz", "ã": "}", "°": "}", "â": "|", "Î": ")", "»": "'V", "¼": "'B", "ê": "V~V", "ë": "M~M", "ô": "Dd", "ÿ": "g~e", "«": "#", "¬": "$", "¡": "W", "¢": "Q", "¥": "Y"
         };
@@ -794,13 +809,11 @@ function finishEvaluationTest() {
 
     let t = 0, s = 0;
     
-    // 🎯 THE LOOKAHEAD ALGORITHM (Prevent Word Shift Issue)
     while (t < typedTokens.length && s < sourceWords.length) {
         let nT = activeLanguage === 'HI_KRUTI' ? normalizeHindi(typedTokens[t]) : typedTokens[t];
         let nS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s]) : sourceWords[s];
 
         if (nT === nS) {
-            // Correct Match
             const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
             wordBlock.innerText = sourceWords[s];
             wordBlock.className += ' rev-correct';
@@ -809,7 +822,7 @@ function finishEvaluationTest() {
         } else {
             let synced = false;
             
-            // Check Omission (Student missed 1, 2, or 3 words in source)
+            // Check Omission
             for(let lookahead = 1; lookahead <= 3; lookahead++) {
                 if (s + lookahead < sourceWords.length) {
                     let nextS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s + lookahead]) : sourceWords[s + lookahead];
@@ -827,7 +840,7 @@ function finishEvaluationTest() {
                 }
             }
 
-            // Check Addition (Student typed 1, 2, or 3 extra words)
+            // Check Addition
             if (!synced) {
                 for(let lookahead = 1; lookahead <= 3; lookahead++) {
                     if (t + lookahead < typedTokens.length) {
@@ -847,7 +860,6 @@ function finishEvaluationTest() {
                 }
             }
 
-            // Normal Substitution Mistake
             if (!synced) {
                 if (nT.toLowerCase() === nS.toLowerCase() || Math.abs(nT.length - nS.length) <= 1) halfMistakesCount++; else fullMistakesCount++;
                 const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
@@ -860,7 +872,6 @@ function finishEvaluationTest() {
         }
     }
 
-    // Add remaining extra typed words
     while(t < typedTokens.length) {
         fullMistakesCount++;
         const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
@@ -874,14 +885,17 @@ function finishEvaluationTest() {
     let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
 
     const tableHead = document.getElementById('reportTableHead'); const tableBody = document.getElementById('reportTableBody');
+    let marksOutof100 = 0;
 
     if (currentMode === 'STENO') {
         let totalWords = sourceWords.length; let errorPercentage = (totalErrorsCalculated / totalWords) * 100; let accuracy = Math.max(0, 100 - errorPercentage);
+        marksOutof100 = Math.max(0, accuracy).toFixed(2);
+        
         let ruleText = (selectedExamType === "RAJ_HC") ? "Rajasthan High Court Steno" : "SSC Steno Standard";
-        tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th></tr>`;
-        tableBody.innerHTML = `<tr><td class="metric-number">${totalWords}</td><td class="metric-number" style="color:#2563eb;">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td class="accuracy-number">${accuracy.toFixed(2)}%</td></tr>`;
+        tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks</th></tr>`;
+        tableBody.innerHTML = `<tr><td class="metric-number">${totalWords}</td><td class="metric-number" style="color:#2563eb;">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td class="accuracy-number">${accuracy.toFixed(2)}%</td><td style="font-size:1.4rem; font-weight:bold; color:#16a34a;">${marksOutof100} / 100</td></tr>`;
         document.getElementById('resMethod').innerText = ruleText;
-        completedTests[activeLanguage][selectedStenoIndex] = { totalWords: totalWords, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
+        completedTests[activeLanguage][selectedStenoIndex] = { totalWords: totalWords, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), marks: marksOutof100, reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
     } else {
         let grossWords = actualStrokes / 5; let grossWPM = Math.round(grossWords / minutesElapsed); let netWPM = 0, accuracy = 0;
         if (selectedExamType === "RAJ_HC") { netWPM = Math.round(grossWPM - (totalErrorsCalculated / minutesElapsed)); accuracy = Math.round(((actualStrokes - (totalErrorsCalculated * 5)) / actualStrokes) * 100); document.getElementById('resMethod').innerText = "Rajasthan High Court Typing Mode"; } 
@@ -891,8 +905,11 @@ function finishEvaluationTest() {
         else if (selectedExamType === "UPSSSC") { netWPM = Math.round((grossWords - totalErrorsCalculated) / minutesElapsed); accuracy = Math.round(((grossWords - totalErrorsCalculated) / grossWords) * 100); document.getElementById('resMethod').innerText = "UPSSSC Exam Standard"; }
         else if (selectedExamType === "UP_POLICE") { netWPM = Math.round((grossWords - totalErrorsCalculated) / minutesElapsed); accuracy = Math.round(((grossWords - totalErrorsCalculated) / grossWords) * 100); document.getElementById('resMethod').innerText = "UP Police Rule"; }
         if(netWPM < 0) netWPM = 0; if(accuracy < 0 || actualStrokes === 0) accuracy = 0;
-        tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes</th><th>❌ Full Mistake</th><th>⚠️ Half Mistake</th><th>📊 Total Errors</th></tr>`;
-        tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes}</td><td style="font-size:1.3rem; font-weight:bold; color:#dc2626;">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td></tr>`;
+        
+        marksOutof100 = Math.max(0, accuracy).toFixed(2); 
+        
+        tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes</th><th>📊 Total Errors</th><th>🏆 Marks</th></tr>`;
+        tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:#16a34a;">${marksOutof100} / 100</td></tr>`;
     }
     document.getElementById('resName').innerText = studentIdentity.name; document.getElementById('resRoll').innerText = studentIdentity.roll;
     hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
