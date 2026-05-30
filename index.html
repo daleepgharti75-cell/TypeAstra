@@ -10,18 +10,20 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
     <style>
-        /* 🎨 PREMIUM MODERN COLOR PALETTE */
+        /* 🎨 PREMIUM MODERN COLOR PALETTE & DYNAMIC THEMES */
         :root { 
             --bg-main: #f4f7fb; 
             --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --secondary: #10b981;
             --danger: #ef4444;
             --text-dark: #1e293b;
             --text-muted: #64748b;
             --card-bg: #ffffff;
             --border-light: #e2e8f0;
             --steno-cream: #fcfaf5; 
+            
+            /* Dynamic Variables set by JS */
+            --active-theme-color: #4f46e5; 
+            --active-theme-grad: linear-gradient(135deg, #4f46e5, #6366f1);
         }
 
         body { 
@@ -41,50 +43,64 @@
 
         /* 🎯 PREMIUM LOGIN SCREEN */
         .login-container { background: var(--card-bg); padding: 45px 40px; border-radius: 16px; width: 400px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); margin: 12vh auto; border: 1px solid rgba(255,255,255,0.5); }
-        .login-title { text-align: center; margin-bottom: 5px; font-size:1.8rem; font-weight:800; background: linear-gradient(90deg, var(--primary), #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-title { text-align: center; margin-bottom: 5px; font-size:1.8rem; font-weight:800; background: linear-gradient(90deg, #4f46e5, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .login-sub { text-align:center; color:var(--text-muted); font-size:0.95rem; margin-top:0; font-weight: 500; margin-bottom: 25px; }
         .login-row { display: flex; flex-direction: column; gap: 6px; margin-top:15px;}
         .login-row label { font-size: 0.95rem; color: var(--text-dark); font-weight:600;}
         .login-input { border: 1px solid var(--border-light); background: #f8fafc; padding: 12px 15px; font-size: 1rem; border-radius: 8px; outline:none; transition: 0.3s; font-family: inherit; }
         .login-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
         .enter-btn { background: var(--primary); color:white; border: none; padding: 12px 25px; cursor: pointer; border-radius: 8px; font-size: 1.05rem; font-weight: bold; transition:0.3s; width: 100%; margin-top: 25px; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3); }
-        .enter-btn:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.4); }
+        .enter-btn:hover { background: #4338ca; transform: translateY(-2px); box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.4); }
         .toggle-auth { text-align: center; display: block; margin-top: 20px; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
         .toggle-auth span { color: var(--primary); font-weight: bold; }
         .toggle-auth:hover span { text-decoration: underline; }
 
-        /* DASHBOARD & TOP BAR */
-        .dashboard-main-title { text-align: center; margin-bottom: 30px; font-size: 2.5rem; font-weight: 800; background: linear-gradient(90deg, #1e293b, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* DASHBOARD & TOP BAR BUTTONS */
+        .dashboard-main-title { text-align: center; margin-bottom: 30px; font-size: 2.5rem; font-weight: 800; background: linear-gradient(90deg, #1e293b, #4f46e5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .top-btn { position: absolute; top: 15px; color: white; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s; z-index: 100; }
-        .btn-red { right: 20px; background: var(--danger); } .btn-red:hover { background: #dc2626; transform: translateY(-2px); }
-        .btn-blue { right: 130px; background: var(--primary); } .btn-blue:hover { background: var(--primary-hover); transform: translateY(-2px); }
-        .btn-orange { right: 265px; background: #f59e0b; } .btn-orange:hover { background: #d97706; transform: translateY(-2px); }
+        
+        /* Specific Button Colors */
+        .btn-red { right: 20px; background: #dc2626; } .btn-red:hover { background: #b91c1c; transform: translateY(-2px); }
+        .btn-grey { right: 130px; background: #64748b; } .btn-grey:hover { background: #475569; transform: translateY(-2px); }
+        .btn-dark { right: 265px; background: #334155; } .btn-dark:hover { background: #1e293b; transform: translateY(-2px); }
         
         .dashboard-box { background: var(--card-bg); border-radius: 16px; padding: 25px 30px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid var(--border-light); }
-        .dashboard-box h2 { margin-top: 0; font-size: 1.25rem; color: var(--text-dark); border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; font-weight: 700; }
+        .dashboard-box h2 { margin-top: 0; font-size: 1.25rem; color: var(--text-dark); border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px; font-weight: 800; }
         .icon-grid { display: flex; gap: 25px; flex-wrap: wrap; }
         .icon-card { display: flex; flex-direction: column; align-items: center; width: 110px; cursor: pointer; transition: all 0.3s ease; padding: 15px 10px; border-radius: 12px; }
         .icon-card:hover { transform: translateY(-5px); background: #f8fafc; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-        .icon-graphic { color: white; width: 60px; height: 60px; border-radius: 14px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; text-align: center; font-weight: bold; font-size: 0.8rem; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-bottom: 12px; }
-        .icon-label { font-size: 0.9rem; text-align: center; color: var(--text-dark); font-weight: 600; }
         
-        .bg-purple { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
-        .bg-orange { background: linear-gradient(135deg, #f59e0b, #ea580c); }
-        .bg-green { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-graphic { color: white; width: 60px; height: 60px; border-radius: 14px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; text-align: center; font-weight: bold; font-size: 0.8rem; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-bottom: 12px; }
+        .icon-label { font-size: 0.9rem; text-align: center; color: var(--text-dark); font-weight: 700; }
+        
+        /* 🎨 THE 6 DISTINCT CATEGORY THEMES (STATIC FOR ICONS) */
+        .theme-icon-steno-en { background: linear-gradient(135deg, #0284c7, #38bdf8); } /* Deep Ocean Blue */
+        .theme-icon-steno-hi { background: linear-gradient(135deg, #ea580c, #fb923c); } /* Saffron Orange */
+        .theme-icon-steno-ma { background: linear-gradient(135deg, #7c3aed, #a78bfa); } /* Royal Amethyst */
+        
+        .theme-icon-type-en { background: linear-gradient(135deg, #059669, #34d399); } /* Jade Green */
+        .theme-icon-type-hi { background: linear-gradient(135deg, #ca8a04, #facc15); } /* Ochre Yellow */
+        .theme-icon-type-ma { background: linear-gradient(135deg, #be123c, #fb7185); } /* Ruby Crimson */
 
-        /* LIST SCREENS & TABLES */
-        .steno-list-header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 15px 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border-light); }
+        /* LIST SCREENS & TABLES (DYNAMIC) */
+        .dynamic-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--active-theme-grad); color: white; }
+        .dynamic-header h2 { margin: 0; color: white !important; font-weight: 800; letter-spacing: 0.5px;}
+        
         .steno-table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); font-size: 0.95rem; border: 1px solid var(--border-light);}
         .steno-table th, .steno-table td { padding: 14px 15px; text-align: center; border-bottom: 1px solid #f1f5f9; }
-        .steno-table th { background: #f8fafc; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-light); }
+        .steno-table th { background: #f8fafc; color: var(--text-muted); font-weight: 800; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-light); }
         .steno-table tr:hover { background: #f8fafc; }
-        .steno-table td:nth-child(2) { text-align: left; font-weight: 700; color: var(--primary); }
+        .steno-table td:nth-child(2) { text-align: left; font-weight: 700; color: var(--active-theme-color); }
         .action-flex { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
+        /* DYNAMIC BUTTONS */
+        .dynamic-btn { background: var(--active-theme-grad) !important; color: white !important; border: none !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;}
+        .dynamic-btn:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+
         /* EXAM TOP BAR */
-        .exam-top-bar { background: var(--card-bg); padding: 10px 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: bold; z-index: 10; position: relative; color: var(--text-dark); border: 1px solid var(--border-light); border-bottom: none; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); }
-        .candidate-text { color: var(--primary); font-weight: 800; background: #e0e7ff; padding: 4px 10px; border-radius: 6px; }
-        .action-btn-mini { background: #ffffff; border: 1px solid var(--border-light); padding: 6px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 600; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 5px; color: var(--text-dark); transition: 0.2s;}
+        .exam-top-bar { background: var(--card-bg); padding: 10px 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; font-weight: bold; z-index: 10; position: relative; color: var(--text-dark); border: 1px solid var(--border-light); border-top: 4px solid var(--active-theme-color); box-shadow: 0 -4px 10px rgba(0,0,0,0.02); }
+        .candidate-text { color: var(--active-theme-color); font-weight: 800; background: #f1f5f9; padding: 4px 10px; border-radius: 6px; }
+        .action-btn-mini { background: #ffffff; border: 1px solid var(--border-light); padding: 6px 14px; cursor: pointer; font-size: 0.85rem; font-weight: 700; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; align-items: center; gap: 5px; color: var(--text-dark); transition: 0.2s;}
         .action-btn-mini:hover { background: #f1f5f9; transform: translateY(-1px); }
         .admin-only { display: none !important; }
 
@@ -95,35 +111,32 @@
         
         .exam-right-sidebar { width: 280px; flex-shrink: 0; background: #f8fafc; border-radius: 8px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%; overflow-y: auto; overflow-x: hidden; border: 1px solid var(--border-light); box-sizing: border-box; }
 
-        /* SIDEBAR TIMER */
-        .timer-title { font-weight: 700; font-size: 1.05rem; color: var(--text-muted); text-align: center; margin-bottom: -5px; text-transform: uppercase; letter-spacing: 0.5px;}
-        .circular-timer { width: 140px; height: 140px; border-radius: 50%; background: white; border: 6px solid var(--secondary); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2); margin: 0 auto; flex-shrink: 0; }
+        /* SIDEBAR TIMER (DYNAMIC) */
+        .timer-title { font-weight: 800; font-size: 1.05rem; color: var(--text-muted); text-align: center; margin-bottom: -5px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .circular-timer { width: 140px; height: 140px; border-radius: 50%; background: white; border: 6px solid var(--active-theme-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 0 auto; flex-shrink: 0; }
         .time-text { font-size: 2.4rem; font-weight: 800; color: var(--text-dark); letter-spacing: 1px; }
 
-        /* TYPING WINDOWS (WITH ANTI-CHEAT CSS) */
+        /* TYPING WINDOWS */
         .display-window { 
             flex: 1.6; overflow-y: auto; text-align: justify; line-height: 2.2rem; letter-spacing: 0.5px; color: #1e293b; padding: 20px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
             user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
         }
         .custom-divider { text-align: center; border-bottom: 2px dashed var(--border-light); line-height: 0.1em; margin: 20px 0; flex-shrink: 0; }
-        .custom-divider span { background: var(--card-bg); padding: 0 15px; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;}
+        .custom-divider span { background: var(--card-bg); padding: 0 15px; color: var(--text-muted); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
         .input-window { flex: 0.8; width: 100%; box-sizing: border-box; resize: none; outline: none; font-family: inherit; color: #000; background: #ffffff; border: 1px solid var(--border-light); line-height: 2.2rem; padding: 20px; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s;}
-        .input-window:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .input-window:focus { border-color: var(--active-theme-color); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
         
         /* STENO MODE BIG CANVAS */
         .steno-input-expanded { flex: 1 !important; height: auto !important; font-size: 1.7rem !important; padding: 30px !important; background-color: var(--steno-cream) !important; border: 2px solid #e5e7eb !important; border-radius: 8px !important; box-shadow: inset 0 4px 6px rgba(0,0,0,0.02) !important; overflow-y: auto !important; resize: none; line-height: 2.8rem !important; color: #1e293b !important; }
         
         /* SIDEBAR BOXES */
         .sidebar-panel-box { width: 100%; background: transparent; padding: 0; box-sizing: border-box; flex-shrink: 0; border-top: 1px solid var(--border-light); padding-top: 15px;}
-        .sidebar-panel-box label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .sidebar-panel-box label { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
         .sidebar-select { width: 100%; padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; font-weight: 600; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); background: white; outline:none; cursor:pointer;}
-        .sidebar-select:focus { border-color: var(--primary); }
-        
-        .exam-action-btn { width: 100%; padding: 14px; font-size: 1.1rem; font-weight: 800; border-radius: 8px; cursor: pointer; border: none; background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3); margin-top: auto; flex-shrink: 0; transition: 0.3s; text-transform: uppercase;}
-        .exam-action-btn:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(79, 70, 229, 0.4);}
+        .sidebar-select:focus { border-color: var(--active-theme-color); }
 
         /* DICTATION AUDIO SCREEN */
-        .dictation-wrapper { background: var(--card-bg); padding: 50px; border-radius: 16px; border: 2px solid var(--primary); box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15); max-width: 600px; margin: 12vh auto; text-align: center; width: 100%; }
+        .dictation-wrapper { background: var(--card-bg); padding: 50px; border-radius: 16px; border: 2px solid var(--active-theme-color); box-shadow: 0 20px 40px rgba(0,0,0, 0.1); max-width: 600px; margin: 12vh auto; text-align: center; width: 100%; }
         .pulse-mic { font-size: 4.5rem; animation: pulse 1.5s infinite; margin-bottom: 20px; display:inline-block; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
 
@@ -140,30 +153,34 @@
         
         .report-view { background: #ffffff; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 1px solid var(--border-light); width: 100%; box-sizing: border-box; margin: auto;}
         .report-header { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
-        .report-table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 1.05rem; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--border-light);}
+        
+        /* 🎯 DYNAMIC REPORT TABLE HEADER */
+        .report-table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 1.05rem; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .report-table th, .report-table td { border-bottom: 1px solid var(--border-light); padding: 16px; text-align: center;}
-        .report-table th { background: #f8fafc; color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px;}
-        .speed-number { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
-        .net-speed-number { font-size: 1.6rem; font-weight: 800; color: var(--secondary); }
+        .report-table th { background: var(--active-theme-color); color: white; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; border:none;}
+        
+        .speed-number { font-size: 1.6rem; font-weight: 800; color: var(--active-theme-color); }
+        .net-speed-number { font-size: 1.6rem; font-weight: 800; color: #16a34a; }
         .accuracy-number { font-size: 1.6rem; font-weight: 800; color: #475569; }
         .metric-number { font-size: 1.5rem; font-weight: 800; color: #ea580c; }
         .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
         .review-box { background: #f8fafc; border: 1px solid var(--border-light); padding: 25px; max-height: 300px; overflow-y: auto; text-align: left; border-radius: 8px; line-height: 3.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
+        
+        /* 🎯 DYNAMIC REVIEW COLORS */
         .word-block { display: inline-block; margin-right: 14px; font-size: inherit; }
-        .rev-correct { color: var(--secondary); font-weight: normal; }
+        .rev-correct { color: var(--active-theme-color); font-weight: 800; }
         .rev-wrong-text { color: var(--danger) !important; font-weight: bold; display: inline; text-decoration: underline;}
-        .rev-expected-word { color: var(--primary) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: line-through; opacity: 0.8;}
+        .rev-expected-word { color: var(--active-theme-color) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: line-through; opacity: 0.8;}
     </style>
 </head>
 <body>
 
     <div id="loadingOverlay">
         <div class="loader-spinner"></div>
-        <h2 id="loadingText">Syncing with Cloud Database...</h2>
+        <h2 id="loadingText" style="font-weight:700;">Syncing with Cloud Database...</h2>
     </div>
 
     <div class="login-container app-view" id="loginScreen">
-        
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
             <p class="login-sub">Student Login</p>
@@ -171,7 +188,7 @@
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             
             <div style="display:flex; justify-content:flex-end; margin-top: 8px;">
-                <span style="color:var(--text-muted); font-size:0.85rem; cursor:pointer;" onclick="alert('🔒 Please contact your Institute Admin/Teacher to recover or reset your password.')">Forgot Password?</span>
+                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="alert('🔒 Please contact your Institute Admin/Teacher to recover or reset your password.')">Forgot Password?</span>
             </div>
 
             <button class="enter-btn" id="loginBtnMain" onclick="handleLoginSubmit()">Login to Portal</button>
@@ -184,15 +201,14 @@
             <div class="login-row"><label>Name / ID</label><input type="text" id="regName" class="login-input" placeholder="Create a unique Name/ID"></div>
             <div class="login-row"><label>Password</label><input type="password" id="regPass" class="login-input" placeholder="Create Password"></div>
             
-            <button class="enter-btn" id="signupBtnMain" style="background:var(--secondary);" onclick="handleSignupSubmit()">Send Request</button>
+            <button class="enter-btn" id="signupBtnMain" style="background:#10b981; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);" onclick="handleSignupSubmit()">Send Request</button>
             <div class="toggle-auth" onclick="toggleAuth('LOGIN')">Already registered? <span>Back to Login</span></div>
         </div>
-
     </div>
 
     <div class="app-view" id="dashboardScreen" style="position: relative;">
-        <button id="adminManageBtn" class="top-btn btn-orange admin-only" onclick="showAdminUserPanel()">👥 Manage Users</button>
-        <button class="top-btn btn-blue" onclick="showHistory()">📜 My History</button>
+        <button id="adminManageBtn" class="top-btn btn-dark admin-only" onclick="showAdminUserPanel()">👥 Manage Users</button>
+        <button class="top-btn btn-grey" onclick="showHistory()">📜 My History</button>
         <button class="top-btn btn-red" onclick="handleLogout()">🚪 Logout</button>
         
         <div style="margin: auto; width:100%;">
@@ -201,18 +217,18 @@
             <div class="dashboard-box">
                 <h2>Stenography Audio Transcription</h2>
                 <div class="icon-grid">
-                    <div class="icon-card" onclick="launchApplicationConsole('EN', 'STENO')"><div class="icon-graphic bg-purple"><div>🎧</div><div>EN</div><div>✍️</div><div>St</div></div><div class="icon-label">English Steno</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic bg-purple"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Steno</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'STENO')"><div class="icon-graphic bg-purple"><div>🎧</div><div>म</div><div>✍️</div><div>St</div></div><div class="icon-label">Mangal Steno</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('EN', 'STENO')"><div class="icon-graphic theme-icon-steno-en"><div>🎧</div><div>EN</div><div>✍️</div><div>St</div></div><div class="icon-label">English Steno</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic theme-icon-steno-hi"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Steno</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'STENO')"><div class="icon-graphic theme-icon-steno-ma"><div>🎧</div><div>म</div><div>✍️</div><div>St</div></div><div class="icon-label">Mangal Steno</div></div>
                 </div>
             </div>
 
             <div class="dashboard-box">
                 <h2>Typing Test</h2>
                 <div class="icon-grid">
-                    <div class="icon-card" onclick="launchApplicationConsole('EN', 'TYPE')"><div class="icon-graphic bg-orange"><div>A</div><div>B</div><div>C</div><div>D</div></div><div class="icon-label">English Tests</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic bg-orange"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Tests</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'TYPE')"><div class="icon-graphic bg-green"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Mangal Tests</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('EN', 'TYPE')"><div class="icon-graphic theme-icon-type-en"><div>A</div><div>B</div><div>C</div><div>D</div></div><div class="icon-label">English Tests</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic theme-icon-type-hi"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Tests</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'TYPE')"><div class="icon-graphic theme-icon-type-ma"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Mangal Tests</div></div>
                 </div>
             </div>
         </div>
@@ -221,7 +237,7 @@
     <div class="app-view" id="adminUsersScreen">
         <div style="margin: auto; width:100%;">
             <div class="steno-list-header">
-                <h2 style="margin:0; color:var(--text-dark);">👥 Pending & Approved Students</h2>
+                <h2 style="margin:0; color:var(--text-dark); font-weight:800;">👥 Pending & Approved Students</h2>
                 <button class="action-btn-mini" onclick="exitToDashboard()">🔙 Dashboard</button>
             </div>
             <div id="adminUsersContainer"></div>
@@ -231,7 +247,7 @@
     <div class="app-view" id="historyScreen">
         <div style="margin: auto; width:100%;">
             <div class="steno-list-header">
-                <h2 style="margin:0; color:var(--text-dark);">📜 My Last 10 Tests History</h2>
+                <h2 style="margin:0; color:var(--text-dark); font-weight:800;">📜 My Last 10 Tests History</h2>
                 <button class="action-btn-mini" onclick="exitToDashboard()">🔙 Dashboard</button>
             </div>
             <div id="historyListContainer"></div>
@@ -240,10 +256,10 @@
 
     <div class="app-view" id="stenoSelectionScreen">
         <div style="margin: auto; width:100%;">
-            <div class="steno-list-header">
-                <h2 style="margin:0; color:var(--text-dark);" id="selectionListTitle">Select Test</h2>
+            <div class="dynamic-header">
+                <h2 id="selectionListTitle">Select Test</h2>
                 <div style="display:flex; gap:10px;">
-                    <button class="action-btn-mini admin-only-btn" style="color:var(--primary);" onclick="openUploadModal('ADD')">➕ Add New Track</button>
+                    <button class="action-btn-mini admin-only-btn" style="color:var(--text-dark);" onclick="openUploadModal('ADD')">➕ Add New Track</button>
                     <button class="action-btn-mini" onclick="exitToDashboard()">🔙 Dashboard</button>
                 </div>
             </div>
@@ -254,7 +270,7 @@
     <div class="app-view" id="dictationScreen">
         <div class="dictation-wrapper">
             <div class="pulse-mic">🎙️</div>
-            <h2 style="color:var(--primary); font-weight:800;">Dictation in Progress...</h2>
+            <h2 style="color:var(--active-theme-color); font-weight:800;">Dictation in Progress...</h2>
             <p style="color:var(--text-muted); font-size:1.1rem; margin-bottom: 30px;">Please concentrate and take down your shorthand notes. Transcription will start automatically once the dictation ends.</p>
             <audio id="mainDictationAudio" controls style="width: 100%; height: 50px; outline: none;"></audio>
             <br>
@@ -318,7 +334,7 @@
                 </div>
 
                 <div style="width: 100%; margin-top: auto; flex-shrink: 0; display:flex; flex-direction:column; gap:5px;">
-                    <button class="exam-action-btn" onclick="finishEvaluationTest()">Submit Exam</button>
+                    <button class="exam-action-btn dynamic-btn" onclick="finishEvaluationTest()">Submit Exam</button>
                 </div>
             </div>
         </div>
@@ -326,7 +342,7 @@
 
     <div class="custom-matter-modal" id="customMatterModal">
         <div class="modal-box">
-            <h3 id="modalBoxTitle" style="color:var(--text-dark); margin-top:0;">Add New Track</h3>
+            <h3 id="modalBoxTitle" style="color:var(--text-dark); margin-top:0; font-weight:800;">Add New Track</h3>
             
             <label style="font-size:0.85rem; font-weight:bold; color:var(--text-muted);">Exercise Name (English Only):</label>
             <input type="text" id="customExerciseNameInput" style="font-family: Arial, sans-serif !important; width:100%; padding:10px; margin:5px 0; border:1px solid var(--border-light); border-radius:6px; box-sizing:border-box;">
@@ -351,7 +367,7 @@
             
             <div class="modal-buttons">
                 <button class="modal-btn" id="modalCancelBtn" style="background:#e2e8f0; color:var(--text-dark);" onclick="closeCustomMatterModal()">Cancel</button>
-                <button class="modal-btn" id="modalSaveBtn" style="background:var(--primary); color:white;" onclick="saveExerciseManagerAction()">Save Changes</button>
+                <button class="modal-btn" id="modalSaveBtn" style="background:var(--text-dark); color:white;" onclick="saveExerciseManagerAction()">Save Changes</button>
             </div>
         </div>
     </div>
@@ -361,8 +377,8 @@
             <div class="report-view" id="reportViewPanel">
                 <div class="report-header"><span>🏁 Official Examination Evaluation Summary</span></div>
                 <p style="text-align:left; font-size:1.05rem; margin-top:-5px; color:var(--text-muted);">
-                    <strong>Candidate:</strong> <span id="resName">--</span> &nbsp;|&nbsp; 
-                    <strong>Exam Rule:</strong> <span id="resMethod" style="color:var(--primary); font-weight:bold;">--</span>
+                    <strong>Candidate:</strong> <span id="resName" style="color:var(--text-dark); font-weight:bold;">--</span> &nbsp;|&nbsp; 
+                    <strong>Exam Rule:</strong> <span id="resMethod" style="color:var(--active-theme-color); font-weight:bold;">--</span>
                 </p>
                 <table class="report-table">
                     <thead id="reportTableHead"></thead>
@@ -370,7 +386,7 @@
                 </table>
                 <div class="review-heading">Text Processing Review (Mistakes in Red, Right target in Blue):</div>
                 <div class="review-box" id="textReviewLogBox"></div>
-                <button class="action-btn-mini" onclick="exitResultScreen()" style="margin-top:25px; padding:10px 25px; font-weight:bold; font-size:1rem; background:var(--primary); color:white; border:none; box-shadow:0 4px 6px rgba(79,70,229,0.3);">🔙 Return to Dashboard</button>
+                <button class="dynamic-btn" onclick="exitResultScreen()" style="margin-top:25px; padding:12px 30px; font-weight:bold; font-size:1.05rem; border-radius:8px; cursor:pointer;">🔙 Return to Dashboard</button>
             </div>
         </div>
     </div>
@@ -413,6 +429,22 @@ const exerciseSelector = document.getElementById('exerciseSelector');
 const examTargetSelector = document.getElementById('examTargetSelector');
 const dictationAudioPlayer = document.getElementById('mainDictationAudio');
 const timeSelector = document.getElementById('timeSelector');
+
+// 🎯 DYNAMIC THEME ENGINE
+function setAppTheme(lang, mode) {
+    let color, grad;
+    if (mode === 'STENO') {
+        if(lang === 'EN') { color = '#0ea5e9'; grad = 'linear-gradient(135deg, #0284c7, #38bdf8)'; } // Deep Ocean
+        else if(lang === 'HI_KRUTI') { color = '#f97316'; grad = 'linear-gradient(135deg, #ea580c, #fb923c)'; } // Saffron
+        else if(lang === 'HI_MANGAL') { color = '#8b5cf6'; grad = 'linear-gradient(135deg, #7c3aed, #a78bfa)'; } // Royal Purple
+    } else {
+        if(lang === 'EN') { color = '#10b981'; grad = 'linear-gradient(135deg, #059669, #34d399)'; } // Jade Green
+        else if(lang === 'HI_KRUTI') { color = '#eab308'; grad = 'linear-gradient(135deg, #ca8a04, #facc15)'; } // Ochre Yellow
+        else if(lang === 'HI_MANGAL') { color = '#e11d48'; grad = 'linear-gradient(135deg, #be123c, #fb7185)'; } // Ruby Crimson
+    }
+    document.documentElement.style.setProperty('--active-theme-color', color);
+    document.documentElement.style.setProperty('--active-theme-grad', grad);
+}
 
 function deepClean(str) {
     if (!str) return "";
@@ -663,8 +695,8 @@ function showHistory() {
         html += `<tr>
             <td style="font-weight:600; color:var(--text-dark);">${h.date}</td>
             <td style="color:var(--text-muted);">${h.name}</td>
-            <td><span style="font-weight:bold; color:var(--primary);">${h.mode}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${h.rule})</span></td>
-            <td style="color:var(--primary); font-weight:bold;">${h.speed}</td>
+            <td><span style="font-weight:bold; color:var(--text-dark);">${h.mode}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${h.rule})</span></td>
+            <td style="color:var(--text-dark); font-weight:bold;">${h.speed}</td>
             <td style="font-weight:bold; color:var(--text-dark);">${h.acc}</td>
             <td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${h.marks}</td>
         </tr>`;
@@ -680,7 +712,7 @@ function exitToDashboard() {
 function exitResultScreen() {
     hideAllScreens();
     if (currentMode === 'STENO') { document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); } 
-    else { document.getElementById('dashboardScreen').classList.add('active-view'); }
+    else { document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); }
 }
 function abortStenoTest() {
     if(confirm("Are you sure you want to abort this test?")) {
@@ -704,21 +736,20 @@ function updateEvaluationModes() {
 }
 
 function launchApplicationConsole(lang, mode) {
-    activeLanguage = lang; currentMode = mode; hideAllScreens();
+    activeLanguage = lang; currentMode = mode; 
     
+    // 🎯 APPLY THEME DYNAMICALLY
+    setAppTheme(lang, mode);
+    
+    hideAllScreens();
     document.getElementById('selectionListTitle').innerText = (mode === 'STENO') ? "Select Stenography Dictation" : "Select Typing Test";
     
     displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':lang==='HI_MANGAL'?'font-mangal':'font-english');
     typingAreaInput.className = 'input-window ' + (lang==='HI_KRUTI'?'font-kruti':lang==='HI_MANGAL'?'font-mangal':'font-english');
     updateEvaluationModes();
 
-    if (mode === 'STENO') {
-        document.getElementById('stenoSelectionScreen').classList.add('active-view');
-        renderStenoList();
-    } else {
-        document.getElementById('stenoSelectionScreen').classList.add('active-view');
-        renderStenoList(); 
-    }
+    document.getElementById('stenoSelectionScreen').classList.add('active-view');
+    renderStenoList();
 }
 
 function applyUIMode(mode) {
@@ -762,10 +793,11 @@ function renderStenoList() {
         let hasTaken = completedTests[activeLanguage] && completedTests[activeLanguage][index];
         let startText = currentMode === 'STENO' ? '🎧 Start Transcription' : '⌨️ Start Typing';
         
+        // 🎯 DYNAMIC BUTTON CLASSES APPLIED
         let actionHTML = hasTaken ? `
-            <button class="action-btn-mini" style="background:#e0f2fe; color:var(--primary);" onclick="startDictationPhase(${index})">🔄 Restart</button>
-            <button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary);" onclick="viewStenoResult(${index})">👁️ View Answer</button>
-        ` : `<button class="action-btn-mini" style="background:#e0f2fe; color:var(--primary);" onclick="startDictationPhase(${index})">${startText}</button>`;
+            <button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">🔄 Restart</button>
+            <button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary); border:1px solid var(--secondary);" onclick="viewStenoResult(${index})">👁️ View Answer</button>
+        ` : `<button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">${startText}</button>`;
 
         if(isAdmin) {
             actionHTML += `
@@ -836,7 +868,7 @@ function enterStenoTranscriptionPhase(index) {
 
     clearInterval(coreTimerLoop); 
     secondsCounter = 0; strokeCounter = 0;
-    clockLabel.style.opacity = '1'; clockLabel.style.color = '#000';
+    clockLabel.style.opacity = '1'; clockLabel.style.color = 'var(--text-dark)';
     typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
 
     if(currentMode === 'STENO') {
@@ -852,6 +884,27 @@ function autoSetExamTimer() {
     if(activeObject && activeObject.duration) timeSelector.value = activeObject.duration;
     else { const times = { "RAJ_HC": 30, "SSC_STENO": 50 }; timeSelector.value = times[document.getElementById('examTargetSelector').value] || (currentMode === 'STENO' ? 50 : 10); }
     modifyDurationConfig(); 
+}
+
+function buildExerciseDropdownOptions() {
+    exerciseSelector.innerHTML = '';
+    const list = exerciseDatabaseBank[currentMode][activeLanguage] || [];
+    list.forEach((ex, index) => { const option = document.createElement('option'); option.value = index; option.innerText = ex.name; exerciseSelector.appendChild(option); });
+}
+function loadSelectedExercisePattern() { initializeExamEngine(); }
+
+function initializeExamEngine() {
+    clearInterval(coreTimerLoop); liveSystemRunning = false; secondsCounter = 0; strokeCounter = 0;
+    clockLabel.style.opacity = '1'; clockLabel.style.color = 'var(--text-dark)';
+
+    const activeObject = exerciseDatabaseBank[currentMode][activeLanguage][parseInt(exerciseSelector.value) || 0];
+    if(!activeObject) return;
+
+    applyUIMode('TYPE'); 
+    displayWindow.innerText = activeObject.text;
+    sourceWords = deepClean(activeObject.text).split(/\s+/); 
+    modifyDurationConfig();
+    typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
 }
 
 function openUploadModal(mode) {
@@ -1014,10 +1067,10 @@ function viewStenoResult(index) {
     
     if (currentMode === 'STENO' && res.examRule.includes("SSC")) {
         document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
-        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:#2563eb;">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${res.marks}</td></tr>`;
+        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:var(--active-theme-color);">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${res.marks}</td></tr>`;
     } else if (currentMode === 'STENO') {
         document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
-        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:#2563eb;">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td class="accuracy-number">${res.accuracy}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks}</td></tr>`;
+        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:var(--active-theme-color);">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td class="accuracy-number">${res.accuracy}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks}</td></tr>`;
     } else {
         document.getElementById('reportTableHead').innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
         document.getElementById('reportTableBody').innerHTML = `<tr><td class="speed-number">${res.grossWPM || 0} WPM</td><td class="net-speed-number">${res.netWPM || 0} WPM</td><td class="accuracy-number">${res.accuracy}%</td><td class="metric-number">${res.strokes || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks || 0}</td></tr>`;
@@ -1074,7 +1127,7 @@ function finishEvaluationTest() {
                         for(let skip = 0; skip < lookahead; skip++) {
                              fullMistakesCount++;
                              const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                             mBlock.innerHTML = `<span class="rev-expected-word" style="text-decoration:line-through; color:var(--text-muted) !important;">${sourceWords[s + skip]}</span>`;
+                             mBlock.innerHTML = `<span class="rev-expected-word" style="text-decoration:line-through;">${sourceWords[s + skip]}</span>`;
                              reviewContainer.appendChild(mBlock);
                         }
                         s += lookahead;
@@ -1092,7 +1145,7 @@ function finishEvaluationTest() {
                             for(let ext = 0; ext < lookahead; ext++) {
                                  fullMistakesCount++;
                                  const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                                 mBlock.innerHTML = `<span class="rev-wrong-text" style="text-decoration:underline;">${typedTokens[t + ext]}</span>`;
+                                 mBlock.innerHTML = `<span class="rev-wrong-text">${typedTokens[t + ext]}</span>`;
                                  reviewContainer.appendChild(mBlock);
                             }
                             t += lookahead;
@@ -1118,7 +1171,7 @@ function finishEvaluationTest() {
     while(t < typedTokens.length) {
         fullMistakesCount++;
         const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
-        wordBlock.innerHTML = `<span class="rev-wrong-text" style="text-decoration:underline;">${typedTokens[t]}</span>`;
+        wordBlock.innerHTML = `<span class="rev-wrong-text">${typedTokens[t]}</span>`;
         reviewContainer.appendChild(wordBlock);
         t++;
     }
@@ -1145,11 +1198,11 @@ function finishEvaluationTest() {
         if (selectedExamType === "SSC_STENO") {
             finalMarksStr = errorPercentage.toFixed(2) + "%";
             tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="metric-number">${totalWords}</td><td class="metric-number" style="color:#2563eb;">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${finalMarksStr}</td></tr>`;
+            tableBody.innerHTML = `<tr><td class="metric-number">${totalWords}</td><td class="metric-number" style="color:var(--active-theme-color);">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${finalMarksStr}</td></tr>`;
         } else {
             finalMarksStr = accuracy.toFixed(2);
             tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="metric-number">${totalWords}</td><td class="metric-number" style="color:#2563eb;">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td class="accuracy-number">${accuracy.toFixed(2)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${finalMarksStr}</td></tr>`;
+            tableBody.innerHTML = `<tr><td class="metric-number">${totalWords}</td><td class="metric-number" style="color:var(--active-theme-color);">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td class="accuracy-number">${accuracy.toFixed(2)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${finalMarksStr}</td></tr>`;
         }
 
         document.getElementById('resMethod').innerText = ruleText;
