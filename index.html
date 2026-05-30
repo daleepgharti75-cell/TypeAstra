@@ -166,10 +166,14 @@
         
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
-            <p class="login-sub">Student & Admin Login</p>
+            <p class="login-sub">Student Login</p>
             <div class="login-row"><label>Name / ID</label><input type="text" id="loginName" class="login-input" placeholder="Enter your Name or ID"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             
+            <div style="display:flex; justify-content:flex-end; margin-top: 8px;">
+                <span style="color:var(--text-muted); font-size:0.85rem; cursor:pointer;" onclick="alert('🔒 Please contact your Institute Admin/Teacher to recover or reset your password.')">Forgot Password?</span>
+            </div>
+
             <button class="enter-btn" id="loginBtnMain" onclick="handleLoginSubmit()">Login to Portal</button>
             <div class="toggle-auth" onclick="toggleAuth('SIGNUP')">Don't have an account? <span>Register Here</span></div>
         </div>
@@ -506,7 +510,7 @@ async function handleSignupSubmit() {
     btn.innerText = "Send Request"; btn.disabled = false;
 }
 
-// 🎯 SECURE ADMIN LOGIN VIA DATABASE (HIDDEN FROM SOURCE CODE)
+// 🎯 SECURE ADMIN LOGIN VIA DATABASE
 async function handleLoginSubmit() {
     const lName = document.getElementById('loginName').value.trim();
     const lPass = document.getElementById('loginPass').value.trim();
@@ -516,7 +520,6 @@ async function handleLoginSubmit() {
     btn.innerText = "Checking..."; btn.disabled = true;
 
     try {
-        // 1. Check if it's an Admin Login (Database verification)
         const adminQuery = await db.collection("admin_settings").where("admin_id", "==", lName).where("admin_pass", "==", lPass).get();
         
         if (!adminQuery.empty) {
@@ -530,7 +533,6 @@ async function handleLoginSubmit() {
             return;
         }
 
-        // 2. If not admin, Check Student Login
         const userQuery = await db.collection("students").where("name", "==", lName).where("password", "==", lPass).get();
         
         if(userQuery.empty) {
