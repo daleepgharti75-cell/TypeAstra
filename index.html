@@ -864,12 +864,31 @@ function enterStenoTranscriptionPhase(index) {
     applyUIMode(currentMode); 
 
     const activeObject = exerciseDatabaseBank[currentMode][activeLanguage][index];
-    sourceWords = deepClean(activeObject.text).split(/\s+/);
-    
-    if(currentMode === 'TYPE') displayWindow.innerText = activeObject.text;
 
+    // 🎯 Set Duration
     timeSelector.value = activeObject.duration || (currentMode === 'STENO' ? 50 : 10); 
     modifyDurationConfig();
+
+    // 🎯 NEW LOGIC: AUTO-REPEAT MATTER FOR HIGH SPEED
+    let baseText = activeObject.text;
+    let selectedMins = parseInt(timeSelector.value);
+    
+    let maxPossibleWords = 120 * selectedMins; 
+    let baseWordsCount = deepClean(baseText).split(/\s+/).length;
+    
+    let repeatCount = 1;
+    if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) {
+        repeatCount = Math.ceil(maxPossibleWords / baseWordsCount);
+    }
+    
+    let finalText = baseText;
+    for (let i = 1; i < repeatCount; i++) {
+        finalText += " " + baseText; 
+    }
+
+    // Set updated source words and display
+    sourceWords = deepClean(finalText).split(/\s+/);
+    if(currentMode === 'TYPE') displayWindow.innerText = finalText;
 
     clearInterval(coreTimerLoop); 
     secondsCounter = 0; strokeCounter = 0;
