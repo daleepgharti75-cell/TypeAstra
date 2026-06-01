@@ -463,6 +463,7 @@ function hideAllScreens() {
     document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
 }
 
+// 🎯 NAYA LOGIC: SORTING THE DATABASE FETCH
 async function fetchDatabaseFromCloud() {
     let safetyTimer = setTimeout(() => {
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -489,6 +490,15 @@ async function fetchDatabaseFromCloud() {
             }
         });
         
+        // 🎯 NAYA LOGIC: HAR CATEGORY KE TESTS KO NAAM/NUMBER KE HISAAB SE SORT KARNA
+        for (let modeKey in exerciseDatabaseBank) {
+            for (let langKey in exerciseDatabaseBank[modeKey]) {
+                exerciseDatabaseBank[modeKey][langKey].sort((a, b) => {
+                    return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+                });
+            }
+        }
+        
         document.getElementById('loadingOverlay').style.display = 'none';
         hideAllScreens();
         document.getElementById('loginScreen').classList.add('active-view');
@@ -500,6 +510,7 @@ async function fetchDatabaseFromCloud() {
         document.getElementById('loginScreen').classList.add('active-view');
     }
 }
+
 window.onload = fetchDatabaseFromCloud;
 
 function toggleAuth(mode) {
