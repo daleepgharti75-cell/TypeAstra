@@ -326,12 +326,11 @@
                         <option value="font-mangal">Hindi (Mangal)</option>
                     </select>
                     
-                    <select id="fontSizeSelector" class="sidebar-select" onchange="updateStudentFont()">
-                        <option value="1.1">Size: Normal</option>
-                        <option value="1.4">Size: Medium</option>
-                        <option value="1.7">Size: Large</option>
-                        <option value="2.2">Size: Extra Large</option>
-                    </select>
+                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 10px; align-items: center;">
+                        <button class="action-btn-mini" onclick="changeFontSize(-0.1)" title="Decrease Font Size" style="flex: 1; justify-content: center; font-size: 1.1rem;">➖</button>
+                        <span id="currentFontSizeDisplay" style="font-weight: bold; font-size: 1rem; color: var(--text-dark); display: flex; align-items: center; justify-content: center; width: 60px;">1.1x</span>
+                        <button class="action-btn-mini" onclick="changeFontSize(0.1)" title="Increase Font Size" style="flex: 1; justify-content: center; font-size: 1.1rem;">➕</button>
+                    </div>
                 </div>
 
                 <div style="width: 100%; margin-top: auto; flex-shrink: 0; display:flex; flex-direction:column; gap:5px;">
@@ -440,8 +439,8 @@ const completedTests = {
 let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
 let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
 let studentIdentity = { name: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
-let currentFontSize = 1.1; 
 let isAdmin = false; 
+let currentCustomFontSize = 1.1; // 🎯 Naya variable Custom Size ke liye
 
 const displayWindow = document.getElementById('displayParagraphFrame');
 const typeDivider = document.getElementById('typeDivider');
@@ -666,10 +665,24 @@ function updateEvaluationModes() {
     `;
 }
 
-// 🎯 DYNAMIC FONT UPDATER FUNCTION
+// 🎯 DYNAMIC FONT UPDATER FUNCTION WITH +/- LOGIC
+function changeFontSize(step) {
+    currentCustomFontSize += step;
+    
+    // Size limit set karein
+    if (currentCustomFontSize < 0.8) currentCustomFontSize = 0.8;
+    if (currentCustomFontSize > 3.0) currentCustomFontSize = 3.0;
+
+    // UI me size number update karein
+    document.getElementById('currentFontSizeDisplay').innerText = currentCustomFontSize.toFixed(1) + 'x';
+    
+    // Main function ko call karein
+    updateStudentFont(); 
+}
+
 function updateStudentFont() {
     const selectedFontClass = document.getElementById('fontFamilySelector').value;
-    const selectedFontSize = document.getElementById('fontSizeSelector').value + 'rem';
+    const selectedFontSize = currentCustomFontSize.toFixed(1) + 'rem';
     
     const displayFrame = document.getElementById('displayParagraphFrame');
     const inputArea = document.getElementById('typingAreaInput');
@@ -706,7 +719,8 @@ function launchApplicationConsole(lang, mode) {
     const fontSelector = document.getElementById('fontFamilySelector');
     if(fontSelector) {
         fontSelector.value = (lang === 'HI_KRUTI') ? 'font-kruti' : 'font-english';
-        document.getElementById('fontSizeSelector').value = '1.1';
+        currentCustomFontSize = 1.1;
+        document.getElementById('currentFontSizeDisplay').innerText = '1.1x';
     }
     
     displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
