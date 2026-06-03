@@ -178,7 +178,7 @@
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
             <p class="login-sub">Student Login</p>
-            <div class="login-row"><label>Email Address</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter your Email"></div>
+            <div class="login-row"><label>Email Address / Admin ID</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter Email or Admin ID"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             <div style="display:flex; justify-content:flex-end; margin-top: 8px;"><span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="resetFirebasePassword()">Forgot Password?</span></div>
             <button class="enter-btn" id="loginBtnMain" onclick="handleLoginSubmit()">Login to Portal</button>
@@ -266,6 +266,7 @@
     </div>
 
     <div class="app-view" id="examConsoleScreen">
+        
         <div class="exam-top-bar">
             <span>Candidate: <span id="barName" class="candidate-text">--</span></span>
             
@@ -405,7 +406,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const auth = firebase.auth(); // 🔐 Added Firebase Auth
+const auth = firebase.auth(); 
 const storage = firebase.storage();
 
 function escapeHTML(str) {
@@ -415,14 +416,21 @@ function escapeHTML(str) {
     );
 }
 
-let exerciseDatabaseBank = { STENO: { EN: [], HI_KRUTI: [], HI_MANGAL: [] }, TYPE: { EN: [], HI_KRUTI: [], HI_MANGAL: [] } };
-const completedTests = { STENO: { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} }, TYPE: { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} } };
+// 🎯 SAFE ARRAY INITIALIZATION INCLUDING MANGAL
+let exerciseDatabaseBank = { 
+    STENO: { EN: [], HI_KRUTI: [], HI_MANGAL: [] },
+    TYPE: { EN: [], HI_KRUTI: [], HI_MANGAL: [] }
+};
+const completedTests = { 
+    STENO: { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} },
+    TYPE: { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} }
+};
 
 let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
-let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0;
+let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
 let studentIdentity = { name: "", uid: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
-let isAdmin = false; 
 let currentCustomFontSize = 1.1; 
+let isAdmin = false; 
 
 const displayWindow = document.getElementById('displayParagraphFrame');
 const typeDivider = document.getElementById('typeDivider');
@@ -450,10 +458,16 @@ function setAppTheme(lang, mode) {
 
 function deepClean(str) {
     if (!str) return "";
-    return str.replace(/[\u200B-\u200D\uFEFF\xA0\r\n\t]/g, "").replace(/[‘’´`]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").trim();
+    return str.replace(/[\u200B-\u200D\uFEFF\xA0\r\n\t]/g, "")
+              .replace(/[‘’´`]/g, "'")
+              .replace(/[“”]/g, '"')
+              .replace(/[–—]/g, "-")
+              .trim();
 }
 
-function hideAllScreens() { document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); }
+function hideAllScreens() { 
+    document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
+}
 
 async function fetchDatabaseFromCloud() {
     let safetyTimer = setTimeout(() => {
@@ -464,25 +478,35 @@ async function fetchDatabaseFromCloud() {
     try {
         const snapshot = await db.collection("exercises").get();
         clearTimeout(safetyTimer);
-        exerciseDatabaseBank = { STENO: { EN: [], HI_KRUTI: [], HI_MANGAL: [] }, TYPE: { EN: [], HI_KRUTI: [], HI_MANGAL: [] } };
+        
+        exerciseDatabaseBank = { 
+            STENO: { EN: [], HI_KRUTI: [], HI_MANGAL: [] },
+            TYPE: { EN: [], HI_KRUTI: [], HI_MANGAL: [] }
+        };
 
         snapshot.forEach(doc => {
             const data = doc.data();
             let mode = data.mode || (data.audio ? 'STENO' : 'TYPE'); 
             let lang = data.language;
-            if(exerciseDatabaseBank[mode] && exerciseDatabaseBank[mode][lang]) { exerciseDatabaseBank[mode][lang].push({ id: doc.id, ...data }); }
+            
+            if(exerciseDatabaseBank[mode] && exerciseDatabaseBank[mode][lang]) {
+                exerciseDatabaseBank[mode][lang].push({ id: doc.id, ...data });
+            }
         });
         
         for (let modeKey in exerciseDatabaseBank) {
             for (let langKey in exerciseDatabaseBank[modeKey]) {
-                exerciseDatabaseBank[modeKey][langKey].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+                exerciseDatabaseBank[modeKey][langKey].sort((a, b) => {
+                    return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+                });
             }
         }
         
         document.getElementById('loadingOverlay').style.display = 'none';
         hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
     } catch (error) {
-        clearTimeout(safetyTimer); document.getElementById('loadingOverlay').style.display = 'none';
+        clearTimeout(safetyTimer);
+        document.getElementById('loadingOverlay').style.display = 'none';
         hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
     }
 }
@@ -491,9 +515,11 @@ window.onload = fetchDatabaseFromCloud;
 
 function toggleAuth(mode) {
     if(mode === 'SIGNUP') {
-        document.getElementById('loginFormBox').style.display = 'none'; document.getElementById('signupFormBox').style.display = 'block';
+        document.getElementById('loginFormBox').style.display = 'none';
+        document.getElementById('signupFormBox').style.display = 'block';
     } else {
-        document.getElementById('loginFormBox').style.display = 'block'; document.getElementById('signupFormBox').style.display = 'none';
+        document.getElementById('loginFormBox').style.display = 'block';
+        document.getElementById('signupFormBox').style.display = 'none';
     }
 }
 
@@ -513,7 +539,7 @@ async function handleSignupSubmit() {
         const userCredential = await auth.createUserWithEmailAndPassword(sEmail, sPass);
         const user = userCredential.user;
 
-        // Save raw details (not escaped) in Firestore
+        // Raw input fields mapping to prevent double layout layout escaping issues
         await db.collection("students").doc(user.uid).set({ 
             name: sName, 
             email: sEmail, 
@@ -531,17 +557,17 @@ async function handleSignupSubmit() {
     btn.innerText = "Send Request"; btn.disabled = false;
 }
 
-// 🔐 FIREBASE SECURE LOGIN LOGIC
+// 🔐 FIREBASE SECURE LOGIN LOGIC (WITH INTEGRATED BYPASS LAYER)
 async function handleLoginSubmit() {
     const lEmail = document.getElementById('loginEmail').value.trim();
     const lPass = document.getElementById('loginPass').value.trim();
-    if (!lEmail || !lPass) return alert("Please enter Email and Password!");
+    if (!lEmail || !lPass) return alert("Please enter Email/ID and Password!");
     
     const btn = document.getElementById('loginBtnMain');
     btn.innerText = "Authenticating..."; btn.disabled = true;
 
     try {
-        // Admin Legacy Bypass
+        // Legacy Admin Settings Check Execution Block
         const adminQuery = await db.collection("admin_settings").where("admin_id", "==", lEmail).where("admin_pass", "==", lPass).get();
         if (!adminQuery.empty) {
             isAdmin = true; studentIdentity = { name: "Portal Admin" };
@@ -552,7 +578,7 @@ async function handleLoginSubmit() {
             btn.innerText = "Login to Portal"; btn.disabled = false; return;
         }
 
-        // Firebase Auth Logic
+        // Firebase Auth Framework Pipeline
         const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
         const user = userCredential.user;
         const userDoc = await db.collection("students").doc(user.uid).get();
@@ -574,12 +600,12 @@ async function handleLoginSubmit() {
         
         hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
     } catch(error) { 
-        alert("❌ Invalid Email or Password. Please try again."); 
+        alert("❌ Invalid Credentials. Please try again."); 
     }
     btn.innerText = "Login to Portal"; btn.disabled = false;
 }
 
-// 🔐 LOGOUT FUNCTION
+// 🔐 SECURE LOGOUT MODULE
 function handleLogout() {
     auth.signOut().then(() => {
         studentIdentity = { name: "", uid: "" }; isAdmin = false;
@@ -588,7 +614,7 @@ function handleLogout() {
     });
 }
 
-// 🔐 BONUS: FORGOT PASSWORD
+// 🔐 SECURE FORGOT PASSWORD
 async function resetFirebasePassword() {
     const email = document.getElementById('loginEmail').value.trim();
     if(!email) return alert("Please enter your registered Email address in the box first, then click Forgot Password.");
@@ -603,9 +629,11 @@ async function showAdminUserPanel() {
     hideAllScreens(); document.getElementById('adminUsersScreen').classList.add('active-view');
     const container = document.getElementById('adminUsersContainer');
     container.innerHTML = `<h3 style="text-align:center; color:var(--text-muted);">Loading Students...</h3>`;
+    
     try {
         const snapshot = await db.collection("students").limit(100).get();
         if(snapshot.empty) { container.innerHTML = `<p style="text-align:center;">No students found.</p>`; return; }
+        
         let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
         snapshot.forEach(doc => {
             let user = doc.data();
@@ -622,7 +650,7 @@ async function approveStudent(docId) { await db.collection("students").doc(docId
 async function revokeStudent(docId) { await db.collection("students").doc(docId).update({ status: "pending" }); showAdminUserPanel(); }
 async function deleteStudent(docId) { if(confirm("Are you sure you want to permanently delete this student record?")) { await db.collection("students").doc(docId).delete(); showAdminUserPanel(); } }
 
-// 🔐 FIX: Saves to cloud Firestore instead of local storage
+// 🔐 CLOUD DATABASE SYNCHRONIZED STORAGE SYSTEM
 async function saveToHistory(record) {
     if(!studentIdentity.uid || isAdmin) return; 
     try {
@@ -630,10 +658,10 @@ async function saveToHistory(record) {
         record.studentName = studentIdentity.name;
         record.timestamp = new Date().getTime(); 
         await db.collection("history").add(record);
-    } catch (error) { console.error("Error saving history to cloud:", error); }
+    } catch (error) { console.error("History sync runtime error:", error); }
 }
 
-// 🔐 FIX: Fetch history from cloud Firestore
+// 🔐 CLOUD-BASED HISTORY STREAM FETCHING
 async function showHistory() {
     hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
     let container = document.getElementById('historyListContainer');
@@ -662,9 +690,20 @@ function exitResultScreen() { hideAllScreens(); document.getElementById('stenoSe
 function abortStenoTest() { if(confirm("Are you sure you want to abort this test?")) { clearInterval(coreTimerLoop); hideAllScreens(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); } }
 
 function updateEvaluationModes() {
-    examTargetSelector.innerHTML = currentMode === 'STENO' ? `<option value="RAJ_HC">Raj. High Court Steno</option><option value="SSC_STENO">SSC Steno Standard</option>` : `<option value="RAJ_HC">Raj. High Court Rule</option><option value="SSC_STENO">SSC CHSL Standard</option><option value="RPSC_LDC">RPSC LDC Rule</option><option value="RRB_NTPC">RRB NTPC (5% Rule)</option><option value="UPSSSC">UPSSSC Exam</option><option value="UP_POLICE">UP Police (85% Acc.)</option>`;
+    examTargetSelector.innerHTML = currentMode === 'STENO' ? `
+        <option value="RAJ_HC">Raj. High Court Steno</option>
+        <option value="SSC_STENO">SSC Steno Standard</option>
+    ` : `
+        <option value="RAJ_HC">Raj. High Court Rule</option>
+        <option value="SSC_STENO">SSC CHSL Standard</option>
+        <option value="RPSC_LDC">RPSC LDC Rule</option>
+        <option value="RRB_NTPC">RRB NTPC (5% Rule)</option>
+        <option value="UPSSSC">UPSSSC Exam</option>
+        <option value="UP_POLICE">UP Police (85% Acc.)</option>
+    `;
 }
 
+// 🎯 DYNAMIC FONT SIZE CONTROLS LOGIC ENGINE
 function changeFontSize(step) {
     currentCustomFontSize += step;
     if (currentCustomFontSize < 0.8) currentCustomFontSize = 0.8;
@@ -676,47 +715,79 @@ function changeFontSize(step) {
 function updateStudentFont() {
     const selectedFontClass = document.getElementById('fontFamilySelector').value;
     const selectedFontSize = currentCustomFontSize.toFixed(1) + 'rem';
-    displayWindow.classList.remove('font-english', 'font-kruti', 'font-mangal');
-    typingAreaInput.classList.remove('font-english', 'font-kruti', 'font-mangal');
-    displayWindow.classList.add(selectedFontClass); typingAreaInput.classList.add(selectedFontClass);
-    displayWindow.style.fontSize = selectedFontSize; typingAreaInput.style.fontSize = selectedFontSize;
     
-    if(selectedFontClass === 'font-mangal') activeLanguage = 'HI_MANGAL';
-    else if(selectedFontClass === 'font-kruti') activeLanguage = 'HI_KRUTI';
-    else activeLanguage = 'EN';
+    const displayFrame = document.getElementById('displayParagraphFrame');
+    const inputArea = document.getElementById('typingAreaInput');
+
+    displayFrame.classList.remove('font-english', 'font-kruti', 'font-mangal');
+    inputArea.classList.remove('font-english', 'font-kruti', 'font-mangal');
+
+    displayFrame.classList.add(selectedFontClass);
+    inputArea.classList.add(selectedFontClass);
+
+    displayFrame.style.fontSize = selectedFontSize;
+    inputArea.style.fontSize = selectedFontSize;
+    
+    if(selectedFontClass === 'font-mangal') {
+        activeLanguage = 'HI_MANGAL';
+    } else if(selectedFontClass === 'font-kruti') {
+        activeLanguage = 'HI_KRUTI';
+    } else {
+        activeLanguage = 'EN';
+    }
 }
 
 function launchApplicationConsole(lang, mode) {
-    activeLanguage = lang; currentMode = mode; setAppTheme(lang, mode); hideAllScreens();
+    activeLanguage = lang; currentMode = mode; 
+    setAppTheme(lang, mode);
+    hideAllScreens();
     document.getElementById('selectionListTitle').innerText = (mode === 'STENO') ? "Select Stenography Dictation" : "Select Typing Test";
     
     const fontSelector = document.getElementById('fontFamilySelector');
-    if(fontSelector) { fontSelector.value = (lang === 'HI_KRUTI') ? 'font-kruti' : 'font-english'; currentCustomFontSize = 1.1; document.getElementById('currentFontSizeDisplay').innerText = '1.1x'; }
+    if(fontSelector) {
+        fontSelector.value = (lang === 'HI_KRUTI') ? 'font-kruti' : 'font-english';
+        currentCustomFontSize = 1.1;
+        document.getElementById('currentFontSizeDisplay').innerText = '1.1x';
+    }
     
     displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
     typingAreaInput.className = 'input-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
-    updateEvaluationModes(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList();
+    updateEvaluationModes();
+
+    document.getElementById('stenoSelectionScreen').classList.add('active-view');
+    renderStenoList();
 }
 
 function applyUIMode(mode) {
     if (mode === 'STENO') {
         timeSelector.innerHTML = `<option value="1">1 Minute</option><option value="2">2 Minutes</option><option value="5">5 Minutes</option><option value="10">10 Minutes</option><option value="15">15 Minutes</option><option value="20">20 Minutes</option><option value="30">30 Minutes</option><option value="40">40 Minutes</option><option value="50">50 Minutes</option><option value="60">60 Minutes</option>`;
-        document.getElementById('typingTopControls').style.display = 'none'; document.getElementById('stenoTopControls').style.display = 'flex'; 
-        document.getElementById('durationPanelBox').style.display = 'none'; document.getElementById('exercisePanelBox').style.display = 'none';
+        document.getElementById('typingTopControls').style.display = 'none'; 
+        document.getElementById('stenoTopControls').style.display = 'flex'; 
+        document.getElementById('durationPanelBox').style.display = 'none'; 
+        document.getElementById('exercisePanelBox').style.display = 'none';
         document.getElementById('fontControlPanelBox').style.display = 'none'; 
-        typingAreaInput.classList.add('steno-input-expanded'); displayWindow.style.display = 'none'; typeDivider.style.display = 'none'; 
+        
+        typingAreaInput.classList.add('steno-input-expanded'); 
+        displayWindow.style.display = 'none'; 
+        typeDivider.style.display = 'none'; 
     } else {
         timeSelector.innerHTML = `<option value="1">1 Minute</option><option value="2">2 Minutes</option><option value="5">5 Minutes</option><option value="10" selected>10 Minutes</option><option value="15">15 Minutes</option><option value="20">20 Minutes</option><option value="30">30 Minutes</option>`;
-        document.getElementById('typingTopControls').style.display = 'flex'; document.getElementById('stenoTopControls').style.display = 'none'; 
-        document.getElementById('durationPanelBox').style.display = 'block'; document.getElementById('exercisePanelBox').style.display = 'none'; 
+        document.getElementById('typingTopControls').style.display = 'flex'; 
+        document.getElementById('stenoTopControls').style.display = 'none'; 
+        document.getElementById('durationPanelBox').style.display = 'block'; 
+        document.getElementById('exercisePanelBox').style.display = 'none'; 
         document.getElementById('fontControlPanelBox').style.display = 'block'; 
-        typingAreaInput.classList.remove('steno-input-expanded'); displayWindow.style.display = 'block'; typeDivider.style.display = 'block'; 
+        
+        typingAreaInput.classList.remove('steno-input-expanded'); 
+        displayWindow.style.display = 'block'; 
+        typeDivider.style.display = 'block'; 
     }
 }
 
 function renderStenoList() {
     const container = document.getElementById('stenoListContainer'); container.innerHTML = '';
     const list = exerciseDatabaseBank[currentMode][activeLanguage] || exerciseDatabaseBank[currentMode]['EN'] || [];
+    
     if(list.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:40px;">No Tests available in Cloud yet.</p>`; return; }
 
     let html = `<table class="steno-table"><thead><tr><th style="width:50px;">S.No.</th><th>Test Name</th>`;
@@ -727,8 +798,14 @@ function renderStenoList() {
         let hasTaken = completedTests[currentMode][activeLanguage] && completedTests[currentMode][activeLanguage][index];
         let startText = currentMode === 'STENO' ? '🎧 Start Transcription' : '⌨️ Start Typing';
         
-        let actionHTML = hasTaken ? `<button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">🔄 Restart</button><button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary); border:1px solid var(--secondary);" onclick="viewStenoResult(${index})">👁️ View Answer</button>` : `<button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">${startText}</button>`;
-        if(isAdmin) { actionHTML += `<button class="action-btn-mini" style="color:#d97706;" onclick="editStenoTest(${index})">✏️</button><button class="action-btn-mini" style="color:var(--danger);" onclick="deleteStenoTest(${index})">❌</button>`; }
+        let actionHTML = hasTaken ? `
+            <button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">🔄 Restart</button>
+            <button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary); border:1px solid var(--secondary);" onclick="viewStenoResult(${index})">👁️ View Answer</button>
+        ` : `<button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">${startText}</button>`;
+
+        if(isAdmin) {
+            actionHTML += `<button class="action-btn-mini" style="color:#d97706;" onclick="editStenoTest(${index})">✏️</button><button class="action-btn-mini" style="color:var(--danger);" onclick="deleteStenoTest(${index})">❌</button>`;
+        }
         
         html += `<tr><td style="font-weight:bold; color:var(--text-muted);">${index + 1}</td><td style="color:var(--text-dark);">${escapeHTML(ex.name)}</td>`;
         if(currentMode === 'STENO') html += `<td style="color:var(--text-muted);">${escapeHTML(ex.date || 'N/A')}</td><td style="color:var(--text-muted);">${escapeHTML(ex.dictTime || '-')}</td><td style="color:var(--text-muted);">${escapeHTML(ex.speed ? ex.speed + ' WPM' : '-')}</td>`;
@@ -744,30 +821,45 @@ function getDirectAudioUrl(url) {
 }
 
 function startDictationPhase(index) {
-    selectedStenoIndex = index; const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
+    selectedStenoIndex = index; 
+    const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
     const activeObject = exerciseDatabaseBank[currentMode][fallbackLang][index];
+    
     if(currentMode === 'TYPE' || !activeObject.audio) { enterStenoTranscriptionPhase(index); return; }
 
     hideAllScreens(); document.getElementById('dictationScreen').classList.add('active-view');
-    dictationAudioPlayer.src = getDirectAudioUrl(activeObject.audio); dictationAudioPlayer.load();
-    dictationAudioPlayer.onerror = function() { alert("⚠️ Audio link is invalid. Skipping to transcription window."); skipDictationAndTranscribe(); };
+    const finalAudioLink = getDirectAudioUrl(activeObject.audio);
+    dictationAudioPlayer.src = finalAudioLink; dictationAudioPlayer.load();
+
+    dictationAudioPlayer.onerror = function() { alert("⚠️ Audio link is invalid or blocked. Skipping directly to transcription window."); skipDictationAndTranscribe(); };
     dictationAudioPlayer.onended = function() { enterStenoTranscriptionPhase(selectedStenoIndex); };
 }
 
 function skipDictationAndTranscribe() { dictationAudioPlayer.pause(); dictationAudioPlayer.currentTime = 0; enterStenoTranscriptionPhase(selectedStenoIndex); }
 
 function enterStenoTranscriptionPhase(index) {
-    hideAllScreens(); document.getElementById('examConsoleScreen').classList.add('active-view'); applyUIMode(currentMode); 
+    hideAllScreens(); document.getElementById('examConsoleScreen').classList.add('active-view');
+    applyUIMode(currentMode); 
+
     const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
     const activeObject = exerciseDatabaseBank[currentMode][fallbackLang][index];
 
-    timeSelector.value = activeObject.duration || (currentMode === 'STENO' ? 50 : 10); modifyDurationConfig();
-    let baseText = activeObject.text; let selectedMins = parseInt(timeSelector.value);
-    let maxPossibleWords = 120 * selectedMins; let baseWordsCount = deepClean(baseText).split(/\s+/).length;
-    let repeatCount = 1; if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) { repeatCount = Math.ceil(maxPossibleWords / baseWordsCount); }
-    let finalText = baseText; for (let i = 1; i < repeatCount; i++) { finalText += " " + baseText; }
+    timeSelector.value = activeObject.duration || (currentMode === 'STENO' ? 50 : 10); 
+    modifyDurationConfig();
 
-    sourceWords = deepClean(finalText).split(/\s+/); if(currentMode === 'TYPE') displayWindow.innerText = finalText;
+    let baseText = activeObject.text;
+    let selectedMins = parseInt(timeSelector.value);
+    let maxPossibleWords = 120 * selectedMins; 
+    let baseWordsCount = deepClean(baseText).split(/\s+/).length;
+    
+    let repeatCount = 1;
+    if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) { repeatCount = Math.ceil(maxPossibleWords / baseWordsCount); }
+    let finalText = baseText;
+    for (let i = 1; i < repeatCount; i++) { finalText += " " + baseText; }
+
+    sourceWords = deepClean(finalText).split(/\s+/);
+    if(currentMode === 'TYPE') displayWindow.innerText = finalText;
+
     clearInterval(coreTimerLoop); secondsCounter = 0; strokeCounter = 0;
     clockLabel.style.opacity = '1'; clockLabel.style.color = 'var(--text-dark)';
     typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
@@ -786,6 +878,7 @@ function autoSetExamTimer() {
 function openUploadModal(mode) {
     if(!isAdmin) return alert("Only Admin can add or edit tests!");
     currentManagerMode = mode;
+    
     modalTextArea.className = 'modal-textarea ' + (activeLanguage==='HI_KRUTI'?'font-kruti':(activeLanguage==='HI_MANGAL'?'font-mangal':'font-english'));
     document.getElementById('customAudioFileInput').value = ""; document.getElementById('customAudioUrlInput').value = "";
     document.getElementById('modalSaveBtn').innerText = "Save Changes"; document.getElementById('modalSaveBtn').disabled = false;
@@ -805,6 +898,7 @@ function openUploadModal(mode) {
     } else if (mode === 'EDIT') {
         const currentActive = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex];
         if(!currentActive) return alert("No exercise to edit!");
+        
         document.getElementById('modalBoxTitle').innerText = "Edit Cloud Details"; modalNameInput.value = currentActive.name; modalTextArea.value = currentActive.text;
         document.getElementById('customDuration').value = currentActive.duration || "";
         if (currentMode === 'STENO') {
@@ -818,15 +912,16 @@ function openUploadModal(mode) {
 function editStenoTest(index) { selectedStenoIndex = index; openUploadModal('EDIT'); }
 async function deleteStenoTest(index) {
     if(!isAdmin) return;
-    if (confirm(`Are you sure you want to delete this test?`)) {
+    if (confirm(`Are you sure you want to delete this exercise?`)) {
         const docId = exerciseDatabaseBank[currentMode][activeLanguage][index].id;
-        await db.collection("exercises").doc(docId).delete(); exerciseDatabaseBank[currentMode][activeLanguage].splice(index, 1); renderStenoList();
+        await db.collection("exercises").doc(docId).delete();
+        exerciseDatabaseBank[currentMode][activeLanguage].splice(index, 1);
+        renderStenoList();
     }
 }
 function closeCustomMatterModal() { document.getElementById('customMatterModal').style.display = 'none'; }
 
 async function saveExerciseManagerAction() {
-    // FIX: Raw text input
     const nameVal = modalNameInput.value.trim(); const textVal = modalTextArea.value.trim();
     if (nameVal === "" || textVal === "") return alert("Fields cannot be empty!");
     
@@ -837,7 +932,8 @@ async function saveExerciseManagerAction() {
         if (currentManagerMode === 'EDIT' && exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex]) { if(!audioUrl && fileInput.files.length === 0) { audioUrl = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex].audio || ""; } }
 
         if (fileInput.files.length > 0) {
-            saveBtn.innerText = "Uploading Audio..."; const file = fileInput.files[0]; const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
+            saveBtn.innerText = "Uploading Audio...";
+            const file = fileInput.files[0]; const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
             const snapshot = await storageRef.put(file); audioUrl = await snapshot.ref.getDownloadURL();
         }
 
@@ -845,12 +941,16 @@ async function saveExerciseManagerAction() {
 
         saveBtn.innerText = "Writing Data...";
         if (currentManagerMode === 'ADD') {
-            const docRef = await db.collection("exercises").add(dataObj); exerciseDatabaseBank[currentMode][activeLanguage].push({ id: docRef.id, ...dataObj });
+            const docRef = await db.collection("exercises").add(dataObj);
+            exerciseDatabaseBank[currentMode][activeLanguage].push({ id: docRef.id, ...dataObj });
         } else if (currentManagerMode === 'EDIT') {
-            const docId = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex].id; await db.collection("exercises").doc(docId).update(dataObj); exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex] = { id: docId, ...dataObj };
+            const docId = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex].id;
+            await db.collection("exercises").doc(docId).update(dataObj);
+            exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex] = { id: docId, ...dataObj };
         }
+        
         saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; closeCustomMatterModal(); renderStenoList();
-    } catch(e) { alert("Error saving."); saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; }
+    } catch(e) { alert("Error saving data to the backend."); saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; }
 }
 
 function modifyDurationConfig() {
@@ -862,6 +962,7 @@ function modifyDurationConfig() {
 }
 function toggleTimerVisibility() { clockLabel.style.opacity = (clockLabel.style.opacity === '0') ? '1' : '0'; }
 
+// 🛡️ SECURITY ANTI-CHEAT HANDLERS
 typingAreaInput.addEventListener('paste', e => e.preventDefault()); typingAreaInput.addEventListener('copy', e => e.preventDefault());
 typingAreaInput.addEventListener('cut', e => e.preventDefault()); typingAreaInput.addEventListener('drop', e => e.preventDefault());
 typingAreaInput.addEventListener('dragover', e => e.preventDefault()); typingAreaInput.addEventListener('contextmenu', e => e.preventDefault());
@@ -978,11 +1079,19 @@ function finishEvaluationTest() {
         }
     }
 
-    while(t < typedTokens.length) { fullMistakesCount++; const wordBlock = document.createElement('div'); wordBlock.className = 'word-block'; wordBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span>`; reviewContainer.appendChild(wordBlock); t++; }
+    while(t < typedTokens.length) { 
+        fullMistakesCount++; 
+        const wordBlock = document.createElement('div'); 
+        wordBlock.className = 'word-block'; 
+        wordBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span>`; 
+        reviewContainer.appendChild(wordBlock); 
+        t++; 
+    }
     
     let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
     let selectedExamType = document.getElementById('examTargetSelector').value;
     let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
+
     const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
     let activeObject = exerciseDatabaseBank[currentMode][fallbackLang][selectedStenoIndex];
     let testName = activeObject ? activeObject.name : "Custom Test";
@@ -1016,7 +1125,7 @@ function finishEvaluationTest() {
         let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
         if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
         
-        // 🔐 FIX: Anti-Cheat WPM Validator
+        // 🛡️ ENHANCED ANTI-CHEAT SPEED VALIDATION ENGINE
         if (grossWPM > 150) {
             alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
             grossWPM = 0; netWPM = 0; accuracy = 0; totalErrorsCalculated = "N/A";
