@@ -72,16 +72,13 @@
         .icon-graphic { color: white; width: 60px; height: 60px; border-radius: 14px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; text-align: center; font-weight: bold; font-size: 0.8rem; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-bottom: 12px; }
         .icon-label { font-size: 0.9rem; text-align: center; color: var(--text-dark); font-weight: 700; }
         
-        /* 🎨 THE 6 DISTINCT CATEGORY THEMES (STATIC FOR ICONS) */
-        .theme-icon-steno-en { background: linear-gradient(135deg, #0284c7, #38bdf8); } /* Deep Ocean Blue */
-        .theme-icon-steno-hi { background: linear-gradient(135deg, #ea580c, #fb923c); } /* Saffron Orange */
-        .theme-icon-steno-ma { background: linear-gradient(135deg, #7c3aed, #a78bfa); } /* Royal Amethyst */
-        
-        .theme-icon-type-en { background: linear-gradient(135deg, #059669, #34d399); } /* Jade Green */
-        .theme-icon-type-hi { background: linear-gradient(135deg, #ca8a04, #facc15); } /* Ochre Yellow */
-        .theme-icon-type-ma { background: linear-gradient(135deg, #be123c, #fb7185); } /* Ruby Crimson */
+        /* 🎨 THE DISTINCT CATEGORY THEMES */
+        .theme-icon-steno-en { background: linear-gradient(135deg, #0284c7, #38bdf8); } 
+        .theme-icon-steno-hi { background: linear-gradient(135deg, #ea580c, #fb923c); } 
+        .theme-icon-type-en { background: linear-gradient(135deg, #059669, #34d399); } 
+        .theme-icon-type-hi { background: linear-gradient(135deg, #ca8a04, #facc15); } 
 
-        /* LIST SCREENS & TABLES (DYNAMIC) */
+        /* LIST SCREENS & TABLES */
         .dynamic-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 25px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: var(--active-theme-grad); color: white; }
         .dynamic-header h2 { margin: 0; color: white !important; font-weight: 800; letter-spacing: 0.5px;}
         
@@ -110,10 +107,15 @@
         
         .exam-right-sidebar { width: 280px; flex-shrink: 0; background: #f8fafc; border-radius: 8px; padding: 20px 15px; display: flex; flex-direction: column; align-items: center; gap: 15px; height: 100%; overflow-y: auto; overflow-x: hidden; border: 1px solid var(--border-light); box-sizing: border-box; }
 
-        /* SIDEBAR TIMER (DYNAMIC) */
+        /* SIDEBAR TIMER & PANELS */
         .timer-title { font-weight: 800; font-size: 1.05rem; color: var(--text-muted); text-align: center; margin-bottom: -5px; text-transform: uppercase; letter-spacing: 0.5px;}
         .circular-timer { width: 140px; height: 140px; border-radius: 50%; background: white; border: 6px solid var(--active-theme-color); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin: 0 auto; flex-shrink: 0; }
         .time-text { font-size: 2.4rem; font-weight: 800; color: var(--text-dark); letter-spacing: 1px; }
+
+        .sidebar-panel-box { width: 100%; background: transparent; padding: 0; box-sizing: border-box; flex-shrink: 0; border-top: 1px solid var(--border-light); padding-top: 15px;}
+        .sidebar-panel-box label { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .sidebar-select { width: 100%; padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; font-weight: 600; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); background: white; outline:none; cursor:pointer;}
+        .sidebar-select:focus { border-color: var(--active-theme-color); }
 
         /* TYPING WINDOWS */
         .display-window { 
@@ -127,21 +129,16 @@
         
         /* STENO MODE BIG CANVAS */
         .steno-input-expanded { flex: 1 !important; height: auto !important; font-size: 1.7rem !important; padding: 30px !important; background-color: var(--steno-cream) !important; border: 2px solid #e5e7eb !important; border-radius: 8px !important; box-shadow: inset 0 4px 6px rgba(0,0,0,0.02) !important; overflow-y: auto !important; resize: none; line-height: 2.8rem !important; color: #1e293b !important; }
-        
-        /* SIDEBAR BOXES */
-        .sidebar-panel-box { width: 100%; background: transparent; padding: 0; box-sizing: border-box; flex-shrink: 0; border-top: 1px solid var(--border-light); padding-top: 15px;}
-        .sidebar-panel-box label { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
-        .sidebar-select { width: 100%; padding: 10px; border: 1px solid var(--border-light); border-radius: 6px; font-weight: 600; font-family: inherit; font-size: 0.95rem; color: var(--text-dark); background: white; outline:none; cursor:pointer;}
-        .sidebar-select:focus { border-color: var(--active-theme-color); }
+
+        /* FONT CONTROLS */
+        .font-kruti { font-family: 'Kruti Dev 010', 'Devlys 010', sans-serif; font-size: 1.4rem; }
+        .font-english { font-family: Arial, sans-serif; font-size: 1.1rem; }
+        .font-mangal { font-family: 'Mangal', 'Aparajita', sans-serif; font-size: 1.4rem; }
 
         /* DICTATION AUDIO SCREEN */
         .dictation-wrapper { background: var(--card-bg); padding: 50px; border-radius: 16px; border: 2px solid var(--active-theme-color); box-shadow: 0 20px 40px rgba(0,0,0, 0.1); max-width: 600px; margin: 12vh auto; text-align: center; width: 100%; }
         .pulse-mic { font-size: 4.5rem; animation: pulse 1.5s infinite; margin-bottom: 20px; display:inline-block; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
-
-        .font-kruti { font-family: 'Kruti Dev 010', 'Devlys 010', sans-serif; font-size: 1.4rem; }
-        .font-mangal { font-family: 'Nirmala UI', 'Mangal', sans-serif; font-size: 1.3rem; }
-        .font-english { font-family: Arial, sans-serif; font-size: 1.1rem; }
 
         /* MODAL & REPORT */
         .custom-matter-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 5000; justify-content: center; align-items: center; }
@@ -152,8 +149,6 @@
         
         .report-view { background: #ffffff; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 1px solid var(--border-light); width: 100%; box-sizing: border-box; margin: auto;}
         .report-header { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
-        
-        /* 🎯 DYNAMIC REPORT TABLE HEADER */
         .report-table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 1.05rem; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .report-table th, .report-table td { border-bottom: 1px solid var(--border-light); padding: 16px; text-align: center;}
         .report-table th { background: var(--active-theme-color); color: white; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; border:none;}
@@ -165,7 +160,6 @@
         .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
         .review-box { background: #f8fafc; border: 1px solid var(--border-light); padding: 25px; max-height: 300px; overflow-y: auto; text-align: left; border-radius: 8px; line-height: 3.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
         
-        /* 🎯 DYNAMIC REVIEW COLORS */
         .word-block { display: inline-block; margin-right: 14px; font-size: inherit; }
         .rev-correct { color: var(--active-theme-color); font-weight: 800; }
         .rev-wrong-text { color: var(--danger) !important; font-weight: bold; display: inline; text-decoration: underline;}
@@ -180,27 +174,20 @@
     </div>
 
     <div class="login-container app-view" id="loginScreen">
-        
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
             <p class="login-sub">Student Login</p>
             <div class="login-row"><label>Name / ID</label><input type="text" id="loginName" class="login-input" placeholder="Enter your Name or ID"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
-            
-            <div style="display:flex; justify-content:flex-end; margin-top: 8px;">
-                <span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="alert('🔒 Please contact your Institute Admin/Teacher to recover or reset your password.')">Forgot Password?</span>
-            </div>
-
+            <div style="display:flex; justify-content:flex-end; margin-top: 8px;"><span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="alert('🔒 Please contact your Institute Admin/Teacher to recover or reset your password.')">Forgot Password?</span></div>
             <button class="enter-btn" id="loginBtnMain" onclick="handleLoginSubmit()">Login to Portal</button>
             <div class="toggle-auth" onclick="toggleAuth('SIGNUP')">Don't have an account? <span>Register Here</span></div>
         </div>
-
         <div id="signupFormBox" style="display:none;">
             <div class="login-title" style="background: linear-gradient(90deg, #10b981, #059669); -webkit-background-clip: text;">New Registration</div>
             <p class="login-sub">Send access request to Admin</p>
             <div class="login-row"><label>Name / ID</label><input type="text" id="regName" class="login-input" placeholder="Create a unique Name/ID"></div>
             <div class="login-row"><label>Password</label><input type="password" id="regPass" class="login-input" placeholder="Create Password"></div>
-            
             <button class="enter-btn" id="signupBtnMain" style="background:#10b981; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);" onclick="handleSignupSubmit()">Send Request</button>
             <div class="toggle-auth" onclick="toggleAuth('LOGIN')">Already registered? <span>Back to Login</span></div>
         </div>
@@ -219,7 +206,6 @@
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'STENO')"><div class="icon-graphic theme-icon-steno-en"><div>🎧</div><div>EN</div><div>✍️</div><div>St</div></div><div class="icon-label">English Steno</div></div>
                     <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic theme-icon-steno-hi"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Steno</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'STENO')"><div class="icon-graphic theme-icon-steno-ma"><div>🎧</div><div>म</div><div>✍️</div><div>St</div></div><div class="icon-label">Mangal Steno</div></div>
                 </div>
             </div>
 
@@ -228,7 +214,6 @@
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'TYPE')"><div class="icon-graphic theme-icon-type-en"><div>A</div><div>B</div><div>C</div><div>D</div></div><div class="icon-label">English Tests</div></div>
                     <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic theme-icon-type-hi"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Tests</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'TYPE')"><div class="icon-graphic theme-icon-type-ma"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Mangal Tests</div></div>
                 </div>
             </div>
         </div>
@@ -307,7 +292,7 @@
                 <div style="text-align: center; width:100%; flex-shrink: 0;">
                     <div class="timer-title">Remaining Time</div><br>
                     <div class="circular-timer"><span id="clockLabel" class="time-text">10:00</span></div><br>
-                    <button class="hide-timer-btn" onclick="toggleTimerVisibility()">👁️ Hide / Show Timer</button>
+                    <button class="hide-timer-btn action-btn-mini" style="margin:0 auto;" onclick="toggleTimerVisibility()">👁️ Hide / Show Timer</button>
                 </div>
 
                 <div class="sidebar-panel-box" id="durationPanelBox">
@@ -333,8 +318,24 @@
                     </select>
                 </div>
 
+                <div class="sidebar-panel-box" id="fontControlPanelBox" style="display: none;">
+                    <label>Font & Size Settings</label>
+                    <select id="fontFamilySelector" class="sidebar-select" onchange="updateStudentFont()" style="margin-bottom: 8px;">
+                        <option value="font-english">English (Arial)</option>
+                        <option value="font-kruti">Hindi (Kruti Dev)</option>
+                        <option value="font-mangal">Hindi (Mangal)</option>
+                    </select>
+                    
+                    <select id="fontSizeSelector" class="sidebar-select" onchange="updateStudentFont()">
+                        <option value="1.1">Size: Normal</option>
+                        <option value="1.4">Size: Medium</option>
+                        <option value="1.7">Size: Large</option>
+                        <option value="2.2">Size: Extra Large</option>
+                    </select>
+                </div>
+
                 <div style="width: 100%; margin-top: auto; flex-shrink: 0; display:flex; flex-direction:column; gap:5px;">
-                    <button class="exam-action-btn dynamic-btn" onclick="finishEvaluationTest()">Submit Exam</button>
+                    <button class="exam-action-btn dynamic-btn" onclick="finishEvaluationTest()" style="padding:15px; font-weight:bold; font-size:1.1rem; border-radius:8px; width:100%;">Submit Exam</button>
                 </div>
             </div>
         </div>
@@ -343,7 +344,6 @@
     <div class="custom-matter-modal" id="customMatterModal">
         <div class="modal-box">
             <h3 id="modalBoxTitle" style="color:var(--text-dark); margin-top:0; font-weight:800;">Add New Track</h3>
-            
             <label style="font-size:0.85rem; font-weight:bold; color:var(--text-muted);">Exercise Name (English Only):</label>
             <input type="text" id="customExerciseNameInput" style="font-family: Arial, sans-serif !important; width:100%; padding:10px; margin:5px 0; border:1px solid var(--border-light); border-radius:6px; box-sizing:border-box;">
             
@@ -407,7 +407,27 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// 🎯 COMPLETELY SEPARATED ARRAYS FOR STENO & TYPE
+function escapeHTML(str) {
+    if (!str) return "";
+    return str.toString().replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+}
+
+async function hashPassword(password) {
+    const msgBuffer = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// 🎯 SAFE ARRAY INITIALIZATION INCLUDING MANGAL
 let exerciseDatabaseBank = { 
     STENO: { EN: [], HI_KRUTI: [], HI_MANGAL: [] },
     TYPE: { EN: [], HI_KRUTI: [], HI_MANGAL: [] }
@@ -420,7 +440,7 @@ const completedTests = {
 let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
 let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
 let studentIdentity = { name: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
-let currentFontSize = 1.1; // Default font size set to smaller
+let currentFontSize = 1.1; 
 let isAdmin = false; 
 
 const displayWindow = document.getElementById('displayParagraphFrame');
@@ -434,17 +454,14 @@ const examTargetSelector = document.getElementById('examTargetSelector');
 const dictationAudioPlayer = document.getElementById('mainDictationAudio');
 const timeSelector = document.getElementById('timeSelector');
 
-// 🎯 DYNAMIC THEME ENGINE
 function setAppTheme(lang, mode) {
     let color, grad;
     if (mode === 'STENO') {
         if(lang === 'EN') { color = '#0ea5e9'; grad = 'linear-gradient(135deg, #0284c7, #38bdf8)'; } 
-        else if(lang === 'HI_KRUTI') { color = '#ea580c'; grad = 'linear-gradient(135deg, #ea580c, #fb923c)'; } 
-        else if(lang === 'HI_MANGAL') { color = '#7c3aed'; grad = 'linear-gradient(135deg, #7c3aed, #a78bfa)'; } 
+        else { color = '#ea580c'; grad = 'linear-gradient(135deg, #ea580c, #fb923c)'; } 
     } else {
         if(lang === 'EN') { color = '#059669'; grad = 'linear-gradient(135deg, #059669, #34d399)'; } 
-        else if(lang === 'HI_KRUTI') { color = '#ca8a04'; grad = 'linear-gradient(135deg, #ca8a04, #facc15)'; } 
-        else if(lang === 'HI_MANGAL') { color = '#be123c'; grad = 'linear-gradient(135deg, #be123c, #fb7185)'; } 
+        else { color = '#ca8a04'; grad = 'linear-gradient(135deg, #ca8a04, #facc15)'; } 
     }
     document.documentElement.style.setProperty('--active-theme-color', color);
     document.documentElement.style.setProperty('--active-theme-grad', grad);
@@ -463,12 +480,10 @@ function hideAllScreens() {
     document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
 }
 
-// 🎯 NAYA LOGIC: SORTING THE DATABASE FETCH
 async function fetchDatabaseFromCloud() {
     let safetyTimer = setTimeout(() => {
         document.getElementById('loadingOverlay').style.display = 'none';
-        hideAllScreens();
-        document.getElementById('loginScreen').classList.add('active-view');
+        hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
     }, 4000);
 
     try {
@@ -490,7 +505,6 @@ async function fetchDatabaseFromCloud() {
             }
         });
         
-        // 🎯 NAYA LOGIC: HAR CATEGORY KE TESTS KO NAAM/NUMBER KE HISAAB SE SORT KARNA
         for (let modeKey in exerciseDatabaseBank) {
             for (let langKey in exerciseDatabaseBank[modeKey]) {
                 exerciseDatabaseBank[modeKey][langKey].sort((a, b) => {
@@ -500,14 +514,11 @@ async function fetchDatabaseFromCloud() {
         }
         
         document.getElementById('loadingOverlay').style.display = 'none';
-        hideAllScreens();
-        document.getElementById('loginScreen').classList.add('active-view');
+        hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
     } catch (error) {
-        clearTimeout(safetyTimer);
-        console.error("Firebase Error:", error);
+        clearTimeout(safetyTimer); console.error("Firebase Error:", error);
         document.getElementById('loadingOverlay').style.display = 'none';
-        hideAllScreens();
-        document.getElementById('loginScreen').classList.add('active-view');
+        hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
     }
 }
 
@@ -526,7 +537,6 @@ function toggleAuth(mode) {
 async function handleSignupSubmit() {
     const sName = document.getElementById('regName').value.trim();
     const sPass = document.getElementById('regPass').value.trim();
-    
     if(!sName || !sPass) return alert("Name/ID and Password are required!");
     
     const btn = document.getElementById('signupBtnMain');
@@ -534,30 +544,18 @@ async function handleSignupSubmit() {
 
     try {
         const checkRef = await db.collection("students").where("name", "==", sName).get();
-        if(!checkRef.empty) {
-            alert("This Name/ID already exists! Please use Login.");
-            btn.innerText = "Send Request"; btn.disabled = false;
-            return;
-        }
+        if(!checkRef.empty) { alert("This Name/ID already exists! Please use Login."); btn.innerText = "Send Request"; btn.disabled = false; return; }
 
-        await db.collection("students").add({
-            name: sName,
-            password: sPass,
-            status: "pending",
-            date: new Date().toISOString()
-        });
+        const hashedPass = await hashPassword(sPass);
+        await db.collection("students").add({ name: escapeHTML(sName), password: hashedPass, status: "pending", date: new Date().toISOString() });
 
         alert("✅ Request sent successfully! Please wait for Admin to approve your account.");
         toggleAuth('LOGIN');
         document.getElementById('regName').value = ""; document.getElementById('regPass').value = "";
-    } catch(e) {
-        alert("Error sending request. Check connection.");
-        console.log(e);
-    }
+    } catch(e) { alert("Error sending request. Check connection."); console.log(e); }
     btn.innerText = "Send Request"; btn.disabled = false;
 }
 
-// 🎯 SECURE ADMIN LOGIN VIA DATABASE
 async function handleLoginSubmit() {
     const lName = document.getElementById('loginName').value.trim();
     const lPass = document.getElementById('loginPass').value.trim();
@@ -568,173 +566,91 @@ async function handleLoginSubmit() {
 
     try {
         const adminQuery = await db.collection("admin_settings").where("admin_id", "==", lName).where("admin_pass", "==", lPass).get();
-        
         if (!adminQuery.empty) {
-            isAdmin = true;
-            studentIdentity = { name: "Portal Admin" };
+            isAdmin = true; studentIdentity = { name: "Portal Admin" };
             document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
             document.getElementById('adminManageBtn').classList.remove('admin-only');
             document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
             hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
-            btn.innerText = "Login to Portal"; btn.disabled = false;
-            return;
+            btn.innerText = "Login to Portal"; btn.disabled = false; return;
         }
 
-        const userQuery = await db.collection("students").where("name", "==", lName).where("password", "==", lPass).get();
+        const hashedPass = await hashPassword(lPass);
+        const userQuery = await db.collection("students").where("name", "==", lName).where("password", "==", hashedPass).get();
         
-        if(userQuery.empty) {
-            alert("❌ Invalid Name/ID or Password!");
-            btn.innerText = "Login to Portal"; btn.disabled = false;
-            return;
-        }
-
+        if(userQuery.empty) { alert("❌ Invalid Name/ID or Password!"); btn.innerText = "Login to Portal"; btn.disabled = false; return; }
         const userData = userQuery.docs[0].data();
         
-        if(userData.status !== "approved") {
-            alert("⏳ Your account is still Pending. Please wait for Admin approval.");
-            btn.innerText = "Login to Portal"; btn.disabled = false;
-            return;
-        }
+        if(userData.status !== "approved") { alert("⏳ Your account is still Pending. Please wait for Admin approval."); btn.innerText = "Login to Portal"; btn.disabled = false; return; }
 
-        isAdmin = false;
-        studentIdentity = { name: userData.name };
+        isAdmin = false; studentIdentity = { name: escapeHTML(userData.name) };
         document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
         document.getElementById('adminManageBtn').classList.add('admin-only');
-        document.getElementById('barName').innerText = userData.name;
-        
+        document.getElementById('barName').innerText = studentIdentity.name;
         hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
-    } catch(e) {
-        alert("Error logging in. Check internet connection.");
-        console.log(e);
-    }
+    } catch(e) { alert("Error logging in. Check internet connection."); console.log(e); }
     btn.innerText = "Login to Portal"; btn.disabled = false;
 }
 
 async function showAdminUserPanel() {
-    hideAllScreens();
-    document.getElementById('adminUsersScreen').classList.add('active-view');
+    hideAllScreens(); document.getElementById('adminUsersScreen').classList.add('active-view');
     const container = document.getElementById('adminUsersContainer');
     container.innerHTML = `<h3 style="text-align:center; color:var(--text-muted);">Loading Students...</h3>`;
     
     try {
-        const snapshot = await db.collection("students").get();
+        const snapshot = await db.collection("students").limit(100).get();
         if(snapshot.empty) { container.innerHTML = `<p style="text-align:center;">No students found.</p>`; return; }
         
-        let html = `<table class="steno-table"><thead><tr><th>Name / ID</th><th>Password</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
-        
+        let html = `<table class="steno-table"><thead><tr><th>Name / ID</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
         snapshot.forEach(doc => {
             let user = doc.data();
-            let statusHTML = user.status === 'approved' 
-                ? `<span style="color:var(--secondary); font-weight:bold;">Approved</span>` 
-                : `<span style="color:#d97706; font-weight:bold;">Pending</span>`;
-            
-            let btnHTML = user.status === 'pending'
-                ? `<button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary);" onclick="approveStudent('${doc.id}')">✅ Approve</button>`
-                : `<button class="action-btn-mini" style="background:#fef08a; color:#d97706;" onclick="revokeStudent('${doc.id}')">⏸️ Revoke</button>`;
-                
-            btnHTML += `<button class="action-btn-mini" style="color:var(--danger); margin-left:5px;" onclick="deleteStudent('${doc.id}')">❌ Delete</button>`;
-
-            html += `<tr><td style="font-weight:bold; color:var(--text-dark);">${user.name}</td><td>${user.password}</td><td>${statusHTML}</td><td>${btnHTML}</td></tr>`;
+            let statusHTML = user.status === 'approved' ? `<span style="color:var(--secondary); font-weight:bold;">Approved</span>` : `<span style="color:#d97706; font-weight:bold;">Pending</span>`;
+            let btnHTML = user.status === 'pending' ? `<button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary);" onclick="approveStudent('${escapeHTML(doc.id)}')">✅ Approve</button>` : `<button class="action-btn-mini" style="background:#fef08a; color:#d97706;" onclick="revokeStudent('${escapeHTML(doc.id)}')">⏸️ Revoke</button>`;
+            btnHTML += `<button class="action-btn-mini" style="color:var(--danger); margin-left:5px;" onclick="deleteStudent('${escapeHTML(doc.id)}')">❌ Delete</button>`;
+            html += `<tr><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(user.name)}</td><td>${statusHTML}</td><td>${btnHTML}</td></tr>`;
         });
-        html += `</tbody></table>`;
-        container.innerHTML = html;
-    } catch(e) {
-        container.innerHTML = `<p style="text-align:center; color:var(--danger);">Error loading students.</p>`;
-    }
+        html += `</tbody></table>`; container.innerHTML = html;
+    } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger);">Error loading students.</p>`; }
 }
 
-async function approveStudent(docId) {
-    await db.collection("students").doc(docId).update({ status: "approved" });
-    showAdminUserPanel();
-}
-async function revokeStudent(docId) {
-    await db.collection("students").doc(docId).update({ status: "pending" });
-    showAdminUserPanel();
-}
-async function deleteStudent(docId) {
-    if(confirm("Are you sure you want to permanently delete this student?")) {
-        await db.collection("students").doc(docId).delete();
-        showAdminUserPanel();
-    }
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey) {
-        if (e.key === '+' || e.key === '=') { e.preventDefault(); changeFontSize(0.1); } 
-        else if (e.key === '-' || e.key === '_') { e.preventDefault(); changeFontSize(-0.1); } 
-        else if (e.key === '0') { e.preventDefault(); resetFontSize(); }
-    }
-});
-function changeFontSize(delta) { currentFontSize = Math.min(Math.max(currentFontSize + delta, 0.8), 3.0); applyFont(); }
-function resetFontSize() { currentFontSize = 1.1; applyFont(); }
-function applyFont() {
-    document.getElementById('displayParagraphFrame').style.fontSize = currentFontSize + 'rem';
-    document.getElementById('typingAreaInput').style.fontSize = currentFontSize + 'rem';
-}
+async function approveStudent(docId) { await db.collection("students").doc(docId).update({ status: "approved" }); showAdminUserPanel(); }
+async function revokeStudent(docId) { await db.collection("students").doc(docId).update({ status: "pending" }); showAdminUserPanel(); }
+async function deleteStudent(docId) { if(confirm("Are you sure you want to permanently delete this student?")) { await db.collection("students").doc(docId).delete(); showAdminUserPanel(); } }
 
 function handleLogout() {
-    studentIdentity = { name: "" };
-    isAdmin = false;
-    document.getElementById('loginName').value = "";
-    document.getElementById('loginPass').value = "";
-    hideAllScreens();
-    document.getElementById('loginScreen').classList.add('active-view');
+    studentIdentity = { name: "" }; isAdmin = false;
+    document.getElementById('loginName').value = ""; document.getElementById('loginPass').value = "";
+    hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
 }
 
 function saveToHistory(record) {
     if(!studentIdentity.name) return;
-    let histKey = 'TypeAstra_Hist_' + studentIdentity.name;
-    let hist = JSON.parse(localStorage.getItem(histKey)) || [];
-    hist.unshift(record); 
-    if(hist.length > 10) hist.pop(); 
-    localStorage.setItem(histKey, JSON.stringify(hist));
+    let histKey = 'TypeAstra_Hist_' + btoa(unescape(encodeURIComponent(studentIdentity.name)));
+    let rawData = localStorage.getItem(histKey); let hist = [];
+    try { hist = rawData ? JSON.parse(decodeURIComponent(escape(atob(rawData)))) : []; } catch(e) { hist = []; }
+    hist.unshift(record); if(hist.length > 10) hist.pop(); 
+    localStorage.setItem(histKey, btoa(unescape(encodeURIComponent(JSON.stringify(hist)))));
 }
 
 function showHistory() {
-    hideAllScreens();
-    document.getElementById('historyScreen').classList.add('active-view');
-    let histKey = 'TypeAstra_Hist_' + studentIdentity.name;
-    let hist = JSON.parse(localStorage.getItem(histKey)) || [];
+    hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
+    let histKey = 'TypeAstra_Hist_' + btoa(unescape(encodeURIComponent(studentIdentity.name)));
+    let rawData = localStorage.getItem(histKey); let hist = [];
+    try { hist = rawData ? JSON.parse(decodeURIComponent(escape(atob(rawData)))) : []; } catch(e) { hist = []; }
     let container = document.getElementById('historyListContainer');
     
-    if(hist.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`;
-        return;
-    }
-
-    let html = `<table class="steno-table"><thead><tr>
-        <th>Date & Time</th><th>Test Name</th><th>Mode (Rule)</th><th>Speed (Gross/Net)</th><th>Accuracy</th><th>Marks</th>
-    </tr></thead><tbody>`;
-
-    hist.forEach(h => {
-        html += `<tr>
-            <td style="font-weight:600; color:var(--text-dark);">${h.date}</td>
-            <td style="color:var(--text-muted);">${h.name}</td>
-            <td><span style="font-weight:bold; color:var(--primary);">${h.mode}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${h.rule})</span></td>
-            <td style="color:var(--primary); font-weight:bold;">${h.speed}</td>
-            <td style="font-weight:bold; color:var(--text-dark);">${h.acc}</td>
-            <td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${h.marks}</td>
-        </tr>`;
-    });
-    html += `</tbody></table>`;
-    container.innerHTML = html;
+    if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
+    let html = `<table class="steno-table"><thead><tr><th>Date & Time</th><th>Test Name</th><th>Mode (Rule)</th><th>Speed (Gross/Net)</th><th>Accuracy</th><th>Marks</th></tr></thead><tbody>`;
+    hist.forEach(h => { html += `<tr><td style="font-weight:600; color:var(--text-dark);">${escapeHTML(h.date)}</td><td style="color:var(--text-muted);">${escapeHTML(h.name)}</td><td><span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td><td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; });
+    html += `</tbody></table>`; container.innerHTML = html;
 }
 
 function exitToDashboard() {
-    clearInterval(coreTimerLoop); dictationAudioPlayer.pause(); 
+    clearInterval(coreTimerLoop); dictationAudioPlayer.pause(); dictationAudioPlayer.currentTime = 0;
     hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
 }
-function exitResultScreen() {
-    hideAllScreens();
-    if (currentMode === 'STENO') { document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); } 
-    else { document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); }
-}
-function abortStenoTest() {
-    if(confirm("Are you sure you want to abort this test?")) {
-        clearInterval(coreTimerLoop); hideAllScreens();
-        document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList();
-    }
-}
+function exitResultScreen() { hideAllScreens(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); }
+function abortStenoTest() { if(confirm("Are you sure you want to abort this test?")) { clearInterval(coreTimerLoop); hideAllScreens(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); } }
 
 function updateEvaluationModes() {
     examTargetSelector.innerHTML = currentMode === 'STENO' ? `
@@ -750,17 +666,51 @@ function updateEvaluationModes() {
     `;
 }
 
+// 🎯 DYNAMIC FONT UPDATER FUNCTION
+function updateStudentFont() {
+    const selectedFontClass = document.getElementById('fontFamilySelector').value;
+    const selectedFontSize = document.getElementById('fontSizeSelector').value + 'rem';
+    
+    const displayFrame = document.getElementById('displayParagraphFrame');
+    const inputArea = document.getElementById('typingAreaInput');
+
+    // 1. Remove old font classes
+    displayFrame.classList.remove('font-english', 'font-kruti', 'font-mangal');
+    inputArea.classList.remove('font-english', 'font-kruti', 'font-mangal');
+
+    // 2. Add the newly selected font class
+    displayFrame.classList.add(selectedFontClass);
+    inputArea.classList.add(selectedFontClass);
+
+    // 3. Apply the selected font size
+    displayFrame.style.fontSize = selectedFontSize;
+    inputArea.style.fontSize = selectedFontSize;
+    
+    // 4. Update the active language logic to ensure evaluation rules map correctly
+    if(selectedFontClass === 'font-mangal') {
+        activeLanguage = 'HI_MANGAL';
+    } else if(selectedFontClass === 'font-kruti') {
+        activeLanguage = 'HI_KRUTI';
+    } else {
+        activeLanguage = 'EN';
+    }
+}
+
 function launchApplicationConsole(lang, mode) {
     activeLanguage = lang; currentMode = mode; 
-    
-    // 🎯 APPLY THEME DYNAMICALLY
     setAppTheme(lang, mode);
-    
     hideAllScreens();
     document.getElementById('selectionListTitle').innerText = (mode === 'STENO') ? "Select Stenography Dictation" : "Select Typing Test";
     
-    displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':lang==='HI_MANGAL'?'font-mangal':'font-english');
-    typingAreaInput.className = 'input-window ' + (lang==='HI_KRUTI'?'font-kruti':lang==='HI_MANGAL'?'font-mangal':'font-english');
+    // 🎯 INITIALIZE FONT CONTROLS DEFAULTS
+    const fontSelector = document.getElementById('fontFamilySelector');
+    if(fontSelector) {
+        fontSelector.value = (lang === 'HI_KRUTI') ? 'font-kruti' : 'font-english';
+        document.getElementById('fontSizeSelector').value = '1.1';
+    }
+    
+    displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
+    typingAreaInput.className = 'input-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
     updateEvaluationModes();
 
     document.getElementById('stenoSelectionScreen').classList.add('active-view');
@@ -774,6 +724,7 @@ function applyUIMode(mode) {
         document.getElementById('stenoTopControls').style.display = 'flex'; 
         document.getElementById('durationPanelBox').style.display = 'none'; 
         document.getElementById('exercisePanelBox').style.display = 'none';
+        document.getElementById('fontControlPanelBox').style.display = 'none'; // 🎯 Hide in Steno
         
         typingAreaInput.classList.add('steno-input-expanded'); 
         displayWindow.style.display = 'none'; 
@@ -784,6 +735,7 @@ function applyUIMode(mode) {
         document.getElementById('stenoTopControls').style.display = 'none'; 
         document.getElementById('durationPanelBox').style.display = 'block'; 
         document.getElementById('exercisePanelBox').style.display = 'none'; 
+        document.getElementById('fontControlPanelBox').style.display = 'block'; // 🎯 Show in Typing
         
         typingAreaInput.classList.remove('steno-input-expanded'); 
         displayWindow.style.display = 'block'; 
@@ -793,129 +745,92 @@ function applyUIMode(mode) {
 
 function renderStenoList() {
     const container = document.getElementById('stenoListContainer'); container.innerHTML = '';
-    const list = exerciseDatabaseBank[currentMode][activeLanguage] || [];
+    
+    // Safety check fallback if active language doesn't exist in exercise DB
+    const list = exerciseDatabaseBank[currentMode][activeLanguage] || exerciseDatabaseBank[currentMode]['EN'] || [];
     
     if(list.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:40px;">No Tests available in Cloud yet. Admin needs to add them.</p>`; return; }
 
-    let html = `<table class="steno-table"><thead><tr>
-        <th style="width:50px;">S.No.</th><th>Test Name</th>`;
-    
+    let html = `<table class="steno-table"><thead><tr><th style="width:50px;">S.No.</th><th>Test Name</th>`;
     if(currentMode === 'STENO') html += `<th>Test Date</th><th>Dict. Time</th><th>Speed</th>`;
-    
     html += `<th>Duration</th><th>Action</th></tr></thead><tbody>`;
 
     list.forEach((ex, index) => {
-        // 🎯 SEPARATED COMPLETED TESTS CHECK
         let hasTaken = completedTests[currentMode][activeLanguage] && completedTests[currentMode][activeLanguage][index];
         let startText = currentMode === 'STENO' ? '🎧 Start Transcription' : '⌨️ Start Typing';
         
-        // 🎯 DYNAMIC BUTTON CLASSES APPLIED
         let actionHTML = hasTaken ? `
             <button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">🔄 Restart</button>
             <button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary); border:1px solid var(--secondary);" onclick="viewStenoResult(${index})">👁️ View Answer</button>
         ` : `<button class="action-btn-mini dynamic-btn" onclick="startDictationPhase(${index})">${startText}</button>`;
 
         if(isAdmin) {
-            actionHTML += `
-                <button class="action-btn-mini" style="color:#d97706;" onclick="editStenoTest(${index})">✏️</button>
-                <button class="action-btn-mini" style="color:var(--danger);" onclick="deleteStenoTest(${index})">❌</button>
-            `;
+            actionHTML += `<button class="action-btn-mini" style="color:#d97706;" onclick="editStenoTest(${index})">✏️</button><button class="action-btn-mini" style="color:var(--danger);" onclick="deleteStenoTest(${index})">❌</button>`;
         }
         
-        html += `<tr><td style="font-weight:bold; color:var(--text-muted);">${index + 1}</td><td style="color:var(--text-dark);">${ex.name}</td>`;
-        if(currentMode === 'STENO') html += `<td style="color:var(--text-muted);">${ex.date || 'N/A'}</td><td style="color:var(--text-muted);">${ex.dictTime || '-'}</td><td style="color:var(--text-muted);">${ex.speed ? ex.speed + ' WPM' : '-'}</td>`;
-        html += `<td style="color:var(--text-muted);">${ex.duration ? ex.duration + ' Min' : '-'}</td><td class="action-flex">${actionHTML}</td></tr>`;
+        html += `<tr><td style="font-weight:bold; color:var(--text-muted);">${index + 1}</td><td style="color:var(--text-dark);">${escapeHTML(ex.name)}</td>`;
+        if(currentMode === 'STENO') html += `<td style="color:var(--text-muted);">${escapeHTML(ex.date || 'N/A')}</td><td style="color:var(--text-muted);">${escapeHTML(ex.dictTime || '-')}</td><td style="color:var(--text-muted);">${escapeHTML(ex.speed ? ex.speed + ' WPM' : '-')}</td>`;
+        html += `<td style="color:var(--text-muted);">${escapeHTML(ex.duration ? ex.duration + ' Min' : '-')}</td><td class="action-flex">${actionHTML}</td></tr>`;
     });
     html += `</tbody></table>`; container.innerHTML = html;
 }
 
 function getDirectAudioUrl(url) {
     if (!url) return "";
-    if (url.includes("drive.google.com/file/d/")) {
-        const match = url.match(/\/d\/(.+?)\//);
-        if (match && match[1]) return `https://drive.google.com/uc?export=download&id=${match[1]}`;
-    }
+    if (url.includes("drive.google.com/file/d/")) { const match = url.match(/\/d\/(.+?)\//); if (match && match[1]) return `https://drive.google.com/uc?export=download&id=${match[1]}`; }
     return url; 
 }
 
 function startDictationPhase(index) {
     selectedStenoIndex = index; 
-    const activeObject = exerciseDatabaseBank[currentMode][activeLanguage][index];
+    const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
+    const activeObject = exerciseDatabaseBank[currentMode][fallbackLang][index];
     
-    if(currentMode === 'TYPE' || !activeObject.audio) {
-        enterStenoTranscriptionPhase(index);
-        return;
-    }
+    if(currentMode === 'TYPE' || !activeObject.audio) { enterStenoTranscriptionPhase(index); return; }
 
-    hideAllScreens(); 
-    document.getElementById('dictationScreen').classList.add('active-view');
-    
+    hideAllScreens(); document.getElementById('dictationScreen').classList.add('active-view');
     const finalAudioLink = getDirectAudioUrl(activeObject.audio);
-    dictationAudioPlayer.src = finalAudioLink;
-    dictationAudioPlayer.load();
+    dictationAudioPlayer.src = finalAudioLink; dictationAudioPlayer.load();
 
-    dictationAudioPlayer.onerror = function() {
-        alert("⚠️ Audio link is invalid or blocked. Skipping directly to transcription window.");
-        skipDictationAndTranscribe();
-    };
-
-    dictationAudioPlayer.onended = function() {
-        enterStenoTranscriptionPhase(selectedStenoIndex);
-    };
+    dictationAudioPlayer.onerror = function() { alert("⚠️ Audio link is invalid or blocked. Skipping directly to transcription window."); skipDictationAndTranscribe(); };
+    dictationAudioPlayer.onended = function() { enterStenoTranscriptionPhase(selectedStenoIndex); };
 }
 
-function skipDictationAndTranscribe() {
-    dictationAudioPlayer.pause();
-    enterStenoTranscriptionPhase(selectedStenoIndex);
-}
+function skipDictationAndTranscribe() { dictationAudioPlayer.pause(); dictationAudioPlayer.currentTime = 0; enterStenoTranscriptionPhase(selectedStenoIndex); }
 
 function enterStenoTranscriptionPhase(index) {
-    hideAllScreens(); 
-    document.getElementById('examConsoleScreen').classList.add('active-view');
+    hideAllScreens(); document.getElementById('examConsoleScreen').classList.add('active-view');
     applyUIMode(currentMode); 
 
-    const activeObject = exerciseDatabaseBank[currentMode][activeLanguage][index];
+    const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
+    const activeObject = exerciseDatabaseBank[currentMode][fallbackLang][index];
 
-    // 🎯 Set Duration
     timeSelector.value = activeObject.duration || (currentMode === 'STENO' ? 50 : 10); 
     modifyDurationConfig();
 
-    // 🎯 NEW LOGIC: AUTO-REPEAT MATTER FOR HIGH SPEED
     let baseText = activeObject.text;
     let selectedMins = parseInt(timeSelector.value);
-    
     let maxPossibleWords = 120 * selectedMins; 
     let baseWordsCount = deepClean(baseText).split(/\s+/).length;
     
     let repeatCount = 1;
-    if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) {
-        repeatCount = Math.ceil(maxPossibleWords / baseWordsCount);
-    }
-    
+    if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) { repeatCount = Math.ceil(maxPossibleWords / baseWordsCount); }
     let finalText = baseText;
-    for (let i = 1; i < repeatCount; i++) {
-        finalText += " " + baseText; 
-    }
+    for (let i = 1; i < repeatCount; i++) { finalText += " " + baseText; }
 
-    // Set updated source words and display
     sourceWords = deepClean(finalText).split(/\s+/);
     if(currentMode === 'TYPE') displayWindow.innerText = finalText;
 
-    clearInterval(coreTimerLoop); 
-    secondsCounter = 0; strokeCounter = 0;
+    clearInterval(coreTimerLoop); secondsCounter = 0; strokeCounter = 0;
     clockLabel.style.opacity = '1'; clockLabel.style.color = 'var(--text-dark)';
     typingAreaInput.value = ''; typingAreaInput.disabled = false; typingAreaInput.focus();
 
-    if(currentMode === 'STENO') {
-        liveSystemRunning = true; 
-        executeTimerCountdownLoop();
-    } else {
-        liveSystemRunning = false;
-    }
+    if(currentMode === 'STENO') { liveSystemRunning = true; executeTimerCountdownLoop(); } else { liveSystemRunning = false; }
 }
 
 function autoSetExamTimer() {
-    const activeObject = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex];
+    const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
+    const activeObject = exerciseDatabaseBank[currentMode][fallbackLang][selectedStenoIndex];
     if(activeObject && activeObject.duration) timeSelector.value = activeObject.duration;
     else { const times = { "RAJ_HC": 30, "SSC_STENO": 50 }; timeSelector.value = times[document.getElementById('examTargetSelector').value] || (currentMode === 'STENO' ? 50 : 10); }
     modifyDurationConfig(); 
@@ -923,11 +838,10 @@ function autoSetExamTimer() {
 
 function openUploadModal(mode) {
     if(!isAdmin) return alert("Only Admin can add or edit tests!");
-
     currentManagerMode = mode;
-    modalTextArea.className = 'modal-textarea ' + (activeLanguage==='HI_KRUTI'?'font-kruti':activeLanguage==='HI_MANGAL'?'font-mangal':'font-english');
-    document.getElementById('customAudioFileInput').value = "";
-    document.getElementById('customAudioUrlInput').value = "";
+    
+    modalTextArea.className = 'modal-textarea ' + (activeLanguage==='HI_KRUTI'?'font-kruti':(activeLanguage==='HI_MANGAL'?'font-mangal':'font-english'));
+    document.getElementById('customAudioFileInput').value = ""; document.getElementById('customAudioUrlInput').value = "";
     document.getElementById('modalSaveBtn').innerText = "Save Changes"; document.getElementById('modalSaveBtn').disabled = false;
     
     if (currentMode === 'STENO') { 
@@ -943,124 +857,85 @@ function openUploadModal(mode) {
         document.getElementById('modalBoxTitle').innerText = currentMode==='STENO' ? "Add New Cloud Dictation" : "Add New Cloud Typing Test";
         modalNameInput.value = `New Track ${exerciseDatabaseBank[currentMode][activeLanguage].length + 1}`; modalTextArea.value = "";
     } else if (mode === 'EDIT') {
-        const selectedIdx = selectedStenoIndex;
-        const currentActive = exerciseDatabaseBank[currentMode][activeLanguage][selectedIdx];
+        const currentActive = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex];
         if(!currentActive) return alert("No exercise to edit!");
         
         document.getElementById('modalBoxTitle').innerText = "Edit Cloud Details"; modalNameInput.value = currentActive.name; modalTextArea.value = currentActive.text;
-        
         document.getElementById('customDuration').value = currentActive.duration || "";
         if (currentMode === 'STENO') {
             document.getElementById('customDate').value = currentActive.date || ""; document.getElementById('customDictTime').value = currentActive.dictTime || "";
-            document.getElementById('customSpeed').value = currentActive.speed || ""; 
-            document.getElementById('customAudioUrlInput').value = currentActive.audio || ""; 
+            document.getElementById('customSpeed').value = currentActive.speed || ""; document.getElementById('customAudioUrlInput').value = currentActive.audio || ""; 
         }
     }
     document.getElementById('customMatterModal').style.display = 'flex';
 }
 
 function editStenoTest(index) { selectedStenoIndex = index; openUploadModal('EDIT'); }
-
 async function deleteStenoTest(index) {
     if(!isAdmin) return;
-    if (confirm(`Are you sure you want to delete: "${exerciseDatabaseBank[currentMode][activeLanguage][index].name}"?`)) {
+    if (confirm(`Are you sure you want to delete: "${escapeHTML(exerciseDatabaseBank[currentMode][activeLanguage][index].name)}"?`)) {
         const docId = exerciseDatabaseBank[currentMode][activeLanguage][index].id;
         await db.collection("exercises").doc(docId).delete();
         exerciseDatabaseBank[currentMode][activeLanguage].splice(index, 1);
         renderStenoList();
     }
 }
-
 function closeCustomMatterModal() { document.getElementById('customMatterModal').style.display = 'none'; }
 
 async function saveExerciseManagerAction() {
     const nameVal = modalNameInput.value.trim(); const textVal = modalTextArea.value.trim();
     if (nameVal === "" || textVal === "") return alert("Fields cannot be empty!");
     
-    const saveBtn = document.getElementById('modalSaveBtn');
-    saveBtn.innerText = "Saving to Cloud..."; saveBtn.disabled = true;
+    const saveBtn = document.getElementById('modalSaveBtn'); saveBtn.innerText = "Saving to Cloud..."; saveBtn.disabled = true;
 
     try {
-        let audioUrl = document.getElementById('customAudioUrlInput').value.trim(); 
-        const fileInput = document.getElementById('customAudioFileInput');
-        const selectedIdx = selectedStenoIndex;
-        
-        if (currentManagerMode === 'EDIT' && exerciseDatabaseBank[currentMode][activeLanguage][selectedIdx]) {
-            if(!audioUrl && fileInput.files.length === 0) { audioUrl = exerciseDatabaseBank[currentMode][activeLanguage][selectedIdx].audio || ""; }
-        }
+        let audioUrl = document.getElementById('customAudioUrlInput').value.trim(); const fileInput = document.getElementById('customAudioFileInput');
+        if (currentManagerMode === 'EDIT' && exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex]) { if(!audioUrl && fileInput.files.length === 0) { audioUrl = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex].audio || ""; } }
 
         if (fileInput.files.length > 0) {
             saveBtn.innerText = "Uploading Audio...";
-            const file = fileInput.files[0];
-            const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
-            const snapshot = await storageRef.put(file);
-            audioUrl = await snapshot.ref.getDownloadURL();
+            const file = fileInput.files[0]; const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
+            const snapshot = await storageRef.put(file); audioUrl = await snapshot.ref.getDownloadURL();
         }
 
-        const dataObj = {
-            language: activeLanguage, mode: currentMode, name: nameVal, text: textVal, audio: audioUrl,
-            date: currentMode==='STENO' ? document.getElementById('customDate').value || "" : "",
-            dictTime: currentMode==='STENO' ? document.getElementById('customDictTime').value || "" : "",
-            speed: currentMode==='STENO' ? document.getElementById('customSpeed').value || "" : "",
-            duration: document.getElementById('customDuration').value || ""
-        };
+        const dataObj = { language: activeLanguage, mode: currentMode, name: escapeHTML(nameVal), text: escapeHTML(textVal), audio: audioUrl, date: currentMode==='STENO' ? document.getElementById('customDate').value || "" : "", dictTime: currentMode==='STENO' ? document.getElementById('customDictTime').value || "" : "", speed: currentMode==='STENO' ? document.getElementById('customSpeed').value || "" : "", duration: document.getElementById('customDuration').value || "" };
 
         saveBtn.innerText = "Writing Data...";
         if (currentManagerMode === 'ADD') {
             const docRef = await db.collection("exercises").add(dataObj);
             exerciseDatabaseBank[currentMode][activeLanguage].push({ id: docRef.id, ...dataObj });
         } else if (currentManagerMode === 'EDIT') {
-            const docId = exerciseDatabaseBank[currentMode][activeLanguage][selectedIdx].id;
+            const docId = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex].id;
             await db.collection("exercises").doc(docId).update(dataObj);
-            exerciseDatabaseBank[currentMode][activeLanguage][selectedIdx] = { id: docId, ...dataObj };
+            exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex] = { id: docId, ...dataObj };
         }
         
-        saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; closeCustomMatterModal();
-        renderStenoList();
-    } catch(e) {
-        console.error(e);
-        alert("Error saving: Please check Firebase rules or internet.");
-        saveBtn.innerText = "Save Changes"; saveBtn.disabled = false;
-    }
+        saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; closeCustomMatterModal(); renderStenoList();
+    } catch(e) { console.error(e); alert("Error saving: Please check Firebase rules or internet."); saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; }
 }
 
 function modifyDurationConfig() {
     if(!liveSystemRunning) {
         let selectedMins = parseInt(timeSelector.value);
-        if(isNaN(selectedMins) || selectedMins <= 0) {
-            selectedMins = (currentMode === 'STENO') ? 50 : 10;
-        }
-        totalTargetSeconds = selectedMins * 60; 
-        clockLabel.innerText = `${selectedMins.toString().padStart(2, '0')}:00`;
+        if(isNaN(selectedMins) || selectedMins <= 0) { selectedMins = (currentMode === 'STENO') ? 50 : 10; }
+        totalTargetSeconds = selectedMins * 60; clockLabel.innerText = `${selectedMins.toString().padStart(2, '0')}:00`;
     }
 }
-
 function toggleTimerVisibility() { clockLabel.style.opacity = (clockLabel.style.opacity === '0') ? '1' : '0'; }
 
-// 🛡️ ANTI-CHEAT: STRICT FRAUD PREVENTION
-typingAreaInput.addEventListener('paste', e => e.preventDefault());
-typingAreaInput.addEventListener('copy', e => e.preventDefault());
-typingAreaInput.addEventListener('cut', e => e.preventDefault());
-typingAreaInput.addEventListener('drop', e => e.preventDefault());
-typingAreaInput.addEventListener('dragover', e => e.preventDefault());
-typingAreaInput.addEventListener('contextmenu', e => e.preventDefault());
+// 🛡️ ANTI-CHEAT
+typingAreaInput.addEventListener('paste', e => e.preventDefault()); typingAreaInput.addEventListener('copy', e => e.preventDefault());
+typingAreaInput.addEventListener('cut', e => e.preventDefault()); typingAreaInput.addEventListener('drop', e => e.preventDefault());
+typingAreaInput.addEventListener('dragover', e => e.preventDefault()); typingAreaInput.addEventListener('contextmenu', e => e.preventDefault());
 document.getElementById('displayParagraphFrame').addEventListener('contextmenu', e => e.preventDefault());
 
 typingAreaInput.addEventListener('mousedown', function(e) { if (currentMode === 'STENO') setTimeout(() => { this.selectionStart = this.selectionEnd = this.value.length; }, 0); });
 typingAreaInput.addEventListener('click', function(e) { if (currentMode === 'STENO') this.selectionStart = this.selectionEnd = this.value.length; });
 
 typingAreaInput.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && ['c', 'v', 'x', 'a', 'C', 'V', 'X', 'A'].includes(e.key)) {
-        e.preventDefault(); 
-        return;
-    }
-
+    if (e.ctrlKey && ['c', 'v', 'x', 'a', 'C', 'V', 'X', 'A'].includes(e.key)) { e.preventDefault(); return; }
     if (e.key === 'Backspace' && document.getElementById('bkspControl').value === 'DISABLE') return e.preventDefault();
-    if (currentMode === 'STENO') {
-        const blockedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'];
-        if (blockedKeys.includes(e.key)) { e.preventDefault(); return; }
-    }
-    
+    if (currentMode === 'STENO') { const blockedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']; if (blockedKeys.includes(e.key)) { e.preventDefault(); return; } }
     if(!liveSystemRunning) { liveSystemRunning = true; executeTimerCountdownLoop(); }
     if (e.key.length === 1) { strokeCounter++; } 
 });
@@ -1081,13 +956,13 @@ function viewStenoResult(index) {
     
     if (currentMode === 'STENO' && res.examRule.includes("SSC")) {
         document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
-        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:var(--active-theme-color);">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${res.marks}</td></tr>`;
+        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.marks)}</td></tr>`;
     } else if (currentMode === 'STENO') {
         document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
-        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:var(--active-theme-color);">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td class="accuracy-number">${res.accuracy}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks}</td></tr>`;
+        document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks)}</td></tr>`;
     } else {
         document.getElementById('reportTableHead').innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-        document.getElementById('reportTableBody').innerHTML = `<tr><td class="speed-number">${res.grossWPM || 0} WPM</td><td class="net-speed-number">${res.netWPM || 0} WPM</td><td class="accuracy-number">${res.accuracy}%</td><td class="metric-number">${res.strokes || 0} / ${res.typedWords || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks || 0}</td></tr>`;
+        document.getElementById('reportTableBody').innerHTML = `<tr><td class="speed-number">${escapeHTML(res.grossWPM) || 0} WPM</td><td class="net-speed-number">${escapeHTML(res.netWPM) || 0} WPM</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td class="metric-number">${escapeHTML(res.strokes) || 0} / ${escapeHTML(res.typedWords) || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks) || 0}</td></tr>`;
     }
     
     document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
@@ -1101,15 +976,11 @@ function finishEvaluationTest() {
     
     let rawTypedText = deepClean(typingAreaInput.value);
     let typedTokens = rawTypedText === "" ? [] : rawTypedText.split(/\s+/);
-    
     let actualStrokes = rawTypedText.length;
 
     function normalizeHindi(word) {
-        if (!word) return "";
-        let w = word;
-        w = w.replace(/[\u200B-\u200D\uFEFF\xA0]/g, ""); 
-        w = w.replace(/ÁkFkZuk/g, "izkFkZuk"); 
-        w = w.replace(/ÁkFkhZ;k/g, "izkFkhZ;k"); 
+        if (!word) return ""; let w = word;
+        w = w.replace(/[\u200B-\u200D\uFEFF\xA0]/g, ""); w = w.replace(/ÁkFkZuk/g, "izkFkZuk"); w = w.replace(/ÁkFkhZ;k/g, "izkFkhZ;k"); 
         const krutiAltMap = { "ä": "Dr", "Ø": "dz", "Á": "iz", "Ë": "=z", "¯": "=z", "²": "K", "±": "Jz", "ã": "}", "°": "}", "â": "|", "Î": ")", "»": "'V", "¼": "'B", "ê": "V~V", "ë": "M~M", "ô": "Dd", "ÿ": "g~e", "«": "#", "¬": "$", "¡": "W", "¢": "Q", "¥": "Y" };
         for (let altChar in krutiAltMap) { w = w.split(altChar).join(krutiAltMap[altChar]); }
         return w;
@@ -1120,33 +991,25 @@ function finishEvaluationTest() {
     reviewContainer.className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
 
     let t = 0, s = 0;
-    
     while (t < typedTokens.length && s < sourceWords.length) {
         let nT = activeLanguage === 'HI_KRUTI' ? normalizeHindi(typedTokens[t]) : typedTokens[t];
         let nS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s]) : sourceWords[s];
 
         if (nT === nS) {
             const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
-            wordBlock.innerText = sourceWords[s];
-            wordBlock.className += ' rev-correct';
-            reviewContainer.appendChild(wordBlock);
-            t++; s++;
+            wordBlock.innerText = sourceWords[s]; wordBlock.className += ' rev-correct';
+            reviewContainer.appendChild(wordBlock); t++; s++;
         } else {
             let synced = false;
-            
             for(let lookahead = 1; lookahead <= 3; lookahead++) {
                 if (s + lookahead < sourceWords.length) {
                     let nextS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s + lookahead]) : sourceWords[s + lookahead];
                     if (nT === nextS) {
                         for(let skip = 0; skip < lookahead; skip++) {
-                             fullMistakesCount++;
-                             const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                             mBlock.innerHTML = `<span class="rev-expected-word">${sourceWords[s + skip]}</span>`;
-                             reviewContainer.appendChild(mBlock);
+                             fullMistakesCount++; const mBlock = document.createElement('div'); mBlock.className = 'word-block';
+                             mBlock.innerHTML = `<span class="rev-expected-word">${escapeHTML(sourceWords[s + skip])}</span>`; reviewContainer.appendChild(mBlock);
                         }
-                        s += lookahead;
-                        synced = true;
-                        break;
+                        s += lookahead; synced = true; break;
                     }
                 }
             }
@@ -1157,14 +1020,10 @@ function finishEvaluationTest() {
                         let nextT = activeLanguage === 'HI_KRUTI' ? normalizeHindi(typedTokens[t + lookahead]) : typedTokens[t + lookahead];
                         if (nextT === nS) {
                             for(let ext = 0; ext < lookahead; ext++) {
-                                 fullMistakesCount++;
-                                 const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                                 mBlock.innerHTML = `<span class="rev-wrong-text">${typedTokens[t + ext]}</span>`;
-                                 reviewContainer.appendChild(mBlock);
+                                 fullMistakesCount++; const mBlock = document.createElement('div'); mBlock.className = 'word-block';
+                                 mBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t + ext])}</span>`; reviewContainer.appendChild(mBlock);
                             }
-                            t += lookahead;
-                            synced = true;
-                            break;
+                            t += lookahead; synced = true; break;
                         }
                     }
                 }
@@ -1176,53 +1035,38 @@ function finishEvaluationTest() {
                 const wrongSpan = document.createElement('span'); wrongSpan.className = 'rev-wrong-text'; wrongSpan.innerText = typedTokens[t];
                 const expectedSpan = document.createElement('span'); expectedSpan.className = 'rev-expected-word'; expectedSpan.innerText = sourceWords[s];
                 wordBlock.appendChild(wrongSpan); wordBlock.appendChild(document.createTextNode(' ')); wordBlock.appendChild(expectedSpan);
-                reviewContainer.appendChild(wordBlock);
-                t++; s++;
+                reviewContainer.appendChild(wordBlock); t++; s++;
             }
         }
     }
 
-    while(t < typedTokens.length) {
-        fullMistakesCount++;
-        const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
-        wordBlock.innerHTML = `<span class="rev-wrong-text">${typedTokens[t]}</span>`;
-        reviewContainer.appendChild(wordBlock);
-        t++;
+    // This loop keeps the extra wrong words the student typed
+    while(t < typedTokens.length) { 
+        fullMistakesCount++; 
+        const wordBlock = document.createElement('div'); 
+        wordBlock.className = 'word-block'; 
+        wordBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span>`; 
+        reviewContainer.appendChild(wordBlock); 
+        t++; 
     }
-
-    // 🎯 FIX: UNREACHED WORDS NO LONGER COUNTED AS MISTAKES (RHC/SSC RULE)
-    while(s < sourceWords.length) {
-        // Sirf display hoga taaki bacche ko dikhe kya chhut gaya, par Galti(Mistake) nahi jhudegi!
-        const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
-        wordBlock.innerHTML = `<span class="rev-expected-word" style="color:var(--text-muted) !important; text-decoration:none; opacity:0.5;">${sourceWords[s]}</span>`;
-        reviewContainer.appendChild(wordBlock);
-        s++;
-    }
+    
+    // 🗑️ The loop for (s < sourceWords.length) has been removed here to hide untyped words
 
     let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
     let selectedExamType = document.getElementById('examTargetSelector').value;
     let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
 
-    let activeObject = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex];
+    const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
+    let activeObject = exerciseDatabaseBank[currentMode][fallbackLang][selectedStenoIndex];
     let testName = activeObject ? activeObject.name : "Custom Test";
 
     const tableHead = document.getElementById('reportTableHead'); const tableBody = document.getElementById('reportTableBody');
-    let finalMarksStr = "";
-    
-    let histSpeed = "", histAcc = "", histMarks = "";
+    let finalMarksStr = ""; let histSpeed = "", histAcc = "", histMarks = "";
 
     if (currentMode === 'STENO') {
-        let evaluatedWords = typedTokens.length; // Sirf type kiye hue words ki checking
-        let errorPercentage = 0;
-        if(evaluatedWords > 0) {
-            errorPercentage = (totalErrorsCalculated / evaluatedWords) * 100; 
-        } else {
-            errorPercentage = 100;
-        }
-        
-        errorPercentage = Math.min(100, errorPercentage); // Cap at 100%
-        let accuracy = Math.max(0, 100 - errorPercentage);
-        
+        let evaluatedWords = typedTokens.length; let errorPercentage = 0;
+        if(evaluatedWords > 0) { errorPercentage = (totalErrorsCalculated / evaluatedWords) * 100; } else { errorPercentage = 100; }
+        errorPercentage = Math.min(100, errorPercentage); let accuracy = Math.max(0, 100 - errorPercentage);
         let ruleText = (selectedExamType === "RAJ_HC") ? "Rajasthan High Court Steno" : "SSC Steno Standard";
         
         if (selectedExamType === "SSC_STENO") {
@@ -1237,23 +1081,15 @@ function finishEvaluationTest() {
 
         document.getElementById('resMethod').innerText = ruleText;
         completedTests[currentMode][activeLanguage][selectedStenoIndex] = { totalWords: sourceWords.length, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), marks: finalMarksStr, reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
-        
         histSpeed = "-"; histAcc = accuracy.toFixed(2) + "%"; histMarks = finalMarksStr;
     } else {
-        // ACTUAL TYPING TEST CALCULATION (RHC RULE)
-        let grossWords = actualStrokes / 5; 
-        let grossWPM = Math.round(grossWords / minutesElapsed); 
+        let grossWords = actualStrokes / 5; let grossWPM = Math.round(grossWords / minutesElapsed); 
+        let netWords = Math.max(0, grossWords - totalErrorsCalculated); let netWPM = Math.round(netWords / minutesElapsed); 
         
-        let netWords = Math.max(0, grossWords - totalErrorsCalculated);
-        let netWPM = Math.round(netWords / minutesElapsed); 
-        
-        let accuracy = 0;
-        if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
-        if (accuracy < 0 || actualStrokes === 0) accuracy = 0;
-        if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
+        let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
+        if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
         
         let typingMarks = Math.min(50, Math.max(0, netWPM * 0.75)).toFixed(2);
-        
         if (selectedExamType === "RAJ_HC") document.getElementById('resMethod').innerText = "Rajasthan High Court Typing Mode"; 
         else if (selectedExamType === "SSC_STENO") document.getElementById('resMethod').innerText = "SSC (CHSL) Typing Standard"; 
         else if (selectedExamType === "RPSC_LDC") document.getElementById('resMethod').innerText = "RPSC LDC Mode"; 
@@ -1264,20 +1100,10 @@ function finishEvaluationTest() {
         tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
         
         completedTests[currentMode][activeLanguage][selectedStenoIndex] = { grossWPM: grossWPM, netWPM: netWPM, accuracy: accuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
-        
         histSpeed = `${grossWPM} / ${netWPM} WPM`; histAcc = accuracy.toFixed(2) + "%"; histMarks = typingMarks;
     }
     
-    saveToHistory({
-        date: new Date().toLocaleString(),
-        name: testName,
-        mode: currentMode,
-        rule: document.getElementById('resMethod').innerText,
-        speed: histSpeed,
-        acc: histAcc,
-        marks: histMarks
-    });
-
+    saveToHistory({ date: new Date().toLocaleString(), name: testName, mode: currentMode, rule: document.getElementById('resMethod').innerText, speed: histSpeed, acc: histAcc, marks: histMarks });
     document.getElementById('resName').innerText = studentIdentity.name;
     hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
 }
