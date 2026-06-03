@@ -117,12 +117,12 @@
 
         /* TYPING WINDOWS */
         .display-window { 
-            flex: 1.6; overflow-y: auto; text-align: justify; line-height: 2.2rem; letter-spacing: 0.5px; color: #1e293b; padding: 20px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            flex: 1; overflow-y: auto; text-align: justify; line-height: 2.2rem; letter-spacing: 0.5px; color: #1e293b; padding: 20px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
             user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
         }
         .custom-divider { text-align: center; border-bottom: 2px dashed var(--border-light); line-height: 0.1em; margin: 20px 0; flex-shrink: 0; }
         .custom-divider span { background: var(--card-bg); padding: 0 15px; color: var(--text-muted); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
-        .input-window { flex: 0.8; width: 100%; box-sizing: border-box; resize: none; outline: none; font-family: inherit; color: #000; background: #ffffff; border: 1px solid var(--border-light); line-height: 2.2rem; padding: 20px; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s;}
+        .input-window { flex: 1; width: 100%; box-sizing: border-box; resize: none; outline: none; font-family: inherit; color: #000; background: #ffffff; border: 1px solid var(--border-light); line-height: 2.2rem; padding: 20px; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s;}
         .input-window:focus { border-color: var(--active-theme-color); box-shadow: 0 0 0 3px rgba(0,0,0,0.05); }
         
         /* STENO MODE BIG CANVAS */
@@ -139,9 +139,9 @@
         .pulse-mic { font-size: 4.5rem; animation: pulse 1.5s infinite; margin-bottom: 20px; display:inline-block; }
         @keyframes pulse { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
 
-        .font-kruti { font-family: 'Kruti Dev 010', 'Devlys 010', sans-serif; font-size: 1.8rem; }
-        .font-mangal { font-family: 'Nirmala UI', 'Mangal', sans-serif; font-size: 1.7rem; }
-        .font-english { font-family: Arial, sans-serif; font-size: 1.35rem; }
+        .font-kruti { font-family: 'Kruti Dev 010', 'Devlys 010', sans-serif; font-size: 1.4rem; }
+        .font-mangal { font-family: 'Nirmala UI', 'Mangal', sans-serif; font-size: 1.3rem; }
+        .font-english { font-family: Arial, sans-serif; font-size: 1.1rem; }
 
         /* MODAL & REPORT */
         .custom-matter-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); z-index: 5000; justify-content: center; align-items: center; }
@@ -420,7 +420,7 @@ const completedTests = {
 let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
 let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
 let studentIdentity = { name: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
-let currentFontSize = 1.4;
+let currentFontSize = 1.1; // Default font size set to smaller
 let isAdmin = false; 
 
 const displayWindow = document.getElementById('displayParagraphFrame');
@@ -666,7 +666,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 function changeFontSize(delta) { currentFontSize = Math.min(Math.max(currentFontSize + delta, 0.8), 3.0); applyFont(); }
-function resetFontSize() { currentFontSize = 1.4; applyFont(); }
+function resetFontSize() { currentFontSize = 1.1; applyFont(); }
 function applyFont() {
     document.getElementById('displayParagraphFrame').style.fontSize = currentFontSize + 'rem';
     document.getElementById('typingAreaInput').style.fontSize = currentFontSize + 'rem';
@@ -1086,8 +1086,8 @@ function viewStenoResult(index) {
         document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
         document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${res.totalWords}</td><td class="metric-number" style="color:var(--active-theme-color);">${res.typedWords}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${res.fullMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${res.halfMistakes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td class="accuracy-number">${res.accuracy}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks}</td></tr>`;
     } else {
-        document.getElementById('reportTableHead').innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-        document.getElementById('reportTableBody').innerHTML = `<tr><td class="speed-number">${res.grossWPM || 0} WPM</td><td class="net-speed-number">${res.netWPM || 0} WPM</td><td class="accuracy-number">${res.accuracy}%</td><td class="metric-number">${res.strokes || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks || 0}</td></tr>`;
+        document.getElementById('reportTableHead').innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
+        document.getElementById('reportTableBody').innerHTML = `<tr><td class="speed-number">${res.grossWPM || 0} WPM</td><td class="net-speed-number">${res.netWPM || 0} WPM</td><td class="accuracy-number">${res.accuracy}%</td><td class="metric-number">${res.strokes || 0} / ${res.typedWords || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${res.totalErrors}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${res.marks || 0}</td></tr>`;
     }
     
     document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
@@ -1260,10 +1260,10 @@ function finishEvaluationTest() {
         else if (selectedExamType === "RRB_NTPC") document.getElementById('resMethod').innerText = "RRB NTPC Rule"; 
         else document.getElementById('resMethod').innerText = selectedExamType + " Standard";
         
-        tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-        tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
+        tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
+        tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
         
-        completedTests[currentMode][activeLanguage][selectedStenoIndex] = { grossWPM: grossWPM, netWPM: netWPM, accuracy: accuracy.toFixed(2), strokes: actualStrokes, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
+        completedTests[currentMode][activeLanguage][selectedStenoIndex] = { grossWPM: grossWPM, netWPM: netWPM, accuracy: accuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
         
         histSpeed = `${grossWPM} / ${netWPM} WPM`; histAcc = accuracy.toFixed(2) + "%"; histMarks = typingMarks;
     }
