@@ -460,7 +460,7 @@ function deepClean(str) {
     if (!str) return "";
     return str.replace(/[\u200B-\u200D\uFEFF\xA0\r\n\t]/g, "")
               .replace(/[‘’´`]/g, "'")
-              .replace(/[“”]/g, '"')
+              .replace(/[—“]/g, '"')
               .replace(/[–—]/g, "-")
               .trim();
 }
@@ -539,7 +539,6 @@ async function handleSignupSubmit() {
         const userCredential = await auth.createUserWithEmailAndPassword(sEmail, sPass);
         const user = userCredential.user;
 
-        // Raw input fields mapping to prevent double layout layout escaping issues
         await db.collection("students").doc(user.uid).set({ 
             name: sName, 
             email: sEmail, 
@@ -557,7 +556,7 @@ async function handleSignupSubmit() {
     btn.innerText = "Send Request"; btn.disabled = false;
 }
 
-// 🔐 FIREBASE SECURE LOGIN LOGIC (WITH INTEGRATED BYPASS LAYER)
+// 🔐 FIREBASE SECURE LOGIN LOGIC (UPGRADED FOR ADMIN ISOLATION)
 async function handleLoginSubmit() {
     const lEmail = document.getElementById('loginEmail').value.trim();
     const lPass = document.getElementById('loginPass').value.trim();
@@ -566,41 +565,67 @@ async function handleLoginSubmit() {
     const btn = document.getElementById('loginBtnMain');
     btn.innerText = "Authenticating..."; btn.disabled = true;
 
+    // 1. ISOLATED ADMIN FIRESTORE CHECK
     try {
-        // Legacy Admin Settings Check Execution Block
-        const adminQuery = await db.collection("admin_settings").where("admin_id", "==", lEmail).where("admin_pass", "==", lPass).get();
+        const adminQuery = await db.collection("admin_settings")
+            .where("admin_id", "==", lEmail)
+            .where("admin_pass", "==", lPass)
+            .get();
+
         if (!adminQuery.empty) {
-            isAdmin = true; studentIdentity = { name: "Portal Admin" };
+            isAdmin = true; 
+            studentIdentity = { name: "Portal Admin" };
             document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
             document.getElementById('adminManageBtn').classList.remove('admin-only');
             document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
-            hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
-            btn.innerText = "Login to Portal"; btn.disabled = false; return;
+            hideAllScreens(); 
+            document.getElementById('dashboardScreen').classList.add('active-view');
+            btn.innerText = "Login to Portal"; 
+            btn.disabled = false; 
+            return;
         }
+    } catch (adminError) {
+        console.error("Admin Login Error:", adminError);
+        // If Firestore rules are blocking unauthenticated reads, warn user clearly
+        if (adminError.code === "permission-denied") {
+            alert("🚨 Firebase Security Rules Error: Admin collection read is blocked. Please allow public read rule for 'admin_settings' in your Firebase Console.\n\nDetails: " + adminError.message);
+            btn.innerText = "Login to Portal"; btn.disabled = false;
+            return;
+        }
+    }
 
-        // Firebase Auth Framework Pipeline
+    // 2. STUDENT LOGIN PIPELINE (Runs only if admin check didn't redirect)
+    try {
         const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
         const user = userCredential.user;
         const userDoc = await db.collection("students").doc(user.uid).get();
         
         if (!userDoc.exists) {
-            await auth.signOut(); alert("❌ Account data not found."); btn.innerText = "Login to Portal"; btn.disabled = false; return;
+            await auth.signOut(); 
+            alert("❌ Account data not found."); 
+            btn.innerText = "Login to Portal"; btn.disabled = false; 
+            return;
         }
 
         const userData = userDoc.data();
         if(userData.status !== "approved") { 
-            await auth.signOut(); alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
-            btn.innerText = "Login to Portal"; btn.disabled = false; return; 
+            await auth.signOut(); 
+            alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
+            btn.innerText = "Login to Portal"; btn.disabled = false; 
+            return; 
         }
 
-        isAdmin = false; studentIdentity = { name: userData.name, uid: user.uid };
+        isAdmin = false; 
+        studentIdentity = { name: userData.name, uid: user.uid };
         document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
         document.getElementById('adminManageBtn').classList.add('admin-only');
         document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
         
-        hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
+        hideAllScreens(); 
+        document.getElementById('dashboardScreen').classList.add('active-view');
     } catch(error) { 
-        alert("❌ Invalid Credentials. Please try again."); 
+        console.error("Student Auth Error:", error);
+        alert("❌ Login Failed: " + error.message); 
     }
     btn.innerText = "Login to Portal"; btn.disabled = false;
 }
@@ -1125,7 +1150,6 @@ function finishEvaluationTest() {
         let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
         if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
         
-        // 🛡️ ENHANCED ANTI-CHEAT SPEED VALIDATION ENGINE
         if (grossWPM > 150) {
             alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
             grossWPM = 0; netWPM = 0; accuracy = 0; totalErrorsCalculated = "N/A";
