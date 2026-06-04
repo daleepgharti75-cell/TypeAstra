@@ -42,7 +42,7 @@
         .loader-spinner { border: 5px solid rgba(255,255,255,0.2); border-top: 5px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px;}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 🎯 PREMIUM LOGIN SCREEN (CSS Warning Fixed) */
+        /* 🎯 PREMIUM LOGIN SCREEN */
         .login-container { background: var(--card-bg); padding: 45px 40px; border-radius: 16px; width: 400px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); margin: 12vh auto; border: 1px solid rgba(255,255,255,0.5); }
         .login-title { text-align: center; margin-bottom: 5px; font-size:1.8rem; font-weight:800; background: linear-gradient(90deg, #4f46e5, #ec4899); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .login-sub { text-align:center; color:var(--text-muted); font-size:0.95rem; margin-top:0; font-weight: 500; margin-bottom: 25px; }
@@ -56,7 +56,7 @@
         .toggle-auth span { color: var(--primary); font-weight: bold; }
         .toggle-auth:hover span { text-decoration: underline; }
 
-        /* DASHBOARD & TOP BAR BUTTONS (CSS Warning Fixed) */
+        /* DASHBOARD & TOP BAR BUTTONS */
         .dashboard-main-title { text-align: center; margin-bottom: 30px; font-size: 2.5rem; font-weight: 800; background: linear-gradient(90deg, #1e293b, #4f46e5); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .top-btn { position: absolute; top: 15px; color: white; border: none; padding: 8px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s; z-index: 100; }
         
@@ -432,7 +432,7 @@
     let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
     let studentIdentity = { name: "", uid: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
     let currentCustomFontSize = 1.1; 
-    let isAdmin = false; // 🔒 Now this cannot be changed from browser console!
+    let isAdmin = false; 
 
     const displayWindow = document.getElementById('displayParagraphFrame');
     const typeDivider = document.getElementById('typeDivider');
@@ -471,14 +471,12 @@
         document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
     }
 
-    // 🛠️ BUG 2 FIX: Only load login screen on window load. Don't fetch database until logged in to avoid permission errors.
     window.onload = () => {
         document.getElementById('loadingOverlay').style.display = 'none';
         hideAllScreens();
         document.getElementById('loginScreen').classList.add('active-view');
     };
 
-    // Data fetcher function to be called AFTER login
     async function fetchDatabaseFromCloud() {
         document.getElementById('loadingOverlay').style.display = 'flex';
         document.getElementById('loadingText').innerText = "Syncing with Cloud Database...";
@@ -572,7 +570,7 @@
 
             if (!adminQuery.empty) {
                 isAdmin = true; 
-                studentIdentity = { name: "Portal Admin" };
+                studentIdentity = { name: "Portal Admin", uid: "ADMIN" };
                 document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
                 document.getElementById('adminManageBtn').classList.remove('admin-only');
                 document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
@@ -676,13 +674,20 @@
         } catch (error) { console.error("History sync runtime error:", error); }
     }
 
+    // 🔥 BUG FIX: Updated History Display & Admin Access
     window.showHistory = async function() {
         hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
         let container = document.getElementById('historyListContainer');
         container.innerHTML = `<h3 style="text-align:center; color:var(--text-muted); margin-top:30px;">Loading History from Cloud...</h3>`;
         
         try {
-            const snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get();
+            let snapshot;
+            if (isAdmin) {
+                snapshot = await db.collection("history").get(); // Admin can see all records
+            } else {
+                snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get();
+            }
+            
             let hist = []; snapshot.forEach(doc => hist.push(doc.data()));
             
             hist.sort((a, b) => b.timestamp - a.timestamp); 
@@ -690,10 +695,20 @@
             
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
-            let html = `<table class="steno-table"><thead><tr><th>Date & Time</th><th>Test Name</th><th>Mode (Rule)</th><th>Speed (Gross/Net)</th><th>Accuracy</th><th>Marks</th></tr></thead><tbody>`;
-            hist.forEach(h => { html += `<tr><td style="font-weight:600; color:var(--text-dark);">${escapeHTML(h.date)}</td><td style="color:var(--text-muted);">${escapeHTML(h.name)}</td><td><span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td><td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; });
+            let html = `<table class="steno-table"><thead><tr><th>Date & Time</th>`;
+            if (isAdmin) html += `<th>Student Name</th>`; // Show Student Name if Admin
+            html += `<th>Test Name</th><th>Mode (Rule)</th><th>Speed (Gross/Net)</th><th>Accuracy</th><th>Marks</th></tr></thead><tbody>`;
+            
+            hist.forEach(h => { 
+                html += `<tr><td style="font-weight:600; color:var(--text-dark);">${escapeHTML(h.date)}</td>`;
+                if (isAdmin) html += `<td style="color:var(--text-dark); font-weight:bold;">${escapeHTML(h.studentName || '-')}</td>`;
+                html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td><td><span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td><td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; 
+            });
             html += `</tbody></table>`; container.innerHTML = html;
-        } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:30px;">Error loading history.</p>`; }
+        } catch(e) { 
+            console.error("History Load Error:", e);
+            container.innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:30px;"><b>Error:</b> ${e.message} <br><br><span style="font-size:0.9rem; color:var(--text-muted);">Ensure Firebase Rules are updated as instructed!</span></p>`; 
+        }
     }
 
     window.exitToDashboard = function() {
@@ -719,7 +734,6 @@
         `;
     }
 
-    // 🛠️ BUG 3 FIX: Removed language overriding which caused array index crash
     window.updateStudentFont = function() {
         const selectedFontClass = document.getElementById('fontFamilySelector').value;
         const selectedFontSize = currentCustomFontSize.toFixed(1) + 'rem';
@@ -919,7 +933,6 @@
 
     window.editStenoTest = function(index) { selectedStenoIndex = index; window.openUploadModal('EDIT'); }
 
-    // 🛠️ BUG 1 FIX: Added missing functions
     window.deleteActiveExercise = async function() {
         if(!isAdmin) return alert("Only Admin can delete tracks!");
         if(confirm("Are you sure you want to permanently delete this track?")) {
@@ -989,7 +1002,6 @@
     
     window.toggleTimerVisibility = function() { clockLabel.style.opacity = (clockLabel.style.opacity === '0') ? '1' : '0'; }
 
-    // 🛡️ SECURITY ANTI-CHEAT HANDLERS
     typingAreaInput.addEventListener('paste', e => e.preventDefault()); typingAreaInput.addEventListener('copy', e => e.preventDefault());
     typingAreaInput.addEventListener('cut', e => e.preventDefault()); typingAreaInput.addEventListener('drop', e => e.preventDefault());
     typingAreaInput.addEventListener('dragover', e => e.preventDefault()); typingAreaInput.addEventListener('contextmenu', e => e.preventDefault());
@@ -998,7 +1010,6 @@
     typingAreaInput.addEventListener('mousedown', function(e) { if (currentMode === 'STENO') setTimeout(() => { this.selectionStart = this.selectionEnd = this.value.length; }, 0); });
     typingAreaInput.addEventListener('click', function(e) { if (currentMode === 'STENO') this.selectionStart = this.selectionEnd = this.value.length; });
 
-    // 🛠️ BUG 4 FIX: Safe Timer Trigger Integration
     typingAreaInput.addEventListener('keydown', (e) => {
         if (e.ctrlKey && ['c', 'v', 'x', 'a', 'C', 'V', 'X', 'A'].includes(e.key)) { e.preventDefault(); return; }
         if (e.key === 'Backspace' && document.getElementById('bkspControl').value === 'DISABLE') return e.preventDefault();
@@ -1161,7 +1172,6 @@
             let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
             if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
             
-            // 🛡️ ENHANCED ANTI-CHEAT SPEED VALIDATION ENGINE
             if (grossWPM > 150) {
                 alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
                 grossWPM = 0; netWPM = 0; accuracy = 0; totalErrorsCalculated = "N/A";
