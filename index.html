@@ -178,7 +178,7 @@
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
             <p class="login-sub">Student Login</p>
-            <div class="login-row"><label>Email Address / Admin ID</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter Email or Admin ID"></div>
+            <div class="login-row"><label>Email Address</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter Email"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             <div style="display:flex; justify-content:flex-end; margin-top: 8px;"><span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="resetFirebasePassword()">Forgot Password?</span></div>
             <button class="enter-btn" id="loginBtnMain" onclick="handleLoginSubmit()">Login to Portal</button>
@@ -471,11 +471,51 @@
         document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
     }
 
-    window.onload = () => {
-        document.getElementById('loadingOverlay').style.display = 'none';
-        hideAllScreens();
-        document.getElementById('loginScreen').classList.add('active-view');
-    };
+    // Firebase session listener for page reloads & refresh
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingText').innerText = "Resuming Session...";
+            try {
+                const userDoc = await db.collection("students").doc(user.uid).get();
+                if (userDoc.exists && userDoc.data().status === "approved") {
+                    const userData = userDoc.data();
+                    isAdmin = false;
+                    studentIdentity = { name: userData.name, uid: user.uid };
+                    document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
+                    document.getElementById('adminManageBtn').classList.add('admin-only');
+                    document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
+                    
+                    await fetchDatabaseFromCloud();
+                    hideAllScreens(); 
+                    document.getElementById('dashboardScreen').classList.add('active-view');
+                } else {
+                    hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
+                }
+            } catch(error) {
+                hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
+            }
+            document.getElementById('loadingOverlay').style.display = 'none';
+        } else {
+            // Check if Admin was logged in (using sessionStorage)
+            if (sessionStorage.getItem('typeAstraAdmin') === 'true') {
+                isAdmin = true;
+                studentIdentity = { name: "Portal Admin", uid: "ADMIN" };
+                document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
+                document.getElementById('adminManageBtn').classList.remove('admin-only');
+                document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
+                
+                await fetchDatabaseFromCloud();
+                hideAllScreens(); 
+                document.getElementById('dashboardScreen').classList.add('active-view');
+                document.getElementById('loadingOverlay').style.display = 'none';
+            } else {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                hideAllScreens(); 
+                document.getElementById('loginScreen').classList.add('active-view');
+            }
+        }
+    });
 
     async function fetchDatabaseFromCloud() {
         document.getElementById('loadingOverlay').style.display = 'flex';
@@ -557,7 +597,7 @@
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
         const lPass = document.getElementById('loginPass').value.trim();
-        if (!lEmail || !lPass) return alert("Please enter Email/ID and Password!");
+        if (!lEmail || !lPass) return alert("Please enter Email and Password!");
         
         const btn = document.getElementById('loginBtnMain');
         btn.innerText = "Authenticating..."; btn.disabled = true;
@@ -569,6 +609,7 @@
                 .get();
 
             if (!adminQuery.empty) {
+                sessionStorage.setItem('typeAstraAdmin', 'true'); // Admin session save karein
                 isAdmin = true; 
                 studentIdentity = { name: "Portal Admin", uid: "ADMIN" };
                 document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
@@ -622,6 +663,7 @@
     }
 
     window.handleLogout = function() {
+        sessionStorage.removeItem('typeAstraAdmin'); // Admin session clear karein
         auth.signOut().then(() => {
             studentIdentity = { name: "", uid: "" }; isAdmin = false;
             document.getElementById('loginEmail').value = ""; document.getElementById('loginPass').value = "";
@@ -674,7 +716,6 @@
         } catch (error) { console.error("History sync runtime error:", error); }
     }
 
-    // 🔥 BUG FIX: Updated History Display & Admin Access
     window.showHistory = async function() {
         hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
         let container = document.getElementById('historyListContainer');
