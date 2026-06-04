@@ -176,7 +176,7 @@
     <div class="login-container app-view" id="loginScreen">
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
-            <p class="login-sub">Student Login</p>
+            <p class="login-sub">Student / Admin Login</p>
             <div class="login-row"><label>Email Address</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter Email"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             <div style="display:flex; justify-content:flex-end; margin-top: 8px;"><span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="resetFirebasePassword()">Forgot Password?</span></div>
@@ -392,7 +392,7 @@
     </div>
 
 <script>
-// 🛡️ SECURITY WRAPPER: IIFE (Prevents Console Hacking & Variable Manipulation)
+// 🛡️ SECURITY WRAPPER: IIFE 
 (() => {
     // 🎯 FIREBASE CONFIGURATION
     const firebaseConfig = {
@@ -410,6 +410,11 @@
     const auth = firebase.auth(); 
     const storage = firebase.storage();
 
+    // ==========================================
+    // ⚠️ SECURE ADMIN ID (YAHAN APNA UID DAALEIN)
+    // ==========================================
+    const MASTER_ADMIN_UID = oDZaWeUB4rUcZpgH6dPrsvk2O043;
+
     function escapeHTML(str) {
         if (!str) return "";
         return str.toString().replace(/[&<>'"]/g, 
@@ -417,7 +422,6 @@
         );
     }
 
-    // 🔒 LOCAL VARIABLES SECURED INSIDE CLOSURE
     let exerciseDatabaseBank = { 
         STENO: { EN: [], HI_KRUTI: [], HI_MANGAL: [] },
         TYPE: { EN: [], HI_KRUTI: [], HI_MANGAL: [] }
@@ -470,49 +474,47 @@
         document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
     }
 
-    // Firebase session listener for page reloads & refresh
+    // 🔥 Secure Auth Listener
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingText').innerText = "Resuming Session...";
             try {
-                const userDoc = await db.collection("students").doc(user.uid).get();
-                if (userDoc.exists && userDoc.data().status === "approved") {
-                    const userData = userDoc.data();
-                    isAdmin = false;
-                    studentIdentity = { name: userData.name, uid: user.uid };
-                    document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
-                    document.getElementById('adminManageBtn').classList.add('admin-only');
-                    document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
+                if (user.uid === MASTER_ADMIN_UID) {
+                    isAdmin = true;
+                    studentIdentity = { name: "Portal Admin", uid: user.uid };
+                    document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
+                    document.getElementById('adminManageBtn').classList.remove('admin-only');
+                    document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
                     
                     await fetchDatabaseFromCloud();
                     hideAllScreens(); 
                     document.getElementById('dashboardScreen').classList.add('active-view');
                 } else {
-                    hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
+                    const userDoc = await db.collection("students").doc(user.uid).get();
+                    if (userDoc.exists && userDoc.data().status === "approved") {
+                        const userData = userDoc.data();
+                        isAdmin = false;
+                        studentIdentity = { name: userData.name, uid: user.uid };
+                        document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
+                        document.getElementById('adminManageBtn').classList.add('admin-only');
+                        document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
+                        
+                        await fetchDatabaseFromCloud();
+                        hideAllScreens(); 
+                        document.getElementById('dashboardScreen').classList.add('active-view');
+                    } else {
+                        await auth.signOut();
+                        hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
+                    }
                 }
             } catch(error) {
                 hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
             }
             document.getElementById('loadingOverlay').style.display = 'none';
         } else {
-            // Check if Admin was logged in (using sessionStorage)
-            if (sessionStorage.getItem('typeAstraAdmin') === 'true') {
-                isAdmin = true;
-                studentIdentity = { name: "Portal Admin", uid: "ADMIN" };
-                document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
-                document.getElementById('adminManageBtn').classList.remove('admin-only');
-                document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
-                
-                await fetchDatabaseFromCloud();
-                hideAllScreens(); 
-                document.getElementById('dashboardScreen').classList.add('active-view');
-                document.getElementById('loadingOverlay').style.display = 'none';
-            } else {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                hideAllScreens(); 
-                document.getElementById('loginScreen').classList.add('active-view');
-            }
+            document.getElementById('loadingOverlay').style.display = 'none';
+            hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
         }
     });
 
@@ -593,6 +595,7 @@
         btn.innerText = "Send Request"; btn.disabled = false;
     }
 
+    // 🔥 Secure Login Handle
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
         const lPass = document.getElementById('loginPass').value.trim();
@@ -602,59 +605,41 @@
         btn.innerText = "Authenticating..."; btn.disabled = true;
 
         try {
-            const adminQuery = await db.collection("admin_settings")
-                .where("admin_id", "==", lEmail)
-                .where("admin_pass", "==", lPass)
-                .get();
+            const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
+            const user = userCredential.user;
 
-            if (!adminQuery.empty) {
-                sessionStorage.setItem('typeAstraAdmin', 'true'); 
+            if (user.uid === MASTER_ADMIN_UID) {
                 isAdmin = true; 
-                studentIdentity = { name: "Portal Admin", uid: "ADMIN" };
+                studentIdentity = { name: "Portal Admin", uid: user.uid };
                 document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
                 document.getElementById('adminManageBtn').classList.remove('admin-only');
                 document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
                 
                 btn.innerText = "Syncing Cloud Data...";
                 await fetchDatabaseFromCloud(); 
-                
                 hideAllScreens(); 
                 document.getElementById('dashboardScreen').classList.add('active-view');
-                btn.innerText = "Login to Portal"; btn.disabled = false; return;
+            } else {
+                const userDoc = await db.collection("students").doc(user.uid).get();
+                if (!userDoc.exists) {
+                    await auth.signOut(); alert("❌ Account data not found."); 
+                } else {
+                    const userData = userDoc.data();
+                    if(userData.status !== "approved") { 
+                        await auth.signOut(); alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
+                    } else {
+                        isAdmin = false; 
+                        studentIdentity = { name: userData.name, uid: user.uid };
+                        document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
+                        document.getElementById('adminManageBtn').classList.add('admin-only');
+                        document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
+                        
+                        btn.innerText = "Syncing Cloud Data...";
+                        await fetchDatabaseFromCloud(); 
+                        hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
+                    }
+                }
             }
-        } catch (adminError) {
-            if (adminError.code === "permission-denied") {
-                alert("🚨 Firebase Rules Error: Admin read is blocked. Allow public read for 'admin_settings'.\n" + adminError.message);
-                btn.innerText = "Login to Portal"; btn.disabled = false; return;
-            }
-        }
-
-        try {
-            const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
-            const user = userCredential.user;
-            const userDoc = await db.collection("students").doc(user.uid).get();
-            
-            if (!userDoc.exists) {
-                await auth.signOut(); alert("❌ Account data not found."); 
-                btn.innerText = "Login to Portal"; btn.disabled = false; return;
-            }
-
-            const userData = userDoc.data();
-            if(userData.status !== "approved") { 
-                await auth.signOut(); alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
-                btn.innerText = "Login to Portal"; btn.disabled = false; return; 
-            }
-
-            isAdmin = false; 
-            studentIdentity = { name: userData.name, uid: user.uid };
-            document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
-            document.getElementById('adminManageBtn').classList.add('admin-only');
-            document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
-            
-            btn.innerText = "Syncing Cloud Data...";
-            await fetchDatabaseFromCloud(); 
-
-            hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
         } catch(error) { 
             alert("❌ Login Failed: " + error.message); 
         }
@@ -662,7 +647,6 @@
     }
 
     window.handleLogout = function() {
-        sessionStorage.removeItem('typeAstraAdmin'); 
         auth.signOut().then(() => {
             studentIdentity = { name: "", uid: "" }; isAdmin = false;
             document.getElementById('loginEmail').value = ""; document.getElementById('loginPass').value = "";
@@ -701,33 +685,18 @@
         } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger);">Error loading students.</p>`; }
     }
 
-    // 🔥 Added Error Handling for Admin Actions 🔥
     window.approveStudent = async function(docId) { 
-        try {
-            await db.collection("students").doc(docId).update({ status: "approved" }); 
-            window.showAdminUserPanel(); 
-        } catch (error) {
-            alert("⚠️ Approve Failed: " + error.message + "\n\n(Hint: You must change your Firebase Firestore Rules to allow 'write' access for the 'students' collection.)");
-        }
+        try { await db.collection("students").doc(docId).update({ status: "approved" }); window.showAdminUserPanel(); } 
+        catch (error) { alert("⚠️ Approve Failed: " + error.message); }
     }
-    
     window.revokeStudent = async function(docId) { 
-        try {
-            await db.collection("students").doc(docId).update({ status: "pending" }); 
-            window.showAdminUserPanel(); 
-        } catch (error) {
-            alert("⚠️ Revoke Failed: " + error.message);
-        }
+        try { await db.collection("students").doc(docId).update({ status: "pending" }); window.showAdminUserPanel(); } 
+        catch (error) { alert("⚠️ Revoke Failed: " + error.message); }
     }
-    
     window.deleteStudent = async function(docId) { 
         if(confirm("Are you sure you want to permanently delete this student record?")) { 
-            try {
-                await db.collection("students").doc(docId).delete(); 
-                window.showAdminUserPanel(); 
-            } catch (error) {
-                alert("⚠️ Delete Failed: " + error.message);
-            }
+            try { await db.collection("students").doc(docId).delete(); window.showAdminUserPanel(); } 
+            catch (error) { alert("⚠️ Delete Failed: " + error.message); }
         } 
     }
 
@@ -748,16 +717,11 @@
         
         try {
             let snapshot;
-            if (isAdmin) {
-                snapshot = await db.collection("history").get(); 
-            } else {
-                snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get();
-            }
+            if (isAdmin) { snapshot = await db.collection("history").get(); } 
+            else { snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get(); }
             
             let hist = []; snapshot.forEach(doc => hist.push(doc.data()));
-            
-            hist.sort((a, b) => b.timestamp - a.timestamp); 
-            hist = hist.slice(0, 10);
+            hist.sort((a, b) => b.timestamp - a.timestamp); hist = hist.slice(0, 10);
             
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
@@ -771,10 +735,7 @@
                 html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td><td><span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td><td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; 
             });
             html += `</tbody></table>`; container.innerHTML = html;
-        } catch(e) { 
-            console.error("History Load Error:", e);
-            container.innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:30px;"><b>Error:</b> ${e.message} <br><br><span style="font-size:0.9rem; color:var(--text-muted);">Ensure Firebase Rules are updated as instructed!</span></p>`; 
-        }
+        } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:30px;"><b>Error:</b> ${e.message}</p>`; }
     }
 
     window.exitToDashboard = function() {
@@ -1020,9 +981,7 @@
         }
     }
 
-    window.loadSelectedExercisePattern = function() {
-        console.log("Exercise Selection Mod Triggered");
-    }
+    window.loadSelectedExercisePattern = function() { console.log("Exercise Selection Mod Triggered"); }
 
     window.closeCustomMatterModal = function() { document.getElementById('customMatterModal').style.display = 'none'; }
 
