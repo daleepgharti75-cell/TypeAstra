@@ -120,7 +120,7 @@
 
         /* TYPING WINDOWS */
         .display-window { 
-            flex: 1; overflow-y: auto; text-align: justify; line-height: 1.65; letter-spacing: normal; word-spacing: 0.8px; color: #1e293b; padding: 20px 25px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            flex: 1; overflow-y: auto; text-align: justify; line-height: 1.65; letter-spacing: normal; word-spacing: 2px; color: #1e293b; padding: 20px 25px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
             user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
         }
         .custom-divider { text-align: center; border-bottom: 2px dashed var(--border-light); line-height: 0.1em; margin: 15px 0; flex-shrink: 0; }
@@ -430,7 +430,7 @@
     let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
     let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
     let studentIdentity = { name: "", uid: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
-    let currentCustomFontSize = 1.4; // UPDATED to 1.4
+    let currentCustomFontSize = 1.4; 
     let isAdmin = false; 
 
     const displayWindow = document.getElementById('displayParagraphFrame');
@@ -608,7 +608,7 @@
                 .get();
 
             if (!adminQuery.empty) {
-                sessionStorage.setItem('typeAstraAdmin', 'true'); // Admin session save karein
+                sessionStorage.setItem('typeAstraAdmin', 'true'); 
                 isAdmin = true; 
                 studentIdentity = { name: "Portal Admin", uid: "ADMIN" };
                 document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
@@ -662,7 +662,7 @@
     }
 
     window.handleLogout = function() {
-        sessionStorage.removeItem('typeAstraAdmin'); // Admin session clear karein
+        sessionStorage.removeItem('typeAstraAdmin'); 
         auth.signOut().then(() => {
             studentIdentity = { name: "", uid: "" }; isAdmin = false;
             document.getElementById('loginEmail').value = ""; document.getElementById('loginPass').value = "";
@@ -701,9 +701,35 @@
         } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger);">Error loading students.</p>`; }
     }
 
-    window.approveStudent = async function(docId) { await db.collection("students").doc(docId).update({ status: "approved" }); window.showAdminUserPanel(); }
-    window.revokeStudent = async function(docId) { await db.collection("students").doc(docId).update({ status: "pending" }); window.showAdminUserPanel(); }
-    window.deleteStudent = async function(docId) { if(confirm("Are you sure you want to permanently delete this student record?")) { await db.collection("students").doc(docId).delete(); window.showAdminUserPanel(); } }
+    // 🔥 Added Error Handling for Admin Actions 🔥
+    window.approveStudent = async function(docId) { 
+        try {
+            await db.collection("students").doc(docId).update({ status: "approved" }); 
+            window.showAdminUserPanel(); 
+        } catch (error) {
+            alert("⚠️ Approve Failed: " + error.message + "\n\n(Hint: You must change your Firebase Firestore Rules to allow 'write' access for the 'students' collection.)");
+        }
+    }
+    
+    window.revokeStudent = async function(docId) { 
+        try {
+            await db.collection("students").doc(docId).update({ status: "pending" }); 
+            window.showAdminUserPanel(); 
+        } catch (error) {
+            alert("⚠️ Revoke Failed: " + error.message);
+        }
+    }
+    
+    window.deleteStudent = async function(docId) { 
+        if(confirm("Are you sure you want to permanently delete this student record?")) { 
+            try {
+                await db.collection("students").doc(docId).delete(); 
+                window.showAdminUserPanel(); 
+            } catch (error) {
+                alert("⚠️ Delete Failed: " + error.message);
+            }
+        } 
+    }
 
     async function saveToHistory(record) {
         if(!studentIdentity.uid || isAdmin) return; 
@@ -723,7 +749,7 @@
         try {
             let snapshot;
             if (isAdmin) {
-                snapshot = await db.collection("history").get(); // Admin can see all records
+                snapshot = await db.collection("history").get(); 
             } else {
                 snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get();
             }
@@ -736,7 +762,7 @@
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
             let html = `<table class="steno-table"><thead><tr><th>Date & Time</th>`;
-            if (isAdmin) html += `<th>Student Name</th>`; // Show Student Name if Admin
+            if (isAdmin) html += `<th>Student Name</th>`; 
             html += `<th>Test Name</th><th>Mode (Rule)</th><th>Speed (Gross/Net)</th><th>Accuracy</th><th>Marks</th></tr></thead><tbody>`;
             
             hist.forEach(h => { 
@@ -808,8 +834,8 @@
         const fontSelector = document.getElementById('fontFamilySelector');
         if(fontSelector) {
             fontSelector.value = (lang === 'HI_KRUTI') ? 'font-kruti' : 'font-english';
-            currentCustomFontSize = 1.4; // UPDATED to 1.4
-            document.getElementById('currentFontSizeDisplay').innerText = '1.4x'; // UPDATED to 1.4x
+            currentCustomFontSize = 1.4; 
+            document.getElementById('currentFontSizeDisplay').innerText = '1.4x';
         }
         
         displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
