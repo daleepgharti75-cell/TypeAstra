@@ -985,7 +985,7 @@
 
     window.closeCustomMatterModal = function() { document.getElementById('customMatterModal').style.display = 'none'; }
 
-    window.saveExerciseManagerAction = async function() {
+window.saveExerciseManagerAction = async function() {
         const nameVal = modalNameInput.value.trim(); const textVal = modalTextArea.value.trim();
         if (nameVal === "" || textVal === "") return alert("Fields cannot be empty!");
         
@@ -1014,7 +1014,12 @@
             }
             
             saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; window.closeCustomMatterModal(); renderStenoList();
-        } catch(e) { alert("Error saving data to the backend."); saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; }
+            alert("✅ Track saved successfully!"); // Success message add kiya
+        } catch(e) { 
+            // 🔥 AB EXACT ERROR SCREEN PAR DIKHEGA 🔥
+            alert("❌ Error saving data: " + e.message + "\n\n(Agar Permission Denied error hai, toh apna Firebase Rule check karein)"); 
+            saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; 
+        }
     }
 
     window.modifyDurationConfig = function() {
