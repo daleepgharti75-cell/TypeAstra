@@ -464,12 +464,14 @@
 
 function deepClean(str) {
         if (!str) return "";
-        return str.replace(/[\u200B-\u200D\uFEFF\xA0\r\n\t]+/g, " ") // 🔥 Blank ki jagah Space kiya hai taaki words aapas mein na chipkein
+        return str.replace(/[\u200B-\u200D\uFEFF\xA0]/g, "")
+                  .replace(/[\r\n\t]+/g, " ") // 🔥 Enter aur Tab ko Space mein convert karega taaki words aapas mein na chipkein
                   .replace(/[‘’´`]/g, "'")
                   .replace(/[“”]/g, '"')
                   .replace(/[–—]/g, "-")
                   .trim();
     }
+    
     function hideAllScreens() { 
         document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
     }
@@ -901,10 +903,15 @@ function deepClean(str) {
         let maxPossibleWords = 120 * selectedMins; 
         let baseWordsCount = deepClean(baseText).split(/\s+/).length;
         
-        let repeatCount = 1;
+      let repeatCount = 1;
         if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) { repeatCount = Math.ceil(maxPossibleWords / baseWordsCount); }
         let finalText = baseText;
+        // " " ki jagah "\n\n" lagaya hai taaki naya paragraph start ho
         for (let i = 1; i < repeatCount; i++) { finalText += "\n\n" + baseText; }
+
+        sourceWords = deepClean(finalText).split(/\s+/);
+        // innerText ki jagah HTML break <br> use kiya hai taaki gap clearly dikhe
+        if(currentMode === 'TYPE') displayWindow.innerHTML = escapeHTML(finalText).replace(/\n/g, '<br>');
 
         sourceWords = deepClean(finalText).split(/\s+/);
         if(currentMode === 'TYPE') displayWindow.innerText = finalText;
