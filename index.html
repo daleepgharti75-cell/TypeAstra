@@ -566,7 +566,7 @@ function deepClean(str) {
         }
     }
 
-    window.handleSignupSubmit = async function() {
+window.handleSignupSubmit = async function() {
         const sName = document.getElementById('regName').value.trim();
         const sEmail = document.getElementById('regEmail').value.trim();
         const sPass = document.getElementById('regPass').value.trim();
@@ -593,11 +593,36 @@ function deepClean(str) {
             window.toggleAuth('LOGIN');
             document.getElementById('regName').value = ""; document.getElementById('regEmail').value = ""; document.getElementById('regPass').value = "";
         } catch(error) { 
-            alert("❌ Error: " + error.message); 
+            // 🔥 BUG FIX: Handle Deleted Accounts (Limbo State)
+            if (error.code === 'auth/email-already-in-use') {
+                try {
+                    // Try to login silently to verify it's the same user
+                    const signInCred = await auth.signInWithEmailAndPassword(sEmail, sPass);
+                    const user = signInCred.user;
+                    const docCheck = await db.collection("students").doc(user.uid).get();
+
+                    if (!docCheck.exists) {
+                        // Recreate the missing request!
+                        await db.collection("students").doc(user.uid).set({ 
+                            name: sName, email: sEmail, status: "pending", date: new Date().toISOString() 
+                        });
+                        await auth.signOut();
+                        alert("✅ Welcome back! Your new Registration request has been successfully sent to Admin.");
+                        window.toggleAuth('LOGIN');
+                        document.getElementById('regName').value = ""; document.getElementById('regEmail').value = ""; document.getElementById('regPass').value = "";
+                    } else {
+                        await auth.signOut();
+                        alert("❌ This account already exists. Please use the Login screen.");
+                    }
+                } catch (signInError) {
+                    alert("❌ This Email is already registered. If Admin deleted your account and you are trying to re-register, please type your EXACT old password.");
+                }
+            } else {
+                alert("❌ Error: " + error.message); 
+            }
         }
         btn.innerText = "Send Request"; btn.disabled = false;
     }
-
     // 🔥 Secure Login Handle
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
