@@ -120,14 +120,16 @@
 
         /* TYPING WINDOWS */
         .display-window { 
-            flex: 1; overflow-y: auto; text-align: justify; line-height: 1.1; letter-spacing: normal; word-spacing: 2px; color: #1e293b; padding: 20px 25px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            flex: 1; overflow-y: auto; text-align: justify; line-height: 1.6; letter-spacing: normal; word-spacing: 2px; color: #1e293b; padding: 20px 25px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
             user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
-            white-space: pre-wrap; /* 🔥 Ye line ENTER pattern ko show karegi */
-            font-weight: 550;
+            white-space: pre-wrap; 
+            font-weight: 600; 
         }
         .custom-divider { text-align: center; border-bottom: 2px dashed var(--border-light); line-height: 0.1em; margin: 15px 0; flex-shrink: 0; }
         .custom-divider span { background: var(--card-bg); padding: 0 15px; color: var(--text-muted); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
-        .input-window { flex: 1; width: 100%; box-sizing: border-box; resize: none; outline: none; font-family: inherit; color: #000; background: #ffffff; border: 1px solid var(--border-light); line-height: 1.65; letter-spacing: normal; word-spacing: 2px; padding: 20px 25px; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s;}
+        .input-window { flex: 1; width: 100%; box-sizing: border-box; resize: none; outline: none; font-family: inherit; color: #000; background: #ffffff; border: 1px solid var(--border-light); line-height: 1.6; letter-spacing: normal; word-spacing: 2px; padding: 20px 25px; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); transition: 0.3s; 
+            font-weight: 600; 
+        }
         
         /* STENO MODE BIG CANVAS */
         .steno-input-expanded { flex: 1 !important; height: auto !important; font-size: 1.7rem !important; padding: 30px !important; background-color: var(--steno-cream) !important; border: 2px solid #e5e7eb !important; border-radius: 8px !important; box-shadow: inset 0 4px 6px rgba(0,0,0,0.02) !important; overflow-y: auto !important; resize: none; line-height: 2.8rem !important; color: #1e293b !important; }
@@ -178,7 +180,7 @@
     <div class="login-container app-view" id="loginScreen">
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
-            <p class="login-sub">Student Login</p>
+            <p class="login-sub">Student / Admin Login</p>
             <div class="login-row"><label>Email Address</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter Email"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             <div style="display:flex; justify-content:flex-end; margin-top: 8px;"><span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="resetFirebasePassword()">Forgot Password?</span></div>
@@ -415,7 +417,7 @@
     // ==========================================
     // ⚠️ SECURE ADMIN ID (YAHAN APNA UID DAALEIN)
     // ==========================================
-    const MASTER_ADMIN_UID = "WCy4mXts5dZwxqGZA3kJM0RZGIy1";
+    const MASTER_ADMIN_UID = "AAPKA_ADMIN_UID_YAHAN_DAALEIN";
 
     function escapeHTML(str) {
         if (!str) return "";
@@ -438,6 +440,7 @@
     let studentIdentity = { name: "", uid: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
     let currentCustomFontSize = 1.4; 
     let isAdmin = false; 
+    let isAuthPaused = false; // 🔥 Background checker pause control
 
     const displayWindow = document.getElementById('displayParagraphFrame');
     const typeDivider = document.getElementById('typeDivider');
@@ -463,10 +466,10 @@
         document.documentElement.style.setProperty('--active-theme-grad', grad);
     }
 
-function deepClean(str) {
+    function deepClean(str) {
         if (!str) return "";
         return str.replace(/[\u200B-\u200D\uFEFF\xA0]/g, "")
-                  .replace(/[\r\n\t]+/g, " ") // 🔥 Enter aur Tab ko Space mein convert karega taaki words aapas mein na chipkein
+                  .replace(/[\r\n\t]+/g, " ") // 🔥 Word block fix
                   .replace(/[‘’´`]/g, "'")
                   .replace(/[“”]/g, '"')
                   .replace(/[–—]/g, "-")
@@ -477,8 +480,10 @@ function deepClean(str) {
         document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
     }
 
-    // 🔥 Secure Auth Listener
+    // 🔥 Secure Auth Listener (With Pause function)
     auth.onAuthStateChanged(async (user) => {
+        if (isAuthPaused) return; // 🔥 Signup ke time listener block ho jayega
+
         if (user) {
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingText').innerText = "Resuming Session...";
@@ -566,7 +571,7 @@ function deepClean(str) {
         }
     }
 
-window.handleSignupSubmit = async function() {
+    window.handleSignupSubmit = async function() {
         const sName = document.getElementById('regName').value.trim();
         const sEmail = document.getElementById('regEmail').value.trim();
         const sPass = document.getElementById('regPass').value.trim();
@@ -577,15 +582,14 @@ window.handleSignupSubmit = async function() {
         const btn = document.getElementById('signupBtnMain');
         btn.innerText = "Creating Account..."; btn.disabled = true;
 
+        isAuthPaused = true; // 🔥 Block background listener
+
         try {
             const userCredential = await auth.createUserWithEmailAndPassword(sEmail, sPass);
             const user = userCredential.user;
 
             await db.collection("students").doc(user.uid).set({ 
-                name: sName, 
-                email: sEmail, 
-                status: "pending", 
-                date: new Date().toISOString() 
+                name: sName, email: sEmail, status: "pending", date: new Date().toISOString() 
             });
 
             await auth.signOut();
@@ -593,16 +597,14 @@ window.handleSignupSubmit = async function() {
             window.toggleAuth('LOGIN');
             document.getElementById('regName').value = ""; document.getElementById('regEmail').value = ""; document.getElementById('regPass').value = "";
         } catch(error) { 
-            // 🔥 BUG FIX: Handle Deleted Accounts (Limbo State)
+            // 🔥 Deleted Account Limbo State Fix
             if (error.code === 'auth/email-already-in-use') {
                 try {
-                    // Try to login silently to verify it's the same user
                     const signInCred = await auth.signInWithEmailAndPassword(sEmail, sPass);
                     const user = signInCred.user;
                     const docCheck = await db.collection("students").doc(user.uid).get();
 
                     if (!docCheck.exists) {
-                        // Recreate the missing request!
                         await db.collection("students").doc(user.uid).set({ 
                             name: sName, email: sEmail, status: "pending", date: new Date().toISOString() 
                         });
@@ -621,8 +623,11 @@ window.handleSignupSubmit = async function() {
                 alert("❌ Error: " + error.message); 
             }
         }
+
+        isAuthPaused = false; // 🔥 Unblock background listener
         btn.innerText = "Send Request"; btn.disabled = false;
     }
+
     // 🔥 Secure Login Handle
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
@@ -745,11 +750,16 @@ window.handleSignupSubmit = async function() {
         
         try {
             let snapshot;
-            if (isAdmin) { snapshot = await db.collection("history").get(); } 
-            else { snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get(); }
+            if (isAdmin) {
+                snapshot = await db.collection("history").get(); 
+            } else {
+                snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get();
+            }
             
             let hist = []; snapshot.forEach(doc => hist.push(doc.data()));
-            hist.sort((a, b) => b.timestamp - a.timestamp); hist = hist.slice(0, 10);
+            
+            hist.sort((a, b) => b.timestamp - a.timestamp); 
+            hist = hist.slice(0, 10);
             
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
@@ -763,7 +773,10 @@ window.handleSignupSubmit = async function() {
                 html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td><td><span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td><td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; 
             });
             html += `</tbody></table>`; container.innerHTML = html;
-        } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:30px;"><b>Error:</b> ${e.message}</p>`; }
+        } catch(e) { 
+            console.error("History Load Error:", e);
+            container.innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:30px;"><b>Error:</b> ${e.message} <br><br><span style="font-size:0.9rem; color:var(--text-muted);">Ensure Firebase Rules are updated as instructed!</span></p>`; 
+        }
     }
 
     window.exitToDashboard = function() {
@@ -929,18 +942,19 @@ window.handleSignupSubmit = async function() {
         let maxPossibleWords = 120 * selectedMins; 
         let baseWordsCount = deepClean(baseText).split(/\s+/).length;
         
-      let repeatCount = 1;
+        let repeatCount = 1;
         if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) { repeatCount = Math.ceil(maxPossibleWords / baseWordsCount); }
         let finalText = baseText;
-        // " " ki jagah "\n\n" lagaya hai taaki naya paragraph start ho
+        
+        // 🔥 Naya Single Enter pattern
         for (let i = 1; i < repeatCount; i++) { finalText += "\n" + baseText; }
 
         sourceWords = deepClean(finalText).split(/\s+/);
-        // innerText ki jagah HTML break <br> use kiya hai taaki gap clearly dikhe
-        if(currentMode === 'TYPE') displayWindow.innerHTML = escapeHTML(finalText).replace(/\n/g, '<br>');
-
-        sourceWords = deepClean(finalText).split(/\s+/);
-        if(currentMode === 'TYPE') displayWindow.innerText = finalText;
+        
+        if(currentMode === 'TYPE') {
+            displayWindow.style.whiteSpace = "pre-wrap";
+            displayWindow.innerText = finalText;
+        }
 
         clearInterval(coreTimerLoop); secondsCounter = 0; strokeCounter = 0;
         clockLabel.style.opacity = '1'; clockLabel.style.color = 'var(--text-dark)';
@@ -1018,7 +1032,7 @@ window.handleSignupSubmit = async function() {
 
     window.closeCustomMatterModal = function() { document.getElementById('customMatterModal').style.display = 'none'; }
 
-window.saveExerciseManagerAction = async function() {
+    window.saveExerciseManagerAction = async function() {
         const nameVal = modalNameInput.value.trim(); const textVal = modalTextArea.value.trim();
         if (nameVal === "" || textVal === "") return alert("Fields cannot be empty!");
         
@@ -1047,9 +1061,8 @@ window.saveExerciseManagerAction = async function() {
             }
             
             saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; window.closeCustomMatterModal(); renderStenoList();
-            alert("✅ Track saved successfully!"); // Success message add kiya
+            alert("✅ Track saved successfully!");
         } catch(e) { 
-            // 🔥 AB EXACT ERROR SCREEN PAR DIKHEGA 🔥
             alert("❌ Error saving data: " + e.message + "\n\n(Agar Permission Denied error hai, toh apna Firebase Rule check karein)"); 
             saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; 
         }
