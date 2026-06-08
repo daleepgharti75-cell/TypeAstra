@@ -480,7 +480,7 @@
         document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
     }
 
-    // 🔥 Secure Auth Listener (With Pause function)
+    // 🔥 Secure Auth Listener (With Pause function & Cache Fix)
     auth.onAuthStateChanged(async (user) => {
         if (isAuthPaused) return; // 🔥 Signup ke time listener block ho jayega
 
@@ -499,7 +499,8 @@
                     hideAllScreens(); 
                     document.getElementById('dashboardScreen').classList.add('active-view');
                 } else {
-                    const userDoc = await db.collection("students").doc(user.uid).get();
+                    // CACHE FIX: { source: 'server' } added
+                    const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
                     if (userDoc.exists && userDoc.data().status === "approved") {
                         const userData = userDoc.data();
                         isAdmin = false;
@@ -602,7 +603,8 @@
                 try {
                     const signInCred = await auth.signInWithEmailAndPassword(sEmail, sPass);
                     const user = signInCred.user;
-                    const docCheck = await db.collection("students").doc(user.uid).get();
+                    // CACHE FIX: { source: 'server' } added
+                    const docCheck = await db.collection("students").doc(user.uid).get({ source: 'server' });
 
                     if (!docCheck.exists) {
                         await db.collection("students").doc(user.uid).set({ 
@@ -628,7 +630,7 @@
         btn.innerText = "Send Request"; btn.disabled = false;
     }
 
-    // 🔥 Secure Login Handle
+    // 🔥 Secure Login Handle (With Cache Fix)
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
         const lPass = document.getElementById('loginPass').value.trim();
@@ -653,7 +655,8 @@
                 hideAllScreens(); 
                 document.getElementById('dashboardScreen').classList.add('active-view');
             } else {
-                const userDoc = await db.collection("students").doc(user.uid).get();
+                // CACHE FIX: { source: 'server' } added
+                const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
                 if (!userDoc.exists) {
                     await auth.signOut(); alert("❌ Account data not found."); 
                 } else {
@@ -697,13 +700,14 @@
         } catch(error) { alert("❌ Error: " + error.message); }
     }
 
+    // CACHE FIX: { source: 'server' } added to show fresh status
     window.showAdminUserPanel = async function() {
         hideAllScreens(); document.getElementById('adminUsersScreen').classList.add('active-view');
         const container = document.getElementById('adminUsersContainer');
         container.innerHTML = `<h3 style="text-align:center; color:var(--text-muted);">Loading Students...</h3>`;
         
         try {
-            const snapshot = await db.collection("students").limit(100).get();
+            const snapshot = await db.collection("students").limit(100).get({ source: 'server' });
             if(snapshot.empty) { container.innerHTML = `<p style="text-align:center;">No students found.</p>`; return; }
             
             let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
@@ -1028,7 +1032,9 @@
         }
     }
 
-    window.loadSelectedExercisePattern = function() { console.log("Exercise Selection Mod Triggered"); }
+    window.loadSelectedExercisePattern = function() {
+        console.log("Exercise Selection Mod Triggered");
+    }
 
     window.closeCustomMatterModal = function() { document.getElementById('customMatterModal').style.display = 'none'; }
 
