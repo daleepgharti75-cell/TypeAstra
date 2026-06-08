@@ -123,7 +123,7 @@
             flex: 1; overflow-y: auto; text-align: justify; line-height: 1.2; letter-spacing: normal; word-spacing: 2px; color: #1e293b; padding: 20px 25px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
             user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
             white-space: pre-wrap; 
-            font-weight: 590; 
+            font-weight: 600; 
         }
         .custom-divider { text-align: center; border-bottom: 2px dashed var(--border-light); line-height: 0.1em; margin: 15px 0; flex-shrink: 0; }
         .custom-divider span { background: var(--card-bg); padding: 0 15px; color: var(--text-muted); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
@@ -235,7 +235,8 @@
                 <h2>Stenography Audio Transcription</h2>
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'STENO')"><div class="icon-graphic theme-icon-steno-en"><div>🎧</div><div>EN</div><div>✍️</div><div>St</div></div><div class="icon-label">English Steno</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic theme-icon-steno-hi"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Steno</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic theme-icon-steno-hi"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Kruti</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'STENO')"><div class="icon-graphic theme-icon-steno-hi" style="background: linear-gradient(135deg, #e11d48, #fb7185);"><div>🎧</div><div>मं</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Mangal</div></div>
                 </div>
             </div>
 
@@ -243,7 +244,8 @@
                 <h2>Typing Test</h2>
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'TYPE')"><div class="icon-graphic theme-icon-type-en"><div>A</div><div>B</div><div>C</div><div>D</div></div><div class="icon-label">English Tests</div></div>
-                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic theme-icon-type-hi"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Tests</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic theme-icon-type-hi"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Kruti</div></div>
+                    <div class="icon-card" onclick="launchApplicationConsole('HI_MANGAL', 'TYPE')"><div class="icon-graphic theme-icon-type-hi" style="background: linear-gradient(135deg, #e11d48, #fb7185);"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Mangal Tests</div></div>
                 </div>
             </div>
         </div>
@@ -757,7 +759,6 @@
         } 
     }
 
-    // 🟢 HISTORY LOGIC UPDATED FOR AUTO-DELETE TOP 10
     async function saveToHistory(record) {
         if(!studentIdentity.uid || isAdmin) return; 
         try {
@@ -877,13 +878,17 @@
         
         const fontSelector = document.getElementById('fontFamilySelector');
         if(fontSelector) {
-            fontSelector.value = (lang === 'HI_KRUTI') ? 'font-kruti' : 'font-english';
+            if (lang === 'HI_KRUTI') fontSelector.value = 'font-kruti';
+            else if (lang === 'HI_MANGAL') fontSelector.value = 'font-mangal';
+            else fontSelector.value = 'font-english';
+            
             currentCustomFontSize = 1.4; 
             document.getElementById('currentFontSizeDisplay').innerText = '1.4x';
         }
         
-        displayWindow.className = 'display-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
-        typingAreaInput.className = 'input-window ' + (lang==='HI_KRUTI'?'font-kruti':'font-english');
+        let fontClassName = (lang === 'HI_KRUTI') ? 'font-kruti' : ((lang === 'HI_MANGAL') ? 'font-mangal' : 'font-english');
+        displayWindow.className = 'display-window ' + fontClassName;
+        typingAreaInput.className = 'input-window ' + fontClassName;
         updateEvaluationModes();
 
         document.getElementById('stenoSelectionScreen').classList.add('active-view');
@@ -1285,7 +1290,6 @@
             completedTests[currentMode][activeLanguage][selectedStenoIndex] = { totalWords: sourceWords.length, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), marks: finalMarksStr, reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
             histSpeed = "-"; histAcc = accuracy.toFixed(2) + "%"; histMarks = finalMarksStr;
         } else {
-            // 🟢 TYPING TEST EVALUATION WITH RHC KDPH LOGIC
             let timeDurationHours = minutesElapsed / 60; 
             
             let grossWords = actualStrokes / 5; 
