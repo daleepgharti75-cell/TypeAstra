@@ -165,6 +165,7 @@
         .review-box { background: #ffffff; border: 1px solid var(--border-light); padding: 25px; max-height: 400px; overflow-y: auto; text-align: left; border-radius: 12px; line-height: 2.6; box-shadow: inset 0 4px 6px rgba(0,0,0,0.03);}
         
         .word-block { display: inline-block; margin-right: 8px; margin-bottom: 6px; font-size: inherit; }
+        
         .rev-correct { color: #334155; font-weight: 600; }
         
         .rev-wrong-text { 
@@ -193,6 +194,7 @@
             font-family: inherit !important; 
             text-decoration: none; 
         }
+        .rev-expected-word { color: var(--text-muted) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: none; opacity: 0.6;}
     </style>
 </head>
 <body>
@@ -232,7 +234,7 @@
             <div class="dashboard-main-title">Type Astra</div>
             
             <div class="dashboard-box">
-                <h2>Stenography Audio Transcription <span style="font-size:0.8rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; vertical-align:middle; margin-left:10px;">Premium</span></h2>
+                <h2>Stenography Audio Transcription</h2>
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'STENO')"><div class="icon-graphic theme-icon-steno-en"><div>🎧</div><div>EN</div><div>✍️</div><div>St</div></div><div class="icon-label">English Steno</div></div>
                     <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic theme-icon-steno-hi"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Kruti</div></div>
@@ -241,7 +243,7 @@
             </div>
 
             <div class="dashboard-box">
-                <h2>Typing Test <span style="font-size:0.8rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; vertical-align:middle; margin-left:10px;">Premium</span></h2>
+                <h2>Typing Test</h2>
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'TYPE')"><div class="icon-graphic theme-icon-type-en"><div>A</div><div>B</div><div>C</div><div>D</div></div><div class="icon-label">English Tests</div></div>
                     <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic theme-icon-type-hi"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Kruti</div></div>
@@ -625,7 +627,6 @@
             const userCredential = await auth.createUserWithEmailAndPassword(sEmail, sPass);
             const user = userCredential.user;
 
-            // 🟢 Naye account mein by default Typing aur Steno dono band rahenge
             await db.collection("students").doc(user.uid).set({ 
                 name: sName, email: sEmail, status: "pending", date: new Date().toISOString(), hasTypingAccess: false, hasStenoAccess: false 
             });
@@ -749,13 +750,11 @@
             const snapshot = await db.collection("students").limit(100).get({ source: 'server' });
             if(snapshot.empty) { container.innerHTML = `<p style="text-align:center;">No students found.</p>`; return; }
             
-            // 🟢 UPDATED ADMIN TABLE
             let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Login Status</th><th>Course Access</th><th>Action</th></tr></thead><tbody>`;
             snapshot.forEach(doc => {
                 let user = doc.data();
                 let statusHTML = user.status === 'approved' ? `<span style="color:var(--secondary); font-weight:bold;">Approved</span>` : `<span style="color:#d97706; font-weight:bold;">Pending</span>`;
                 
-                // Dropdown to select Course Access
                 let accessSelectHTML = `
                     <select onchange="updateUserAccess('${escapeHTML(doc.id)}', this.value)" style="padding:5px; border-radius:6px; border:1px solid var(--border-light); font-weight:bold; color:var(--text-dark); background:#f8fafc; cursor:pointer;">
                         <option value="NONE" ${!user.hasTypingAccess && !user.hasStenoAccess ? 'selected' : ''}>🔒 No Access</option>
@@ -774,7 +773,6 @@
         } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger);">Error loading students.</p>`; }
     }
 
-    // 🟢 NEW FUNCTION: Handle Dropdown changes for Course Access
     window.updateUserAccess = async function(docId, accessType) {
         let hasTyping = false;
         let hasSteno = false;
@@ -919,7 +917,6 @@
     }
 
     window.launchApplicationConsole = function(lang, mode) {
-        // 🟢 UPDATED SECURITY: Typing aur Steno dono ke liye access check
         if (!isAdmin) {
             if (mode === 'TYPE' && !studentIdentity.hasTypingAccess) {
                 alert("🔒 ACCESS DENIED\n\nYou do not have permission to access the Typing Test module. Please contact Admin to activate this course.");
@@ -1350,48 +1347,18 @@
             completedTests[currentMode][activeLanguage][selectedStenoIndex] = { totalWords: sourceWords.length, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), marks: finalMarksStr, reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
             histSpeed = "-"; histAcc = accuracy.toFixed(2) + "%"; histMarks = finalMarksStr;
         } else {
-            let timeDurationHours = minutesElapsed / 60; 
+            let grossWords = actualStrokes / 5; let grossWPM = Math.round(grossWords / minutesElapsed); 
+            let netWords = Math.max(0, grossWords - totalErrorsCalculated); let netWPM = Math.round(netWords / minutesElapsed); 
             
-            let grossWords = actualStrokes / 5; 
-            let defaultGrossWPM = Math.round(grossWords / minutesElapsed); 
-            let defaultNetWords = Math.max(0, grossWords - totalErrorsCalculated); 
-            let defaultNetWPM = Math.round(defaultNetWords / minutesElapsed); 
+            let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
+            if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
             
-            let typingMarks = 0;
-            let finalGrossWPM = defaultGrossWPM;
-            let finalNetWPM = defaultNetWPM;
-            let finalAccuracy = 0;
-
-            if (selectedExamType === "RAJ_HC") {
-                let penaltyStrokes = totalErrorsCalculated * 5; 
-                let netKeystrokes = Math.max(0, actualStrokes - penaltyStrokes);
-                
-                let grossKDPH = actualStrokes / timeDurationHours;
-                let netKDPH = netKeystrokes / timeDurationHours;
-
-                typingMarks = (20 / 8000) * netKDPH;
-                
-                if (grossKDPH > 0) {
-                    finalAccuracy = (netKDPH / grossKDPH) * 100;
-                }
-                
-                finalGrossWPM = Math.round(grossKDPH / 300);
-                finalNetWPM = Math.round(netKDPH / 300);
-
-            } else {
-                if (grossWords > 0) finalAccuracy = (defaultNetWords / grossWords) * 100;
-                typingMarks = Math.max(0, defaultNetWPM * 0.75); 
-            }
-
-            if (finalAccuracy < 0 || actualStrokes === 0) finalAccuracy = 0; 
-            if (actualStrokes === 0) { finalGrossWPM = 0; finalNetWPM = 0; }
-            
-            if (finalGrossWPM > 150) {
+            if (grossWPM > 150) {
                 alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
-                finalGrossWPM = 0; finalNetWPM = 0; finalAccuracy = 0; totalErrorsCalculated = "N/A";
+                grossWPM = 0; netWPM = 0; accuracy = 0; totalErrorsCalculated = "N/A";
                 typingMarks = "CHEAT DETECTED";
             } else {
-                typingMarks = Math.min(50, typingMarks).toFixed(2); 
+                typingMarks = Math.min(50, Math.max(0, netWPM * 0.75)).toFixed(2);
             }
 
             if (selectedExamType === "RAJ_HC") document.getElementById('resMethod').innerText = "Rajasthan High Court Typing Mode"; 
@@ -1401,10 +1368,10 @@
             else document.getElementById('resMethod').innerText = selectedExamType + " Standard";
             
             tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="speed-number">${finalGrossWPM} WPM</td><td class="net-speed-number">${finalNetWPM} WPM</td><td class="accuracy-number">${finalAccuracy.toFixed(2)}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
+            tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
             
-            completedTests[currentMode][activeLanguage][selectedStenoIndex] = { grossWPM: finalGrossWPM, netWPM: finalNetWPM, accuracy: finalAccuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
-            histSpeed = `${finalGrossWPM} / ${finalNetWPM} WPM`; histAcc = finalAccuracy.toFixed(2) + "%"; histMarks = typingMarks;
+            completedTests[currentMode][activeLanguage][selectedStenoIndex] = { grossWPM: grossWPM, netWPM: netWPM, accuracy: accuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
+            histSpeed = `${grossWPM} / ${netWPM} WPM`; histAcc = accuracy.toFixed(2) + "%"; histMarks = typingMarks;
         }
         
         saveToHistory({ date: new Date().toLocaleString(), name: testName, mode: currentMode, rule: document.getElementById('resMethod').innerText, speed: histSpeed, acc: histAcc, marks: histMarks });
