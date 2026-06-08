@@ -205,7 +205,7 @@
     <div class="login-container app-view" id="loginScreen">
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
-            <p class="login-sub">Student Login</p>
+            <p class="login-sub">Student / Admin Login</p>
             <div class="login-row"><label>Email Address</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter Email"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             <div style="display:flex; justify-content:flex-end; margin-top: 8px;"><span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="resetFirebasePassword()">Forgot Password?</span></div>
@@ -232,7 +232,7 @@
             <div class="dashboard-main-title">Type Astra</div>
             
             <div class="dashboard-box">
-                <h2>Stenography Audio Transcription</h2>
+                <h2>Stenography Audio Transcription <span style="font-size:0.8rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; vertical-align:middle; margin-left:10px;">Premium</span></h2>
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'STENO')"><div class="icon-graphic theme-icon-steno-en"><div>🎧</div><div>EN</div><div>✍️</div><div>St</div></div><div class="icon-label">English Steno</div></div>
                     <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'STENO')"><div class="icon-graphic theme-icon-steno-hi"><div>🎧</div><div>क</div><div>✍️</div><div>St</div></div><div class="icon-label">Hindi Kruti</div></div>
@@ -241,7 +241,7 @@
             </div>
 
             <div class="dashboard-box">
-                <h2>Typing Test</h2>
+                <h2>Typing Test <span style="font-size:0.8rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; vertical-align:middle; margin-left:10px;">Premium</span></h2>
                 <div class="icon-grid">
                     <div class="icon-card" onclick="launchApplicationConsole('EN', 'TYPE')"><div class="icon-graphic theme-icon-type-en"><div>A</div><div>B</div><div>C</div><div>D</div></div><div class="icon-label">English Tests</div></div>
                     <div class="icon-card" onclick="launchApplicationConsole('HI_KRUTI', 'TYPE')"><div class="icon-graphic theme-icon-type-hi"><div>अ</div><div>ब</div><div>स</div><div>द</div></div><div class="icon-label">Hindi Kruti</div></div>
@@ -464,7 +464,11 @@
 
     let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
     let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
-    let studentIdentity = { name: "", uid: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
+    
+    // 🟢 UPDATED: Identity ab Typing aur Steno dono ko alag se verify karegi
+    let studentIdentity = { name: "", uid: "", hasTypingAccess: false, hasStenoAccess: false }; 
+    
+    let currentManagerMode = "ADD", selectedStenoIndex = 0;
     let currentCustomFontSize = 1.4; 
     let isAdmin = false; 
     let isAuthPaused = false; 
@@ -516,7 +520,7 @@
             try {
                 if (user.uid === MASTER_ADMIN_UID) {
                     isAdmin = true;
-                    studentIdentity = { name: "Portal Admin", uid: user.uid };
+                    studentIdentity = { name: "Portal Admin", uid: user.uid, hasTypingAccess: true, hasStenoAccess: true };
                     document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
                     document.getElementById('adminManageBtn').classList.remove('admin-only');
                     document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
@@ -529,7 +533,14 @@
                     if (userDoc.exists && userDoc.data().status === "approved") {
                         const userData = userDoc.data();
                         isAdmin = false;
-                        studentIdentity = { name: userData.name, uid: user.uid };
+                        
+                        studentIdentity = { 
+                            name: userData.name, 
+                            uid: user.uid, 
+                            hasTypingAccess: userData.hasTypingAccess || false, 
+                            hasStenoAccess: userData.hasStenoAccess || false 
+                        };
+                        
                         document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
                         document.getElementById('adminManageBtn').classList.add('admin-only');
                         document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
@@ -614,12 +625,13 @@
             const userCredential = await auth.createUserWithEmailAndPassword(sEmail, sPass);
             const user = userCredential.user;
 
+            // 🟢 Naye account mein by default Typing aur Steno dono band rahenge
             await db.collection("students").doc(user.uid).set({ 
-                name: sName, email: sEmail, status: "pending", date: new Date().toISOString() 
+                name: sName, email: sEmail, status: "pending", date: new Date().toISOString(), hasTypingAccess: false, hasStenoAccess: false 
             });
 
             await auth.signOut();
-            alert("✅ Registration successful! Please wait for Admin to approve your account.");
+            alert("✅ Registration successful! Please wait for Admin to approve your account and assign a course.");
             window.toggleAuth('LOGIN');
             document.getElementById('regName').value = ""; document.getElementById('regEmail').value = ""; document.getElementById('regPass').value = "";
         } catch(error) { 
@@ -631,7 +643,7 @@
 
                     if (!docCheck.exists) {
                         await db.collection("students").doc(user.uid).set({ 
-                            name: sName, email: sEmail, status: "pending", date: new Date().toISOString() 
+                            name: sName, email: sEmail, status: "pending", date: new Date().toISOString(), hasTypingAccess: false, hasStenoAccess: false
                         });
                         await auth.signOut();
                         alert("✅ Welcome back! Your new Registration request has been successfully sent to Admin.");
@@ -669,7 +681,7 @@
 
             if (user.uid === MASTER_ADMIN_UID) {
                 isAdmin = true; 
-                studentIdentity = { name: "Portal Admin", uid: user.uid };
+                studentIdentity = { name: "Portal Admin", uid: user.uid, hasTypingAccess: true, hasStenoAccess: true };
                 document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
                 document.getElementById('adminManageBtn').classList.remove('admin-only');
                 document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
@@ -688,7 +700,12 @@
                         await auth.signOut(); alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
                     } else {
                         isAdmin = false; 
-                        studentIdentity = { name: userData.name, uid: user.uid };
+                        studentIdentity = { 
+                            name: userData.name, 
+                            uid: user.uid, 
+                            hasTypingAccess: userData.hasTypingAccess || false, 
+                            hasStenoAccess: userData.hasStenoAccess || false 
+                        };
                         document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
                         document.getElementById('adminManageBtn').classList.add('admin-only');
                         document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
@@ -707,7 +724,7 @@
 
     window.handleLogout = function() {
         auth.signOut().then(() => {
-            studentIdentity = { name: "", uid: "" }; isAdmin = false;
+            studentIdentity = { name: "", uid: "", hasTypingAccess: false, hasStenoAccess: false }; isAdmin = false;
             document.getElementById('loginEmail').value = ""; document.getElementById('loginPass').value = "";
             hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
         });
@@ -732,16 +749,47 @@
             const snapshot = await db.collection("students").limit(100).get({ source: 'server' });
             if(snapshot.empty) { container.innerHTML = `<p style="text-align:center;">No students found.</p>`; return; }
             
-            let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr></thead><tbody>`;
+            // 🟢 UPDATED ADMIN TABLE
+            let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Login Status</th><th>Course Access</th><th>Action</th></tr></thead><tbody>`;
             snapshot.forEach(doc => {
                 let user = doc.data();
                 let statusHTML = user.status === 'approved' ? `<span style="color:var(--secondary); font-weight:bold;">Approved</span>` : `<span style="color:#d97706; font-weight:bold;">Pending</span>`;
-                let btnHTML = user.status === 'pending' ? `<button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary);" onclick="approveStudent('${escapeHTML(doc.id)}')">✅ Approve</button>` : `<button class="action-btn-mini" style="background:#fef08a; color:#d97706;" onclick="revokeStudent('${escapeHTML(doc.id)}')">⏸️ Revoke</button>`;
+                
+                // Dropdown to select Course Access
+                let accessSelectHTML = `
+                    <select onchange="updateUserAccess('${escapeHTML(doc.id)}', this.value)" style="padding:5px; border-radius:6px; border:1px solid var(--border-light); font-weight:bold; color:var(--text-dark); background:#f8fafc; cursor:pointer;">
+                        <option value="NONE" ${!user.hasTypingAccess && !user.hasStenoAccess ? 'selected' : ''}>🔒 No Access</option>
+                        <option value="TYPING" ${user.hasTypingAccess && !user.hasStenoAccess ? 'selected' : ''}>⌨️ Typing Only</option>
+                        <option value="STENO" ${!user.hasTypingAccess && user.hasStenoAccess ? 'selected' : ''}>🎧 Steno Only</option>
+                        <option value="BOTH" ${user.hasTypingAccess && user.hasStenoAccess ? 'selected' : ''}>🌟 Both Courses</option>
+                    </select>
+                `;
+
+                let btnHTML = user.status === 'pending' ? `<button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary);" onclick="approveStudent('${escapeHTML(doc.id)}')">✅ Approve Login</button>` : `<button class="action-btn-mini" style="background:#fef08a; color:#d97706;" onclick="revokeStudent('${escapeHTML(doc.id)}')">⏸️ Revoke Login</button>`;
                 btnHTML += `<button class="action-btn-mini" style="color:var(--danger); margin-left:5px;" onclick="deleteStudent('${escapeHTML(doc.id)}')">❌ Delete</button>`;
-                html += `<tr><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(user.name)}</td><td style="color:var(--text-muted);">${escapeHTML(user.email)}</td><td>${statusHTML}</td><td>${btnHTML}</td></tr>`;
+                
+                html += `<tr><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(user.name)}</td><td style="color:var(--text-muted);">${escapeHTML(user.email)}</td><td>${statusHTML}</td><td>${accessSelectHTML}</td><td><div class="action-flex">${btnHTML}</div></td></tr>`;
             });
             html += `</tbody></table>`; container.innerHTML = html;
         } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger);">Error loading students.</p>`; }
+    }
+
+    // 🟢 NEW FUNCTION: Handle Dropdown changes for Course Access
+    window.updateUserAccess = async function(docId, accessType) {
+        let hasTyping = false;
+        let hasSteno = false;
+        if (accessType === 'TYPING' || accessType === 'BOTH') hasTyping = true;
+        if (accessType === 'STENO' || accessType === 'BOTH') hasSteno = true;
+        
+        try {
+            await db.collection("students").doc(docId).update({
+                hasTypingAccess: hasTyping,
+                hasStenoAccess: hasSteno
+            });
+            console.log("Access updated successfully.");
+        } catch(e) {
+            alert("⚠️ Update Failed: " + e.message);
+        }
     }
 
     window.approveStudent = async function(docId) { 
@@ -871,6 +919,18 @@
     }
 
     window.launchApplicationConsole = function(lang, mode) {
+        // 🟢 UPDATED SECURITY: Typing aur Steno dono ke liye access check
+        if (!isAdmin) {
+            if (mode === 'TYPE' && !studentIdentity.hasTypingAccess) {
+                alert("🔒 ACCESS DENIED\n\nYou do not have permission to access the Typing Test module. Please contact Admin to activate this course.");
+                return;
+            }
+            if (mode === 'STENO' && !studentIdentity.hasStenoAccess) {
+                alert("🔒 ACCESS DENIED\n\nYou do not have permission to access the Stenography Audio Transcription module. Please contact Admin to activate this course.");
+                return;
+            }
+        }
+
         activeLanguage = lang; currentMode = mode; 
         setAppTheme(lang, mode);
         hideAllScreens();
