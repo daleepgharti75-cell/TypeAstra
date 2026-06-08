@@ -771,15 +771,36 @@
         } 
     }
 
-    async function saveToHistory(record) {
-        if(!studentIdentity.uid || isAdmin) return; 
-        try {
-            record.studentUid = studentIdentity.uid;
-            record.studentName = studentIdentity.name;
-            record.timestamp = new Date().getTime(); 
-            await db.collection("history").add(record);
-        } catch (error) { console.error("History sync runtime error:", error); }
+async function saveToHistory(record) {
+    if(!studentIdentity.uid || isAdmin) return; 
+    try {
+        record.studentUid = studentIdentity.uid;
+        record.studentName = studentIdentity.name;
+        record.timestamp = new Date().getTime(); 
+        
+        // 1. Pehle naya test record database mein add karein
+        await db.collection("history").add(record);
+
+        // 2. User ke saare tests fetch karein (Naye se purane ke kram mein)
+        const snapshot = await db.collection("history")
+            .where("studentUid", "==", studentIdentity.uid)
+            .orderBy("timestamp", "desc")
+            .get();
+
+        let docs = [];
+        snapshot.forEach(doc => docs.push(doc));
+
+        // 3. Agar 10 se zyada records hain, toh 11th aur uske baad wale sab delete kar dein
+        if (docs.length > 10) {
+            for (let i = 10; i < docs.length; i++) {
+                await db.collection("history").doc(docs[i].id).delete();
+                console.log("Deleted old history record to maintain top 10 limit.");
+            }
+        }
+    } catch (error) { 
+        console.error("History sync runtime error:", error); 
     }
+}
 
     window.showHistory = async function() {
         hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
