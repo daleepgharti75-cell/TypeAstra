@@ -180,7 +180,7 @@
     <div class="login-container app-view" id="loginScreen">
         <div id="loginFormBox">
             <div class="login-title">Type Astra</div>
-            <p class="login-sub">Student Login</p>
+            <p class="login-sub">Student / Admin Login</p>
             <div class="login-row"><label>Email Address</label><input type="email" id="loginEmail" class="login-input" placeholder="Enter Email"></div>
             <div class="login-row"><label>Password</label><input type="password" id="loginPass" class="login-input" placeholder="Enter Password"></div>
             <div style="display:flex; justify-content:flex-end; margin-top: 8px;"><span style="color:var(--text-muted); font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="resetFirebasePassword()">Forgot Password?</span></div>
@@ -585,11 +585,14 @@
 
         isAuthPaused = true; // 🔥 Block background listener
 
-       try {
-            await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-            
-            const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
+        try {
+            const userCredential = await auth.createUserWithEmailAndPassword(sEmail, sPass);
             const user = userCredential.user;
+
+            await db.collection("students").doc(user.uid).set({ 
+                name: sName, email: sEmail, status: "pending", date: new Date().toISOString() 
+            });
+
             await auth.signOut();
             alert("✅ Registration successful! Please wait for Admin to approve your account.");
             window.toggleAuth('LOGIN');
@@ -637,6 +640,9 @@
         btn.innerText = "Authenticating..."; btn.disabled = true;
 
         try {
+            // 🔥 YEH RAHI NAYI LINE: Tab close hote hi logout
+            await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+
             const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
             const user = userCredential.user;
 
