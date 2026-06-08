@@ -123,7 +123,7 @@
             flex: 1; overflow-y: auto; text-align: justify; line-height: 1.2; letter-spacing: normal; word-spacing: 2px; color: #1e293b; padding: 20px 25px; border: 1px solid var(--border-light); outline: none; background: #ffffff; border-radius: 8px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
             user-select: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;
             white-space: pre-wrap; 
-            font-weight: 600; 
+            font-weight: 590; 
         }
         .custom-divider { text-align: center; border-bottom: 2px dashed var(--border-light); line-height: 0.1em; margin: 15px 0; flex-shrink: 0; }
         .custom-divider span { background: var(--card-bg); padding: 0 15px; color: var(--text-muted); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;}
@@ -162,15 +162,11 @@
         .accuracy-number { font-size: 1.6rem; font-weight: 800; color: #475569; }
         .metric-number { font-size: 1.5rem; font-weight: 800; color: #ea580c; }
        .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
-        /* Box ka gap aur background theek kiya */
         .review-box { background: #ffffff; border: 1px solid var(--border-light); padding: 25px; max-height: 400px; overflow-y: auto; text-align: left; border-radius: 12px; line-height: 2.6; box-shadow: inset 0 4px 6px rgba(0,0,0,0.03);}
         
         .word-block { display: inline-block; margin-right: 8px; margin-bottom: 6px; font-size: inherit; }
-        
-        /* Sahi type kiye hue normal words */
         .rev-correct { color: #334155; font-weight: 600; }
         
-        /* ❌ Galat type kiya hua word (Premium Red Strikethrough) */
         .rev-wrong-text { 
             color: #ef4444 !important; 
             background: #fef2f2; 
@@ -184,7 +180,6 @@
             display: inline-block; 
         }
         
-        /* ✅ Asli Target word (Premium Bold Blue) */
         .rev-expected-word { 
             color: #2563eb !important; 
             background: #eff6ff; 
@@ -198,7 +193,6 @@
             font-family: inherit !important; 
             text-decoration: none; 
         }
-        .rev-expected-word { color: var(--text-muted) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: none; opacity: 0.6;}
     </style>
 </head>
 <body>
@@ -471,7 +465,7 @@
     let studentIdentity = { name: "", uid: "" }, currentManagerMode = "ADD", selectedStenoIndex = 0;
     let currentCustomFontSize = 1.4; 
     let isAdmin = false; 
-    let isAuthPaused = false; // 🔥 Background checker pause control
+    let isAuthPaused = false; 
 
     const displayWindow = document.getElementById('displayParagraphFrame');
     const typeDivider = document.getElementById('typeDivider');
@@ -500,7 +494,7 @@
     function deepClean(str) {
         if (!str) return "";
         return str.replace(/[\u200B-\u200D\uFEFF\xA0]/g, "")
-                  .replace(/[\r\n\t]+/g, " ") // 🔥 Word block fix
+                  .replace(/[\r\n\t]+/g, " ") 
                   .replace(/[‘’´`]/g, "'")
                   .replace(/[“”]/g, '"')
                   .replace(/[–—]/g, "-")
@@ -511,9 +505,8 @@
         document.querySelectorAll('.app-view').forEach(el => el.classList.remove('active-view')); 
     }
 
-    // 🔥 Secure Auth Listener (With Pause function & Cache Fix)
     auth.onAuthStateChanged(async (user) => {
-        if (isAuthPaused) return; // 🔥 Signup ke time listener block ho jayega
+        if (isAuthPaused) return; 
 
         if (user) {
             document.getElementById('loadingOverlay').style.display = 'flex';
@@ -530,7 +523,6 @@
                     hideAllScreens(); 
                     document.getElementById('dashboardScreen').classList.add('active-view');
                 } else {
-                    // CACHE FIX: { source: 'server' } added
                     const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
                     if (userDoc.exists && userDoc.data().status === "approved") {
                         const userData = userDoc.data();
@@ -614,7 +606,7 @@
         const btn = document.getElementById('signupBtnMain');
         btn.innerText = "Creating Account..."; btn.disabled = true;
 
-        isAuthPaused = true; // 🔥 Block background listener
+        isAuthPaused = true; 
 
         try {
             const userCredential = await auth.createUserWithEmailAndPassword(sEmail, sPass);
@@ -629,12 +621,10 @@
             window.toggleAuth('LOGIN');
             document.getElementById('regName').value = ""; document.getElementById('regEmail').value = ""; document.getElementById('regPass').value = "";
         } catch(error) { 
-            // 🔥 Deleted Account Limbo State Fix
             if (error.code === 'auth/email-already-in-use') {
                 try {
                     const signInCred = await auth.signInWithEmailAndPassword(sEmail, sPass);
                     const user = signInCred.user;
-                    // CACHE FIX: { source: 'server' } added
                     const docCheck = await db.collection("students").doc(user.uid).get({ source: 'server' });
 
                     if (!docCheck.exists) {
@@ -657,11 +647,10 @@
             }
         }
 
-        isAuthPaused = false; // 🔥 Unblock background listener
+        isAuthPaused = false; 
         btn.innerText = "Send Request"; btn.disabled = false;
     }
 
-    // 🔥 Secure Login Handle (With Cache Fix)
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
         const lPass = document.getElementById('loginPass').value.trim();
@@ -671,7 +660,6 @@
         btn.innerText = "Authenticating..."; btn.disabled = true;
 
         try {
-            // 🔥 YEH RAHI NAYI LINE: Tab close hote hi logout
             await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
 
             const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
@@ -689,7 +677,6 @@
                 hideAllScreens(); 
                 document.getElementById('dashboardScreen').classList.add('active-view');
             } else {
-                // CACHE FIX: { source: 'server' } added
                 const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
                 if (!userDoc.exists) {
                     await auth.signOut(); alert("❌ Account data not found."); 
@@ -734,7 +721,6 @@
         } catch(error) { alert("❌ Error: " + error.message); }
     }
 
-    // CACHE FIX: { source: 'server' } added to show fresh status
     window.showAdminUserPanel = async function() {
         hideAllScreens(); document.getElementById('adminUsersScreen').classList.add('active-view');
         const container = document.getElementById('adminUsersContainer');
@@ -771,36 +757,31 @@
         } 
     }
 
-async function saveToHistory(record) {
-    if(!studentIdentity.uid || isAdmin) return; 
-    try {
-        record.studentUid = studentIdentity.uid;
-        record.studentName = studentIdentity.name;
-        record.timestamp = new Date().getTime(); 
-        
-        // 1. Pehle naya test record database mein add karein
-        await db.collection("history").add(record);
+    // 🟢 HISTORY LOGIC UPDATED FOR AUTO-DELETE TOP 10
+    async function saveToHistory(record) {
+        if(!studentIdentity.uid || isAdmin) return; 
+        try {
+            record.studentUid = studentIdentity.uid;
+            record.studentName = studentIdentity.name;
+            record.timestamp = new Date().getTime(); 
+            
+            await db.collection("history").add(record);
 
-        // 2. User ke saare tests fetch karein (Naye se purane ke kram mein)
-        const snapshot = await db.collection("history")
-            .where("studentUid", "==", studentIdentity.uid)
-            .orderBy("timestamp", "desc")
-            .get();
+            const snapshot = await db.collection("history")
+                .where("studentUid", "==", studentIdentity.uid)
+                .orderBy("timestamp", "desc")
+                .get();
 
-        let docs = [];
-        snapshot.forEach(doc => docs.push(doc));
+            let docs = [];
+            snapshot.forEach(doc => docs.push(doc));
 
-        // 3. Agar 10 se zyada records hain, toh 11th aur uske baad wale sab delete kar dein
-        if (docs.length > 10) {
-            for (let i = 10; i < docs.length; i++) {
-                await db.collection("history").doc(docs[i].id).delete();
-                console.log("Deleted old history record to maintain top 10 limit.");
+            if (docs.length > 10) {
+                for (let i = 10; i < docs.length; i++) {
+                    await db.collection("history").doc(docs[i].id).delete();
+                }
             }
-        }
-    } catch (error) { 
-        console.error("History sync runtime error:", error); 
+        } catch (error) { console.error("History sync runtime error:", error); }
     }
-}
 
     window.showHistory = async function() {
         hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
@@ -812,13 +793,15 @@ async function saveToHistory(record) {
             if (isAdmin) {
                 snapshot = await db.collection("history").get(); 
             } else {
-                snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).get();
+                snapshot = await db.collection("history").where("studentUid", "==", studentIdentity.uid).orderBy("timestamp", "desc").get();
             }
             
             let hist = []; snapshot.forEach(doc => hist.push(doc.data()));
             
-            hist.sort((a, b) => b.timestamp - a.timestamp); 
-            hist = hist.slice(0, 10);
+            if (isAdmin) {
+                hist.sort((a, b) => b.timestamp - a.timestamp); 
+                hist = hist.slice(0, 10);
+            }
             
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
@@ -1005,7 +988,6 @@ async function saveToHistory(record) {
         if (baseWordsCount > 0 && baseWordsCount < maxPossibleWords) { repeatCount = Math.ceil(maxPossibleWords / baseWordsCount); }
         let finalText = baseText;
         
-        // 🔥 Naya Single Enter pattern
         for (let i = 1; i < repeatCount; i++) { finalText += "\n" + baseText; }
 
         sourceWords = deepClean(finalText).split(/\s+/);
@@ -1303,18 +1285,49 @@ async function saveToHistory(record) {
             completedTests[currentMode][activeLanguage][selectedStenoIndex] = { totalWords: sourceWords.length, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), marks: finalMarksStr, reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
             histSpeed = "-"; histAcc = accuracy.toFixed(2) + "%"; histMarks = finalMarksStr;
         } else {
-            let grossWords = actualStrokes / 5; let grossWPM = Math.round(grossWords / minutesElapsed); 
-            let netWords = Math.max(0, grossWords - totalErrorsCalculated); let netWPM = Math.round(netWords / minutesElapsed); 
+            // 🟢 TYPING TEST EVALUATION WITH RHC KDPH LOGIC
+            let timeDurationHours = minutesElapsed / 60; 
             
-            let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
-            if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
+            let grossWords = actualStrokes / 5; 
+            let defaultGrossWPM = Math.round(grossWords / minutesElapsed); 
+            let defaultNetWords = Math.max(0, grossWords - totalErrorsCalculated); 
+            let defaultNetWPM = Math.round(defaultNetWords / minutesElapsed); 
             
-            if (grossWPM > 150) {
+            let typingMarks = 0;
+            let finalGrossWPM = defaultGrossWPM;
+            let finalNetWPM = defaultNetWPM;
+            let finalAccuracy = 0;
+
+            if (selectedExamType === "RAJ_HC") {
+                let penaltyStrokes = totalErrorsCalculated * 5; 
+                let netKeystrokes = Math.max(0, actualStrokes - penaltyStrokes);
+                
+                let grossKDPH = actualStrokes / timeDurationHours;
+                let netKDPH = netKeystrokes / timeDurationHours;
+
+                typingMarks = (20 / 8000) * netKDPH;
+                
+                if (grossKDPH > 0) {
+                    finalAccuracy = (netKDPH / grossKDPH) * 100;
+                }
+                
+                finalGrossWPM = Math.round(grossKDPH / 300);
+                finalNetWPM = Math.round(netKDPH / 300);
+
+            } else {
+                if (grossWords > 0) finalAccuracy = (defaultNetWords / grossWords) * 100;
+                typingMarks = Math.max(0, defaultNetWPM * 0.75); 
+            }
+
+            if (finalAccuracy < 0 || actualStrokes === 0) finalAccuracy = 0; 
+            if (actualStrokes === 0) { finalGrossWPM = 0; finalNetWPM = 0; }
+            
+            if (finalGrossWPM > 150) {
                 alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
-                grossWPM = 0; netWPM = 0; accuracy = 0; totalErrorsCalculated = "N/A";
+                finalGrossWPM = 0; finalNetWPM = 0; finalAccuracy = 0; totalErrorsCalculated = "N/A";
                 typingMarks = "CHEAT DETECTED";
             } else {
-                typingMarks = Math.min(50, Math.max(0, netWPM * 0.75)).toFixed(2);
+                typingMarks = Math.min(50, typingMarks).toFixed(2); 
             }
 
             if (selectedExamType === "RAJ_HC") document.getElementById('resMethod').innerText = "Rajasthan High Court Typing Mode"; 
@@ -1324,10 +1337,10 @@ async function saveToHistory(record) {
             else document.getElementById('resMethod').innerText = selectedExamType + " Standard";
             
             tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
+            tableBody.innerHTML = `<tr><td class="speed-number">${finalGrossWPM} WPM</td><td class="net-speed-number">${finalNetWPM} WPM</td><td class="accuracy-number">${finalAccuracy.toFixed(2)}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
             
-            completedTests[currentMode][activeLanguage][selectedStenoIndex] = { grossWPM: grossWPM, netWPM: netWPM, accuracy: accuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
-            histSpeed = `${grossWPM} / ${netWPM} WPM`; histAcc = accuracy.toFixed(2) + "%"; histMarks = typingMarks;
+            completedTests[currentMode][activeLanguage][selectedStenoIndex] = { grossWPM: finalGrossWPM, netWPM: finalNetWPM, accuracy: finalAccuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
+            histSpeed = `${finalGrossWPM} / ${finalNetWPM} WPM`; histAcc = finalAccuracy.toFixed(2) + "%"; histMarks = typingMarks;
         }
         
         saveToHistory({ date: new Date().toLocaleString(), name: testName, mode: currentMode, rule: document.getElementById('resMethod').innerText, speed: histSpeed, acc: histAcc, marks: histMarks });
