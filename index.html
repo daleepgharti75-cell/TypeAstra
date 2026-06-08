@@ -351,14 +351,14 @@
                 </div>
 
                 <div class="sidebar-panel-box" id="fontControlPanelBox" style="display: none;">
-                    <label>Font & Size Settings</label>
-                    <select id="fontFamilySelector" class="sidebar-select" onchange="updateStudentFont()" style="margin-bottom: 8px;">
+                    <label>Text Size Settings</label>
+                    <select id="fontFamilySelector" class="sidebar-select" onchange="updateStudentFont()" style="display: none;">
                         <option value="font-english">English (Arial)</option>
                         <option value="font-kruti">Hindi (Kruti Dev)</option>
                         <option value="font-mangal">Hindi (Mangal)</option>
                     </select>
                     
-                    <div style="display: flex; gap: 8px; justify-content: center; margin-top: 10px; align-items: center;">
+                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
                         <button class="action-btn-mini" onclick="changeFontSize(-0.1)" title="Decrease Font Size" style="flex: 1; justify-content: center; font-size: 1.1rem;">➖</button>
                         <span id="currentFontSizeDisplay" style="font-weight: bold; font-size: 1rem; color: var(--text-dark); display: flex; align-items: center; justify-content: center; width: 60px;">1.4x</span>
                         <button class="action-btn-mini" onclick="changeFontSize(0.1)" title="Increase Font Size" style="flex: 1; justify-content: center; font-size: 1.1rem;">➕</button>
