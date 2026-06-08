@@ -161,12 +161,43 @@
         .net-speed-number { font-size: 1.6rem; font-weight: 800; color: #16a34a; }
         .accuracy-number { font-size: 1.6rem; font-weight: 800; color: #475569; }
         .metric-number { font-size: 1.5rem; font-weight: 800; color: #ea580c; }
-        .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
-        .review-box { background: #f8fafc; border: 1px solid var(--border-light); padding: 25px; max-height: 300px; overflow-y: auto; text-align: left; border-radius: 8px; line-height: 3.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);}
+       .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
+        /* Box ka gap aur background theek kiya */
+        .review-box { background: #ffffff; border: 1px solid var(--border-light); padding: 25px; max-height: 400px; overflow-y: auto; text-align: left; border-radius: 12px; line-height: 2.6; box-shadow: inset 0 4px 6px rgba(0,0,0,0.03);}
         
-        .word-block { display: inline-block; margin-right: 14px; font-size: inherit; }
-        .rev-correct { color: var(--active-theme-color); font-weight: 800; }
-        .rev-wrong-text { color: var(--danger) !important; font-weight: bold; display: inline; text-decoration: underline;}
+        .word-block { display: inline-block; margin-right: 8px; margin-bottom: 6px; font-size: inherit; }
+        
+        /* Sahi type kiye hue normal words */
+        .rev-correct { color: #334155; font-weight: 600; }
+        
+        /* ❌ Galat type kiya hua word (Premium Red Strikethrough) */
+        .rev-wrong-text { 
+            color: #ef4444 !important; 
+            background: #fef2f2; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-weight: 700; 
+            text-decoration: line-through; 
+            text-decoration-color: #ef4444; 
+            text-decoration-thickness: 2px; 
+            border: 1px solid #fecaca; 
+            display: inline-block; 
+        }
+        
+        /* ✅ Asli Target word (Premium Bold Blue) */
+        .rev-expected-word { 
+            color: #2563eb !important; 
+            background: #eff6ff; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-weight: 800; 
+            opacity: 1 !important; 
+            border: 1px solid #bfdbfe; 
+            display: inline-block; 
+            margin-left: 2px;
+            font-family: inherit !important; 
+            text-decoration: none; 
+        }
         .rev-expected-word { color: var(--text-muted) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: none; opacity: 0.6;}
     </style>
 </head>
