@@ -458,7 +458,7 @@
                     <div class="review-box" id="textReviewLogBox" style="background:#ffffff; padding: 25px; border: none; border-radius: 0;"></div>
                 </div>
                 
-                <button class="dynamic-btn" onclick="exitResultScreen()" style="margin-top:25px; padding:15px; font-weight:bold; font-size:1.1rem; border-radius:8px; cursor:pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px;">🔙 Return to Dashboard</button>
+                <button class="dynamic-btn" id="backFromReportBtn" onclick="exitResultScreen()" style="margin-top:25px; padding:15px; font-weight:bold; font-size:1.1rem; border-radius:8px; cursor:pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px;">🔙 Return to Dashboard</button>
             </div>
         </div>
     </div>
@@ -502,6 +502,8 @@
         STENO: { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} },
         TYPE: { EN: {}, HI_KRUTI: {}, HI_MANGAL: {} }
     };
+
+    let currentHistoryList = []; // Array to store history fetched from cloud
 
     let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
     let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
@@ -888,22 +890,75 @@
                 hist = hist.slice(0, 10);
             }
             
+            window.currentHistoryList = hist; // Save it to global for onclick usage
+            
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
             let html = `<table class="steno-table"><thead><tr><th>Date & Time</th>`;
             if (isAdmin) html += `<th>Student Name</th>`; 
             html += `<th>Test Name</th><th>Mode (Rule)</th><th>Speed (Gross/Net)</th><th>Accuracy</th><th>Marks</th></tr></thead><tbody>`;
             
-            hist.forEach(h => { 
+            hist.forEach((h, index) => { 
                 html += `<tr><td style="font-weight:600; color:var(--text-dark);">${escapeHTML(h.date)}</td>`;
                 if (isAdmin) html += `<td style="color:var(--text-dark); font-weight:bold;">${escapeHTML(h.studentName || '-')}</td>`;
-                html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td><td><span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td><td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; 
+                
+                // Mode Column (Made Clickable)
+                html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td>
+                <td style="cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'" onclick="viewHistoryResult(${index})" title="Click to view full scorecard">
+                    <span style="font-weight:bold; color:var(--primary); text-decoration:underline;">${escapeHTML(h.mode)}</span> <br> 
+                    <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span>
+                </td>
+                <td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; 
             });
             html += `</tbody></table>`; container.innerHTML = html;
         } catch(e) { 
             console.error("History Load Error:", e);
             container.innerHTML = `<p style="text-align:center; color:var(--danger); margin-top:30px;"><b>Error:</b> ${e.message} <br><br><span style="font-size:0.9rem; color:var(--text-muted);">Ensure Firebase Rules are updated as instructed!</span></p>`; 
         }
+    }
+
+    // NEW FUNCTION: View Result directly from History
+    window.viewHistoryResult = function(index) {
+        let h = window.currentHistoryList[index];
+        let res = h.resultObj;
+        if(!res) {
+            alert("⚠️ Detailed result is not available for this older test record.");
+            return;
+        }
+        
+        // 🌟 Populate Primary Scorecard
+        document.getElementById('ta_marks').innerText = res.m1_marks;
+        document.getElementById('ta_netSpeed').innerText = res.m1_netWPM;
+        document.getElementById('ta_accuracy').innerText = `${res.m1_acc}%`;
+
+        // ⌨️ Populate Stroke Engine Data
+        document.getElementById('ta_strokes').innerText = `${res.m1_grossStrokes} / ${res.m1_netStrokes}`;
+        document.getElementById('ta_dph').innerText = res.m1_dph;
+        document.getElementById('ta_grossWPM').innerText = res.m1_grossWPM;
+        document.getElementById('ta_errHits').innerText = res.m1_totalErrors;
+
+        // 📝 Populate Mistake & Word Breakdown
+        document.getElementById('ta_fullMistakes').innerText = res.fullMistakes;
+        document.getElementById('ta_halfMistakes').innerText = res.halfMistakes;
+        document.getElementById('ta_totalWords').innerText = res.m2_totalWords;
+        document.getElementById('ta_correctWords').innerText = res.m2_rightWords;
+        document.getElementById('ta_wordSpeed').innerText = `${res.m2_netWPM} WPM`;
+
+        // Render Review Box & assign Font Class
+        document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
+        let langClass = res.lang === 'HI_KRUTI' ? 'font-kruti' : (res.lang === 'HI_MANGAL' ? 'font-mangal' : 'font-english');
+        document.getElementById('textReviewLogBox').className = 'review-box ' + langClass;
+        
+        document.getElementById('resName').innerText = escapeHTML(h.studentName || studentIdentity.name); 
+        document.getElementById('resMethod').innerText = escapeHTML(res.examRule);
+        
+        // Change Return Button to go back to History
+        document.getElementById('backFromReportBtn').innerText = "🔙 Back to History";
+        document.getElementById('backFromReportBtn').onclick = function() {
+            hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
+        };
+
+        hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
     }
 
     window.exitToDashboard = function() {
@@ -1284,6 +1339,10 @@
         document.getElementById('resName').innerText = escapeHTML(studentIdentity.name); 
         document.getElementById('resMethod').innerText = escapeHTML(res.examRule);
         
+        // Ensure Return Button behaves properly for Live Test
+        document.getElementById('backFromReportBtn').innerText = "🔙 Return to Dashboard";
+        document.getElementById('backFromReportBtn').onclick = function() { window.exitResultScreen(); };
+        
         hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
     }
 
@@ -1306,7 +1365,7 @@
         const reviewContainer = document.getElementById('textReviewLogBox');
         reviewContainer.className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
         
-        let reviewHTMLStr = ""; // Naya paragraph style string
+        let reviewHTMLStr = ""; 
         let t = 0, s = 0;
         
         while (t < typedTokens.length && s < sourceWords.length) {
@@ -1353,11 +1412,11 @@
                 // TYPO (FULL OR HALF MISTAKE)
                 if (!synced) {
                     if (nT.toLowerCase() === nS.toLowerCase() || Math.abs(nT.length - nS.length) <= 1) {
-                        // Half Mistake: WrongWord{RightWord}
+                        // Half Mistake
                         halfMistakesCount++;
                         reviewHTMLStr += `<span class="rev-half-wrong">${escapeHTML(typedTokens[t])}</span><span class="rev-half-expected">{${escapeHTML(sourceWords[s])}}</span> `;
                     } else {
-                        // Full Mistake: WrongWord(RightWord)
+                        // Full Mistake
                         fullMistakesCount++;
                         reviewHTMLStr += `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span><span class="rev-expected-word">(${escapeHTML(sourceWords[s])})</span> `;
                     }
@@ -1373,12 +1432,11 @@
             t++; 
         }
 
-        // REMAINING SOURCE WORDS (UNREACHED - DO NOT PENALIZE)
+        // REMAINING SOURCE WORDS (UNREACHED)
         if (s < sourceWords.length) {
             reviewHTMLStr += `<br><br><span style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">... (Test Ended Here)</span>`;
         }
         
-        // Final paragraph render
         reviewContainer.innerHTML = reviewHTMLStr;
         
         let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
@@ -1387,28 +1445,22 @@
         // ==========================================
         // DUAL EVALUATION CALCULATION
         // ==========================================
-        
         let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
         
-        // Method 1: 5 Keystrokes = 1 Word
         let m1_grossStrokes = actualStrokes;
         let m1_grossWPM = (m1_grossStrokes / 5) / minutesElapsed;
-        let m1_netStrokes = Math.max(0, m1_grossStrokes - (totalErrorsCalculated * 5)); // Penalty logic
+        let m1_netStrokes = Math.max(0, m1_grossStrokes - (totalErrorsCalculated * 5)); 
         let m1_netWPM = (m1_netStrokes / 5) / minutesElapsed;
         let m1_dph = (m1_netStrokes / minutesElapsed) * 60;
         let m1_acc = m1_grossStrokes > 0 ? (m1_netStrokes / m1_grossStrokes) * 100 : 0;
-        
-        // Corrected Formula for Rajasthan High Court (50 Marks for 8000 DPH)
         let m1_marks = Math.min(50, Math.max(0, (50 / 8000) * m1_dph)); 
 
-        // Method 2: Space Separated Words
         let m2_totalWords = typedTokens.length;
         let m2_grossWPM = m2_totalWords / minutesElapsed;
         let m2_rightWords = Math.max(0, m2_totalWords - totalErrorsCalculated);
         let m2_netWPM = m2_rightWords / minutesElapsed;
         let m2_acc = m2_totalWords > 0 ? (m2_rightWords / m2_totalWords) * 100 : 0;
 
-        // Anti-Cheat
         if (m1_grossWPM > 150) {
             alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
             m1_grossWPM = 0; m1_netWPM = 0; m1_acc = 0; m1_marks = 0;
@@ -1419,8 +1471,9 @@
         if (selectedExamType === "RAJ_HC") ruleText = "Rajasthan High Court LDC Mode";
         document.getElementById('resMethod').innerText = ruleText;
         
-        // Store Result Data
+        // Store Result Data (Added language info for History retrieval)
         completedTests[currentMode][activeLanguage][selectedStenoIndex] = { 
+            lang: activeLanguage, 
             examRule: ruleText,
             fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount,
             
@@ -1440,7 +1493,17 @@
         let histAcc = m1_acc.toFixed(1) + "%"; 
         let histMarks = m1_marks.toFixed(2);
         
-        saveToHistory({ date: new Date().toLocaleString(), name: exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex]?.name || "Custom Test", mode: currentMode, rule: ruleText, speed: histSpeed, acc: histAcc, marks: histMarks });
+        // Save to Database along with the Full Result Object
+        saveToHistory({ 
+            date: new Date().toLocaleString(), 
+            name: exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex]?.name || "Custom Test", 
+            mode: currentMode, 
+            rule: ruleText, 
+            speed: histSpeed, 
+            acc: histAcc, 
+            marks: histMarks,
+            resultObj: completedTests[currentMode][activeLanguage][selectedStenoIndex] 
+        });
         
         viewStenoResult(selectedStenoIndex);
     }
