@@ -151,21 +151,13 @@
         .modal-buttons { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
         .modal-btn { padding: 8px 20px; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; font-size: 0.95rem; }
         
-        .report-view { background: #ffffff; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 1px solid var(--border-light); width: 100%; box-sizing: border-box; margin: auto;}
-        .report-header { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
-        .report-table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 1.05rem; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .report-table th, .report-table td { border-bottom: 1px solid var(--border-light); padding: 16px; text-align: center;}
-        .report-table th { background: var(--active-theme-color); color: white; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; border:none;}
+        .report-view { background: #ffffff; padding: 35px; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 1px solid var(--border-light); width: 100%; box-sizing: border-box; margin: auto;}
         
-        .speed-number { font-size: 1.6rem; font-weight: 800; color: var(--active-theme-color); }
-        .net-speed-number { font-size: 1.6rem; font-weight: 800; color: #16a34a; }
-        .accuracy-number { font-size: 1.6rem; font-weight: 800; color: #475569; }
-        .metric-number { font-size: 1.5rem; font-weight: 800; color: #ea580c; }
-       .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
-        .review-box { background: #ffffff; border: 1px solid var(--border-light); padding: 25px; max-height: 400px; overflow-y: auto; text-align: left; border-radius: 12px; line-height: 2.6; box-shadow: inset 0 4px 6px rgba(0,0,0,0.03);}
+        .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
+        .review-box { background: #f8fafc; border: 1px solid var(--border-light); padding: 25px; max-height: 400px; overflow-y: auto; text-align: left; border-radius: 12px; line-height: 2.6; box-shadow: inset 0 4px 6px rgba(0,0,0,0.03);}
         
+        /* 🛠️ RESTORED BLOCK STYLING FOR ERRORS */
         .word-block { display: inline-block; margin-right: 8px; margin-bottom: 6px; font-size: inherit; }
-        
         .rev-correct { color: #334155; font-weight: 600; }
         
         .rev-wrong-text { 
@@ -187,14 +179,41 @@
             padding: 3px 8px; 
             border-radius: 6px; 
             font-weight: 800; 
-            opacity: 1 !important; 
             border: 1px solid #bfdbfe; 
             display: inline-block; 
             margin-left: 2px;
             font-family: inherit !important; 
             text-decoration: none; 
         }
-        .rev-expected-word { color: var(--text-muted) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: none; opacity: 0.6;}
+        
+        .rev-half-wrong {
+            color: #ea580c !important; 
+            background: #fff7ed; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-weight: 700; 
+            text-decoration: line-through; 
+            text-decoration-color: #ea580c; 
+            border: 1px solid #fdba74; 
+            display: inline-block;
+        }
+
+        .rev-half-expected {
+            color: #ea580c !important; 
+            background: #fff7ed; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            font-weight: 800; 
+            border: 1px solid #fdba74; 
+            display: inline-block; 
+            margin-left: 2px;
+            text-decoration: none; 
+        }
+
+        /* DATA CARDS STYLING */
+        .data-card { background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid var(--border-light); text-align: center; }
+        .data-card-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .data-card-value { font-size: 1.5rem; font-weight: 900; color: var(--text-dark); }
     </style>
 </head>
 <body>
@@ -406,20 +425,65 @@
     </div>
 
     <div class="app-view" id="analysisReportScreen">
-        <div style="margin: auto; width:100%;">
+        <div style="margin: auto; width:100%; max-width: 1000px;">
             <div class="report-view" id="reportViewPanel">
-                <div class="report-header"><span>🏁 Official Examination Evaluation Summary</span></div>
-                <p style="text-align:left; font-size:1.05rem; margin-top:-5px; color:var(--text-muted);">
-                    <strong>Candidate:</strong> <span id="resName" style="color:var(--text-dark); font-weight:bold;">--</span> &nbsp;|&nbsp; 
-                    <strong>Exam Rule:</strong> <span id="resMethod" style="color:var(--active-theme-color); font-weight:bold;">--</span>
-                </p>
-                <table class="report-table">
-                    <thead id="reportTableHead"></thead>
-                    <tbody id="reportTableBody"></tbody>
-                </table>
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="margin: 0; font-size: 2rem; color: var(--text-dark); font-weight: 800;">Detailed Performance Analytics</h2>
+                    <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 1rem;">Candidate: <strong id="resName" style="color:var(--text-dark);">--</strong> &nbsp;|&nbsp; Exam Rule: <strong id="resMethod" style="color:var(--active-theme-color);">--</strong></p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
+                    <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #bbf7d0;">
+                        <div style="font-size: 0.9rem; color: #166534; font-weight: 800; text-transform: uppercase;">Net Speed</div>
+                        <div style="font-size: 2.5rem; font-weight: 900; color: #15803d;" id="ta_netWPM">0.0 WPM</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #bfdbfe;">
+                        <div style="font-size: 0.9rem; color: #1e40af; font-weight: 800; text-transform: uppercase;">Accuracy</div>
+                        <div style="font-size: 2.5rem; font-weight: 900; color: #1d4ed8;" id="ta_accuracy">0.0%</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #fdf4ff, #fae8ff); padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #f5d0fe;">
+                        <div style="font-size: 0.9rem; color: #86198f; font-weight: 800; text-transform: uppercase;">Marks Obtained</div>
+                        <div style="font-size: 2.5rem; font-weight: 900; color: #a21caf;" id="ta_marks">0.00</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px;">
+                    <div class="data-card">
+                        <div class="data-card-label">Gross Speed</div>
+                        <div class="data-card-value" id="ta_grossWPM">0.0 WPM</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-label">Strokes (Gross/Net)</div>
+                        <div class="data-card-value" id="ta_strokes">0 / 0</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-label">Total DPH</div>
+                        <div class="data-card-value" style="color:var(--primary);" id="ta_dph">0</div>
+                    </div>
+                    <div class="data-card">
+                        <div class="data-card-label">Words (Typed/Total)</div>
+                        <div class="data-card-value" id="ta_words">0 / 0</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 25px;">
+                    <div style="background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fecaca; text-align: center;">
+                        <div class="data-card-label" style="color: #991b1b;">Full Mistakes</div>
+                        <div class="data-card-value" style="color: #dc2626;" id="ta_fullMs">0</div>
+                    </div>
+                    <div style="background: #fffbeb; padding: 15px; border-radius: 10px; border: 1px solid #fde68a; text-align: center;">
+                        <div class="data-card-label" style="color: #92400e;">Half Mistakes</div>
+                        <div class="data-card-value" style="color: #d97706;" id="ta_halfMs">0</div>
+                    </div>
+                    <div style="background: #fef2f2; padding: 15px; border-radius: 10px; border: 1px solid #fecaca; text-align: center;">
+                        <div class="data-card-label" style="color: #991b1b;">Total Error Penalty</div>
+                        <div class="data-card-value" style="color: #b91c1c;" id="ta_totalErrors">0</div>
+                    </div>
+                </div>
+
                 <div class="review-heading">Text Processing Review (Mistakes in Red, Right target in Blue):</div>
                 <div class="review-box" id="textReviewLogBox"></div>
-                <button class="dynamic-btn" onclick="exitResultScreen()" style="margin-top:25px; padding:12px 30px; font-weight:bold; font-size:1.05rem; border-radius:8px; cursor:pointer;">🔙 Return to Dashboard</button>
+                <button class="dynamic-btn" onclick="exitResultScreen()" style="margin-top:25px; padding:15px 30px; font-weight:bold; font-size:1.1rem; border-radius:8px; cursor:pointer; width:100%;">🔙 Return to Dashboard</button>
             </div>
         </div>
     </div>
@@ -467,15 +531,14 @@
     let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
     let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
     
-    // 🟢 UPDATED: Identity ab Typing aur Steno dono ko alag se verify karegi
     let studentIdentity = { name: "", uid: "", hasTypingAccess: false, hasStenoAccess: false }; 
     
     let currentManagerMode = "ADD", selectedStenoIndex = 0;
     let currentCustomFontSize = 1.4; 
     let isAdmin = false; 
     let isAuthPaused = false; 
-    let previousScreen = 'stenoSelectionScreen'; // Tracks where to return after viewing result
-    window.currentHistoryData = []; // Globally hold history data to open when clicked
+    let previousScreen = 'stenoSelectionScreen'; 
+    window.currentHistoryData = []; 
 
     const displayWindow = document.getElementById('displayParagraphFrame');
     const typeDivider = document.getElementById('typeDivider');
@@ -865,7 +928,6 @@
                 if (isAdmin) html += `<td style="color:var(--text-dark); font-weight:bold;">${escapeHTML(h.studentName || '-')}</td>`;
                 html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td>`;
                 
-                // 🛠️ NEW: Make "MODE" clickable
                 let clickableMode = h.details ? `<span style="cursor:pointer; color:var(--primary); text-decoration:underline;" onclick="viewHistoryDetails(${index})" title="Click to view detailed review"><b>${escapeHTML(h.mode)}</b></span>` : `<span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span>`;
 
                 html += `<td>${clickableMode} <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td>`;
@@ -879,28 +941,27 @@
         }
     }
 
-    // 🛠️ NEW: Function to open detailed result from History table
+    // 🌟 UNIFIED HISTORY VIEW FUNCTION
     window.viewHistoryDetails = function(index) {
         let h = window.currentHistoryData[index];
         if(!h || !h.details) return alert("Detailed review is not available for this older test.");
 
         let res = h.details;
-        let currentMode = h.mode;
-        let activeLanguage = h.language || 'EN'; // fallback
+        let activeLanguage = h.language || 'EN'; 
         
-        const tableHead = document.getElementById('reportTableHead'); 
-        const tableBody = document.getElementById('reportTableBody');
+        // Populate Modern Dashboard Cards
+        document.getElementById('ta_netWPM').innerText = (res.netWPM || 0) + " WPM";
+        document.getElementById('ta_accuracy').innerText = res.accuracy + "%";
+        document.getElementById('ta_marks').innerText = res.marks;
+        
+        document.getElementById('ta_grossWPM').innerText = (res.grossWPM || 0) + " WPM";
+        document.getElementById('ta_strokes').innerText = `${res.strokes || 0} / ${res.netStrokes || 0}`;
+        document.getElementById('ta_dph').innerText = res.dph || 0;
+        document.getElementById('ta_words').innerText = `${res.typedWords || 0} / ${res.totalWords || 0}`;
 
-        if (currentMode === 'STENO' && res.examRule && res.examRule.includes("SSC")) {
-            tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.marks)}</td></tr>`;
-        } else if (currentMode === 'STENO') {
-            tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks)}</td></tr>`;
-        } else {
-            tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="speed-number">${escapeHTML(res.grossWPM) || 0} WPM</td><td class="net-speed-number">${escapeHTML(res.netWPM) || 0} WPM</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td class="metric-number">${escapeHTML(res.strokes) || 0} / ${escapeHTML(res.typedWords) || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks) || 0}</td></tr>`;
-        }
+        document.getElementById('ta_fullMs').innerText = res.fullMistakes || 0;
+        document.getElementById('ta_halfMs').innerText = res.halfMistakes || 0;
+        document.getElementById('ta_totalErrors').innerText = res.totalErrors || 0;
 
         document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
         document.getElementById('textReviewLogBox').className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
@@ -908,7 +969,7 @@
         document.getElementById('resName').innerText = escapeHTML(h.studentName || studentIdentity.name); 
         document.getElementById('resMethod').innerText = escapeHTML(res.examRule || h.rule);
         
-        previousScreen = 'historyScreen'; // Track that we came from history
+        previousScreen = 'historyScreen'; 
         hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
     }
 
@@ -1270,20 +1331,24 @@
         }, 1000);
     }
 
+    // 🌟 UNIFIED VIEW FUNCTION
     window.viewStenoResult = function(index) {
         let res = completedTests[currentMode][activeLanguage][index]; if(!res) return;
         
-        if (currentMode === 'STENO' && res.examRule.includes("SSC")) {
-            document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
-            document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.marks)}</td></tr>`;
-        } else if (currentMode === 'STENO') {
-            document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
-            document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks)}</td></tr>`;
-        } else {
-            document.getElementById('reportTableHead').innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-            document.getElementById('reportTableBody').innerHTML = `<tr><td class="speed-number">${escapeHTML(res.grossWPM) || 0} WPM</td><td class="net-speed-number">${escapeHTML(res.netWPM) || 0} WPM</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td class="metric-number">${escapeHTML(res.strokes) || 0} / ${escapeHTML(res.typedWords) || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks) || 0}</td></tr>`;
-        }
+        // Populate Modern Dashboard Cards
+        document.getElementById('ta_netWPM').innerText = (res.netWPM || 0) + " WPM";
+        document.getElementById('ta_accuracy').innerText = res.accuracy + "%";
+        document.getElementById('ta_marks').innerText = res.marks;
         
+        document.getElementById('ta_grossWPM').innerText = (res.grossWPM || 0) + " WPM";
+        document.getElementById('ta_strokes').innerText = `${res.strokes || 0} / ${res.netStrokes || 0}`;
+        document.getElementById('ta_dph').innerText = res.dph || 0;
+        document.getElementById('ta_words').innerText = `${res.typedWords || 0} / ${res.totalWords || 0}`;
+
+        document.getElementById('ta_fullMs').innerText = res.fullMistakes || 0;
+        document.getElementById('ta_halfMs').innerText = res.halfMistakes || 0;
+        document.getElementById('ta_totalErrors').innerText = res.totalErrors || 0;
+
         document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
         document.getElementById('textReviewLogBox').className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
         document.getElementById('resName').innerText = escapeHTML(studentIdentity.name); document.getElementById('resMethod').innerText = escapeHTML(res.examRule);
@@ -1292,6 +1357,7 @@
         hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
     }
 
+    // 🌟 UNIFIED FINISH EVALUATION
     window.finishEvaluationTest = function() {
         typingAreaInput.disabled = true; clearInterval(coreTimerLoop); 
         
@@ -1312,7 +1378,7 @@
         reviewContainer.className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
 
         if (typedTokens.length === 0) {
-            fullMistakesCount = sourceWords.length; // Saare words ko direct galti maan liya
+            fullMistakesCount = sourceWords.length; 
             reviewContainer.innerHTML = `
                 <div style="text-align:center; padding: 40px 20px; font-family: sans-serif; line-height: 1.5;">
                     <div style="font-size: 3.5rem; margin-bottom: 10px;">⚠️</div>
@@ -1326,8 +1392,8 @@
                 let nS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s]) : sourceWords[s];
 
                 if (nT === nS) {
-                    const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
-                    wordBlock.innerText = sourceWords[s]; wordBlock.className += ' rev-correct';
+                    const wordBlock = document.createElement('div'); wordBlock.className = 'word-block rev-correct';
+                    wordBlock.innerText = sourceWords[s]; 
                     reviewContainer.appendChild(wordBlock); t++; s++;
                 } else {
                     let synced = false;
@@ -1337,7 +1403,7 @@
                             if (nT === nextS) {
                                 for(let skip = 0; skip < lookahead; skip++) {
                                      fullMistakesCount++; const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                                     mBlock.innerHTML = `<span class="rev-expected-word">${escapeHTML(sourceWords[s + skip])}</span>`; reviewContainer.appendChild(mBlock);
+                                     mBlock.innerHTML = `<span class="rev-expected-word" style="opacity:0.6;">${escapeHTML(sourceWords[s + skip])}</span>`; reviewContainer.appendChild(mBlock);
                                 }
                                 s += lookahead; synced = true; break;
                             }
@@ -1360,11 +1426,14 @@
                     }
 
                     if (!synced) {
-                        if (nT.toLowerCase() === nS.toLowerCase() || Math.abs(nT.length - nS.length) <= 1) halfMistakesCount++; else fullMistakesCount++;
                         const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
-                        const wrongSpan = document.createElement('span'); wrongSpan.className = 'rev-wrong-text'; wrongSpan.innerText = typedTokens[t];
-                        const expectedSpan = document.createElement('span'); expectedSpan.className = 'rev-expected-word'; expectedSpan.innerText = sourceWords[s];
-                        wordBlock.appendChild(wrongSpan); wordBlock.appendChild(document.createTextNode(' ')); wordBlock.appendChild(expectedSpan);
+                        if (nT.toLowerCase() === nS.toLowerCase() || Math.abs(nT.length - nS.length) <= 1) {
+                            halfMistakesCount++;
+                            wordBlock.innerHTML = `<span class="rev-half-wrong">${escapeHTML(typedTokens[t])}</span><span class="rev-half-expected">${escapeHTML(sourceWords[s])}</span>`;
+                        } else {
+                            fullMistakesCount++;
+                            wordBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span><span class="rev-expected-word">${escapeHTML(sourceWords[s])}</span>`;
+                        }
                         reviewContainer.appendChild(wordBlock); t++; s++;
                     }
                 }
@@ -1378,57 +1447,68 @@
                 reviewContainer.appendChild(wordBlock); 
                 t++; 
             }
+            while(s < sourceWords.length) {
+                fullMistakesCount++;
+                const wordBlock = document.createElement('div'); 
+                wordBlock.className = 'word-block'; 
+                wordBlock.innerHTML = `<span class="rev-expected-word" style="opacity:0.6;">${escapeHTML(sourceWords[s])}</span>`; 
+                reviewContainer.appendChild(wordBlock); 
+                s++;
+            }
         }
         
         let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
         let selectedExamType = document.getElementById('examTargetSelector').value;
         let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
 
+        // Core JR Calcs
+        let m1_grossStrokes = actualStrokes;
+        let m1_netStrokes = Math.max(0, m1_grossStrokes - (totalErrorsCalculated * 5)); 
+        let m1_dph = Math.round((m1_netStrokes / minutesElapsed) * 60);
+        
+        let grossWords = m1_grossStrokes / 5;
+        let grossWPM = Math.round(grossWords / minutesElapsed); 
+        let netWords = Math.max(0, grossWords - totalErrorsCalculated); 
+        let netWPM = Math.round(netWords / minutesElapsed); 
+        
+        let accuracy = 0;
+        if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
+        if (accuracy < 0 || actualStrokes === 0) accuracy = 0; 
+        if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
+
         const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
         let activeObject = exerciseDatabaseBank[currentMode][fallbackLang][selectedStenoIndex];
         let testName = activeObject ? activeObject.name : "Custom Test";
 
-        const tableHead = document.getElementById('reportTableHead'); const tableBody = document.getElementById('reportTableBody');
-        let finalMarksStr = ""; let histSpeed = "", histAcc = "", histMarks = "";
-        
-        // Detailed Object to save in history
-        let finalDetailsObject = {};
+        let finalMarksStr = "0.00"; 
+        let histSpeed = "", histAcc = "", histMarks = "";
 
         if (currentMode === 'STENO') {
             let evaluatedWords = typedTokens.length; let errorPercentage = 0;
             if(evaluatedWords > 0) { errorPercentage = (totalErrorsCalculated / evaluatedWords) * 100; } else { errorPercentage = 100; }
-            errorPercentage = Math.min(100, errorPercentage); let accuracy = Math.max(0, 100 - errorPercentage);
-            let ruleText = (selectedExamType === "RAJ_HC") ? "Rajasthan High Court Steno" : "SSC Steno Standard";
+            errorPercentage = Math.min(100, errorPercentage); 
+            let accuracySteno = Math.max(0, 100 - errorPercentage);
             
             if (selectedExamType === "SSC_STENO") {
-                finalMarksStr = errorPercentage.toFixed(2) + "%";
-                tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
-                tableBody.innerHTML = `<tr><td class="metric-number">${sourceWords.length}</td><td class="metric-number" style="color:var(--active-theme-color);">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${finalMarksStr}</td></tr>`;
+                finalMarksStr = errorPercentage.toFixed(2) + "% (Error)";
+                accuracy = accuracySteno.toFixed(2);
             } else {
-                finalMarksStr = accuracy.toFixed(2);
-                tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
-                tableBody.innerHTML = `<tr><td class="metric-number">${sourceWords.length}</td><td class="metric-number" style="color:var(--active-theme-color);">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td class="accuracy-number">${accuracy.toFixed(2)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${finalMarksStr}</td></tr>`;
+                finalMarksStr = accuracySteno.toFixed(2);
+                accuracy = accuracySteno.toFixed(2);
             }
-
+            let ruleText = (selectedExamType === "RAJ_HC") ? "Rajasthan High Court Steno" : "SSC Steno Standard";
             document.getElementById('resMethod').innerText = ruleText;
-            
-            finalDetailsObject = { totalWords: sourceWords.length, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), marks: finalMarksStr, reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
-            completedTests[currentMode][activeLanguage][selectedStenoIndex] = finalDetailsObject;
-            
-            histSpeed = "-"; histAcc = accuracy.toFixed(2) + "%"; histMarks = finalMarksStr;
         } else {
-            let grossWords = actualStrokes / 5; let grossWPM = Math.round(grossWords / minutesElapsed); 
-            let netWords = Math.max(0, grossWords - totalErrorsCalculated); let netWPM = Math.round(netWords / minutesElapsed); 
-            
-            let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
-            if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
-            
             if (grossWPM > 150) {
                 alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
                 grossWPM = 0; netWPM = 0; accuracy = 0; totalErrorsCalculated = "N/A";
-                typingMarks = "CHEAT DETECTED";
+                finalMarksStr = "CHEAT DETECTED";
             } else {
-                typingMarks = Math.min(50, Math.max(0, netWPM * 0.75)).toFixed(2);
+                if(selectedExamType === "RAJ_HC") {
+                    finalMarksStr = Math.min(50, Math.max(0, (20 / 8000) * m1_dph)).toFixed(2);
+                } else {
+                    finalMarksStr = Math.min(50, Math.max(0, netWPM * 0.75)).toFixed(2);
+                }
             }
 
             if (selectedExamType === "RAJ_HC") document.getElementById('resMethod').innerText = "Rajasthan High Court Typing Mode"; 
@@ -1436,17 +1516,30 @@
             else if (selectedExamType === "RPSC_LDC") document.getElementById('resMethod').innerText = "RPSC LDC Mode"; 
             else if (selectedExamType === "RRB_NTPC") document.getElementById('resMethod').innerText = "RRB NTPC Rule"; 
             else document.getElementById('resMethod').innerText = selectedExamType + " Standard";
-            
-            tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
-            tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
-            
-            finalDetailsObject = { grossWPM: grossWPM, netWPM: netWPM, accuracy: accuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
-            completedTests[currentMode][activeLanguage][selectedStenoIndex] = finalDetailsObject;
-            
-            histSpeed = `${grossWPM} / ${netWPM} WPM`; histAcc = accuracy.toFixed(2) + "%"; histMarks = typingMarks;
         }
         
-        // 🛠️ NEW: Added details object and language to history record
+        let finalDetailsObject = { 
+            grossWPM: grossWPM, 
+            netWPM: netWPM, 
+            accuracy: (currentMode==='STENO') ? accuracy : accuracy.toFixed(2), 
+            strokes: m1_grossStrokes, 
+            netStrokes: Math.round(m1_netStrokes),
+            dph: m1_dph,
+            fullMistakes: fullMistakesCount, 
+            halfMistakes: halfMistakesCount, 
+            typedWords: typedTokens.length, 
+            totalWords: sourceWords.length,
+            totalErrors: totalErrorsCalculated, 
+            marks: finalMarksStr, 
+            reviewHTML: reviewContainer.innerHTML, 
+            examRule: document.getElementById('resMethod').innerText 
+        };
+
+        completedTests[currentMode][activeLanguage][selectedStenoIndex] = finalDetailsObject;
+        histSpeed = (currentMode==='STENO') ? "-" : `${grossWPM} / ${netWPM} WPM`; 
+        histAcc = (currentMode==='STENO') ? accuracy + "%" : accuracy.toFixed(2) + "%"; 
+        histMarks = finalMarksStr;
+
         saveToHistory({ 
             date: new Date().toLocaleString(), 
             name: testName, 
@@ -1459,10 +1552,7 @@
             language: activeLanguage 
         });
         
-        document.getElementById('resName').innerText = escapeHTML(studentIdentity.name);
-        
-        previousScreen = 'stenoSelectionScreen';
-        hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
+        viewStenoResult(selectedStenoIndex);
     }
 })();
 </script>
