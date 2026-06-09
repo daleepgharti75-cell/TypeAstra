@@ -153,46 +153,48 @@
         
         .report-view { background: #ffffff; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); border: 1px solid var(--border-light); width: 100%; box-sizing: border-box; margin: auto;}
         .report-header { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
+        .report-table { width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 1.05rem; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .report-table th, .report-table td { border-bottom: 1px solid var(--border-light); padding: 16px; text-align: center;}
+        .report-table th { background: var(--active-theme-color); color: white; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; border:none;}
         
-        .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
+        .speed-number { font-size: 1.6rem; font-weight: 800; color: var(--active-theme-color); }
+        .net-speed-number { font-size: 1.6rem; font-weight: 800; color: #16a34a; }
+        .accuracy-number { font-size: 1.6rem; font-weight: 800; color: #475569; }
+        .metric-number { font-size: 1.5rem; font-weight: 800; color: #ea580c; }
+       .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
         .review-box { background: #ffffff; border: 1px solid var(--border-light); padding: 25px; max-height: 400px; overflow-y: auto; text-align: left; border-radius: 12px; line-height: 2.6; box-shadow: inset 0 4px 6px rgba(0,0,0,0.03);}
         
         .word-block { display: inline-block; margin-right: 8px; margin-bottom: 6px; font-size: inherit; }
+        
         .rev-correct { color: #334155; font-weight: 600; }
         
         .rev-wrong-text { 
             color: #ef4444 !important; 
+            background: #fef2f2; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
             font-weight: 700; 
             text-decoration: line-through; 
             text-decoration-color: #ef4444; 
             text-decoration-thickness: 2px; 
+            border: 1px solid #fecaca; 
             display: inline-block; 
         }
         
         .rev-expected-word { 
             color: #2563eb !important; 
+            background: #eff6ff; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
             font-weight: 800; 
+            opacity: 1 !important; 
+            border: 1px solid #bfdbfe; 
             display: inline-block; 
+            margin-left: 2px;
             font-family: inherit !important; 
             text-decoration: none; 
         }
-        
-        .rev-half-wrong {
-            color: #d97706 !important; 
-            font-weight: 700; 
-            text-decoration: line-through; 
-            text-decoration-color: #d97706; 
-            text-decoration-thickness: 2px; 
-            display: inline-block;
-        }
-        
-        .rev-half-expected {
-            color: #d97706 !important; 
-            font-weight: 800; 
-            display: inline-block; 
-            font-family: inherit !important; 
-            text-decoration: none; 
-        }
+        .rev-expected-word { color: var(--text-muted) !important; font-weight: normal; display: inline; font-family: inherit !important; text-decoration: none; opacity: 0.6;}
     </style>
 </head>
 <body>
@@ -404,79 +406,20 @@
     </div>
 
     <div class="app-view" id="analysisReportScreen">
-        <div style="margin: auto; width:100%; max-width: 1050px;">
-            <div class="report-view" id="reportViewPanel" style="padding: 35px; background: #ffffff;">
-                
-                <div style="text-align: center; margin-bottom: 25px;">
-                    <h2 style="margin: 0; font-size: 2rem; color: var(--text-dark); font-weight: 800;">Type Astra Advanced Analytics</h2>
-                    <p style="margin: 5px 0 0 0; color: var(--text-muted); font-size: 1rem;">Comprehensive Performance Evaluation</p>
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 15px 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border-light);">
-                    <div style="text-align: left;">
-                        <span style="color:var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Candidate Profile</span><br>
-                        <span id="resName" style="color:var(--text-dark); font-weight:900; font-size: 1.2rem;">--</span>
-                    </div>
-                    <div style="text-align: right;">
-                        <span style="color:var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Evaluation Target</span><br>
-                        <span id="resMethod" style="color:var(--active-theme-color); font-weight:900; font-size: 1.2rem;">--</span>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px;">
-                    <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                        <div style="font-size: 0.9rem; color: #1e3a8a; font-weight: 800; text-transform: uppercase;">Marks Obtained</div>
-                        <div style="font-size: 2.5rem; font-weight: 900; color: #1d4ed8; margin-top: 5px;" id="ta_marks">0.00</div>
-                        <div style="font-size: 0.8rem; color: #3b82f6; font-weight: 600;">Calculated Out of 50</div>
-                    </div>
-                    <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                        <div style="font-size: 0.9rem; color: #14532d; font-weight: 800; text-transform: uppercase;">Final Net Speed</div>
-                        <div style="font-size: 2.5rem; font-weight: 900; color: #15803d; margin-top: 5px;" id="ta_netSpeed">0.0</div>
-                        <div style="font-size: 0.8rem; color: #16a34a; font-weight: 600;">Words Per Minute</div>
-                    </div>
-                    <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 1px solid var(--border-light); padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                        <div style="font-size: 0.9rem; color: var(--text-dark); font-weight: 800; text-transform: uppercase;">Precision Rating</div>
-                        <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-dark); margin-top: 5px;" id="ta_accuracy">0.0%</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Overall Keystroke Accuracy</div>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; text-align: left;">
-                    
-                    <div style="border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;">
-                        <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid var(--border-light); font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">⌨️ Standard Stroke Engine Data</div>
-                        <div style="padding: 15px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Gross / Net Strokes</div><div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);" id="ta_strokes">0 / 0</div></div>
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Depressions / Hour (DPH)</div><div style="font-size: 1.1rem; font-weight: 800; color: var(--primary);" id="ta_dph">0</div></div>
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Base Speed (Gross WPM)</div><div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);" id="ta_grossWPM">0.0</div></div>
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Total Error Penalty</div><div style="font-size: 1.1rem; font-weight: 800; color: #ef4444;" id="ta_errHits">0.0</div></div>
-                        </div>
-                    </div>
-
-                    <div style="border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;">
-                        <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid var(--border-light); font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">📝 Mistake & Word Formatting</div>
-                        <div style="padding: 15px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Full / Half Mistakes</div><div style="font-size: 1.1rem; font-weight: 800; color: #ef4444;"><span id="ta_fullMistakes">0</span> <span style="color:var(--text-muted); font-weight:normal;">/</span> <span style="color:#d97706;" id="ta_halfMistakes">0</span></div></div>
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Total Space-Separated Words</div><div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);" id="ta_totalWords">0</div></div>
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Correct Word Count</div><div style="font-size: 1.1rem; font-weight: 800; color: #16a34a;" id="ta_correctWords">0</div></div>
-                            <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Word-Based Net Speed</div><div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);" id="ta_wordSpeed">0.0 WPM</div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="text-align: left; border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;">
-                    <div style="background: #f1f5f9; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); flex-wrap: wrap; gap: 10px;">
-                        <span style="font-weight: 800; color: var(--text-dark);">Transcription Review</span>
-                        <div style="display: flex; gap: 15px; font-size: 0.85rem; font-weight: 700;">
-                            <span style="display: flex; align-items: center; gap: 5px;"><span style="width:10px; height:10px; background:#ef4444; border-radius:50%;"></span> Full Error (Wrong / Extra)</span>
-                            <span style="display: flex; align-items: center; gap: 5px;"><span style="width:10px; height:10px; background:#d97706; border-radius:50%;"></span> Half Error (Formatting)</span>
-                            <span style="display: flex; align-items: center; gap: 5px;"><span style="width:10px; height:10px; background:#2563eb; border-radius:50%;"></span> Missed / Expected</span>
-                        </div>
-                    </div>
-                    <div class="review-box" id="textReviewLogBox" style="background:#ffffff; padding: 25px; border: none; border-radius: 0;"></div>
-                </div>
-                
-                <button class="dynamic-btn" onclick="exitResultScreen()" style="margin-top:25px; padding:15px; font-weight:bold; font-size:1.1rem; border-radius:8px; cursor:pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px;">🔙 Return to Dashboard</button>
+        <div style="margin: auto; width:100%;">
+            <div class="report-view" id="reportViewPanel">
+                <div class="report-header"><span>🏁 Official Examination Evaluation Summary</span></div>
+                <p style="text-align:left; font-size:1.05rem; margin-top:-5px; color:var(--text-muted);">
+                    <strong>Candidate:</strong> <span id="resName" style="color:var(--text-dark); font-weight:bold;">--</span> &nbsp;|&nbsp; 
+                    <strong>Exam Rule:</strong> <span id="resMethod" style="color:var(--active-theme-color); font-weight:bold;">--</span>
+                </p>
+                <table class="report-table">
+                    <thead id="reportTableHead"></thead>
+                    <tbody id="reportTableBody"></tbody>
+                </table>
+                <div class="review-heading">Text Processing Review (Mistakes in Red, Right target in Blue):</div>
+                <div class="review-box" id="textReviewLogBox"></div>
+                <button class="dynamic-btn" onclick="exitResultScreen()" style="margin-top:25px; padding:12px 30px; font-weight:bold; font-size:1.05rem; border-radius:8px; cursor:pointer;">🔙 Return to Dashboard</button>
             </div>
         </div>
     </div>
@@ -501,7 +444,7 @@
     const storage = firebase.storage();
 
     // ==========================================
-    // ⚠️ SECURE ADMIN ID
+    // ⚠️ SECURE ADMIN ID (YAHAN APNA UID DAALEIN)
     // ==========================================
     const MASTER_ADMIN_UID = "WCy4mXts5dZwxqGZA3kJM0RZGIy1";
 
@@ -524,12 +467,15 @@
     let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
     let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
     
+    // 🟢 UPDATED: Identity ab Typing aur Steno dono ko alag se verify karegi
     let studentIdentity = { name: "", uid: "", hasTypingAccess: false, hasStenoAccess: false }; 
     
     let currentManagerMode = "ADD", selectedStenoIndex = 0;
     let currentCustomFontSize = 1.4; 
     let isAdmin = false; 
     let isAuthPaused = false; 
+    let previousScreen = 'stenoSelectionScreen'; // Tracks where to return after viewing result
+    window.currentHistoryData = []; // Globally hold history data to open when clicked
 
     const displayWindow = document.getElementById('displayParagraphFrame');
     const typeDivider = document.getElementById('typeDivider');
@@ -906,16 +852,25 @@
                 hist = hist.slice(0, 10);
             }
             
+            window.currentHistoryData = hist; // Save globally so it can be opened when clicked
+
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
             let html = `<table class="steno-table"><thead><tr><th>Date & Time</th>`;
             if (isAdmin) html += `<th>Student Name</th>`; 
             html += `<th>Test Name</th><th>Mode (Rule)</th><th>Speed (Gross/Net)</th><th>Accuracy</th><th>Marks</th></tr></thead><tbody>`;
             
-            hist.forEach(h => { 
+            hist.forEach((h, index) => { 
                 html += `<tr><td style="font-weight:600; color:var(--text-dark);">${escapeHTML(h.date)}</td>`;
                 if (isAdmin) html += `<td style="color:var(--text-dark); font-weight:bold;">${escapeHTML(h.studentName || '-')}</td>`;
-                html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td><td><span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span> <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td><td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; 
+                html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td>`;
+                
+                // 🛠️ NEW: Make "MODE" clickable
+                let clickableMode = h.details ? `<span style="cursor:pointer; color:var(--primary); text-decoration:underline;" onclick="viewHistoryDetails(${index})" title="Click to view detailed review"><b>${escapeHTML(h.mode)}</b></span>` : `<span style="font-weight:bold; color:var(--primary);">${escapeHTML(h.mode)}</span>`;
+
+                html += `<td>${clickableMode} <br> <span style="font-size:0.8rem; color:var(--text-muted);">(${escapeHTML(h.rule)})</span></td>`;
+                
+                html += `<td style="color:var(--primary); font-weight:bold;">${escapeHTML(h.speed)}</td><td style="font-weight:bold; color:var(--text-dark);">${escapeHTML(h.acc)}</td><td style="color:var(--secondary); font-weight:bold; font-size:1.1rem;">${escapeHTML(h.marks)}</td></tr>`; 
             });
             html += `</tbody></table>`; container.innerHTML = html;
         } catch(e) { 
@@ -924,12 +879,53 @@
         }
     }
 
+    // 🛠️ NEW: Function to open detailed result from History table
+    window.viewHistoryDetails = function(index) {
+        let h = window.currentHistoryData[index];
+        if(!h || !h.details) return alert("Detailed review is not available for this older test.");
+
+        let res = h.details;
+        let currentMode = h.mode;
+        let activeLanguage = h.language || 'EN'; // fallback
+        
+        const tableHead = document.getElementById('reportTableHead'); 
+        const tableBody = document.getElementById('reportTableBody');
+
+        if (currentMode === 'STENO' && res.examRule && res.examRule.includes("SSC")) {
+            tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
+            tableBody.innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.marks)}</td></tr>`;
+        } else if (currentMode === 'STENO') {
+            tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
+            tableBody.innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks)}</td></tr>`;
+        } else {
+            tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
+            tableBody.innerHTML = `<tr><td class="speed-number">${escapeHTML(res.grossWPM) || 0} WPM</td><td class="net-speed-number">${escapeHTML(res.netWPM) || 0} WPM</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td class="metric-number">${escapeHTML(res.strokes) || 0} / ${escapeHTML(res.typedWords) || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks) || 0}</td></tr>`;
+        }
+
+        document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
+        document.getElementById('textReviewLogBox').className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
+        
+        document.getElementById('resName').innerText = escapeHTML(h.studentName || studentIdentity.name); 
+        document.getElementById('resMethod').innerText = escapeHTML(res.examRule || h.rule);
+        
+        previousScreen = 'historyScreen'; // Track that we came from history
+        hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
+    }
+
     window.exitToDashboard = function() {
         clearInterval(coreTimerLoop); dictationAudioPlayer.pause(); dictationAudioPlayer.currentTime = 0;
         hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
     }
     
-    window.exitResultScreen = function() { hideAllScreens(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); }
+    window.exitResultScreen = function() { 
+        hideAllScreens(); 
+        if (previousScreen === 'historyScreen') {
+            document.getElementById('historyScreen').classList.add('active-view');
+        } else {
+            document.getElementById('stenoSelectionScreen').classList.add('active-view'); 
+            renderStenoList(); 
+        }
+    }
     
     window.abortStenoTest = function() { if(confirm("Are you sure you want to abort this test?")) { clearInterval(coreTimerLoop); hideAllScreens(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); } }
 
@@ -1277,31 +1273,22 @@
     window.viewStenoResult = function(index) {
         let res = completedTests[currentMode][activeLanguage][index]; if(!res) return;
         
-        // 🌟 Populate Primary Scorecard
-        document.getElementById('ta_marks').innerText = res.m1_marks;
-        document.getElementById('ta_netSpeed').innerText = res.m1_netWPM;
-        document.getElementById('ta_accuracy').innerText = `${res.m1_acc}%`;
-
-        // ⌨️ Populate Stroke Engine Data
-        document.getElementById('ta_strokes').innerText = `${res.m1_grossStrokes} / ${res.m1_netStrokes}`;
-        document.getElementById('ta_dph').innerText = res.m1_dph;
-        document.getElementById('ta_grossWPM').innerText = res.m1_grossWPM;
-        document.getElementById('ta_errHits').innerText = res.m1_totalErrors;
-
-        // 📝 Populate Mistake & Word Breakdown
-        document.getElementById('ta_fullMistakes').innerText = res.fullMistakes;
-        document.getElementById('ta_halfMistakes').innerText = res.halfMistakes;
-        document.getElementById('ta_totalWords').innerText = res.m2_totalWords;
-        document.getElementById('ta_correctWords').innerText = res.m2_rightWords;
-        document.getElementById('ta_wordSpeed').innerText = `${res.m2_netWPM} WPM`;
-
-        // Render Review Box
+        if (currentMode === 'STENO' && res.examRule.includes("SSC")) {
+            document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
+            document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.marks)}</td></tr>`;
+        } else if (currentMode === 'STENO') {
+            document.getElementById('reportTableHead').innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
+            document.getElementById('reportTableBody').innerHTML = `<tr><td class="metric-number">${escapeHTML(res.totalWords)}</td><td class="metric-number" style="color:var(--active-theme-color);">${escapeHTML(res.typedWords)}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${escapeHTML(res.fullMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${escapeHTML(res.halfMistakes)}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks)}</td></tr>`;
+        } else {
+            document.getElementById('reportTableHead').innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
+            document.getElementById('reportTableBody').innerHTML = `<tr><td class="speed-number">${escapeHTML(res.grossWPM) || 0} WPM</td><td class="net-speed-number">${escapeHTML(res.netWPM) || 0} WPM</td><td class="accuracy-number">${escapeHTML(res.accuracy)}%</td><td class="metric-number">${escapeHTML(res.strokes) || 0} / ${escapeHTML(res.typedWords) || 0}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${escapeHTML(res.totalErrors)}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${escapeHTML(res.marks) || 0}</td></tr>`;
+        }
+        
         document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
         document.getElementById('textReviewLogBox').className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
+        document.getElementById('resName').innerText = escapeHTML(studentIdentity.name); document.getElementById('resMethod').innerText = escapeHTML(res.examRule);
         
-        document.getElementById('resName').innerText = escapeHTML(studentIdentity.name); 
-        document.getElementById('resMethod').innerText = escapeHTML(res.examRule);
-        
+        previousScreen = 'stenoSelectionScreen';
         hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
     }
 
@@ -1324,27 +1311,23 @@
         const reviewContainer = document.getElementById('textReviewLogBox'); reviewContainer.innerHTML = '';
         reviewContainer.className = 'review-box ' + (activeLanguage === 'HI_KRUTI' ? 'font-kruti' : (activeLanguage === 'HI_MANGAL' ? 'font-mangal' : 'font-english'));
 
-        // ==========================================
-        // 🛠️ BLANK SUBMISSION HANDLER
-        // ==========================================
         if (typedTokens.length === 0) {
-            fullMistakesCount = sourceWords.length; 
+            fullMistakesCount = sourceWords.length; // Saare words ko direct galti maan liya
             reviewContainer.innerHTML = `
                 <div style="text-align:center; padding: 40px 20px; font-family: sans-serif; line-height: 1.5;">
                     <div style="font-size: 3.5rem; margin-bottom: 10px;">⚠️</div>
                     <div style="color: var(--danger); font-size: 1.4rem; font-weight: 900; margin-bottom: 5px;">Blank Submission</div>
-                    <div style="color: var(--text-muted); font-size: 1.05rem; font-weight: 600;">You submitted the test without typing any text.<br>All <b style="color:var(--text-dark);">${sourceWords.length}</b> source words have been marked as missed errors.</div>
+                    <div style="color: var(--text-muted); font-size: 1.05rem; font-weight: 600;">You submitted the test without typing any text.<br>All <b>${sourceWords.length}</b> source words have been marked as missed errors.</div>
                 </div>`;
         } else {
-            // Regular Evaluation Logic
             let t = 0, s = 0;
             while (t < typedTokens.length && s < sourceWords.length) {
                 let nT = activeLanguage === 'HI_KRUTI' ? normalizeHindi(typedTokens[t]) : typedTokens[t];
                 let nS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s]) : sourceWords[s];
 
                 if (nT === nS) {
-                    const wordBlock = document.createElement('div'); wordBlock.className = 'word-block rev-correct';
-                    wordBlock.innerText = sourceWords[s]; 
+                    const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
+                    wordBlock.innerText = sourceWords[s]; wordBlock.className += ' rev-correct';
                     reviewContainer.appendChild(wordBlock); t++; s++;
                 } else {
                     let synced = false;
@@ -1353,10 +1336,8 @@
                             let nextS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s + lookahead]) : sourceWords[s + lookahead];
                             if (nT === nextS) {
                                 for(let skip = 0; skip < lookahead; skip++) {
-                                    fullMistakesCount++; 
-                                    const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                                    mBlock.innerHTML = `<span class="rev-expected-word">(- ${escapeHTML(sourceWords[s + skip])})</span>`; 
-                                    reviewContainer.appendChild(mBlock);
+                                     fullMistakesCount++; const mBlock = document.createElement('div'); mBlock.className = 'word-block';
+                                     mBlock.innerHTML = `<span class="rev-expected-word">${escapeHTML(sourceWords[s + skip])}</span>`; reviewContainer.appendChild(mBlock);
                                 }
                                 s += lookahead; synced = true; break;
                             }
@@ -1369,10 +1350,8 @@
                                 let nextT = activeLanguage === 'HI_KRUTI' ? normalizeHindi(typedTokens[t + lookahead]) : typedTokens[t + lookahead];
                                 if (nextT === nS) {
                                     for(let ext = 0; ext < lookahead; ext++) {
-                                        fullMistakesCount++; 
-                                        const mBlock = document.createElement('div'); mBlock.className = 'word-block';
-                                        mBlock.innerHTML = `<span class="rev-wrong-text">(+ ${escapeHTML(typedTokens[t + ext])})</span>`; 
-                                        reviewContainer.appendChild(mBlock);
+                                         fullMistakesCount++; const mBlock = document.createElement('div'); mBlock.className = 'word-block';
+                                         mBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t + ext])}</span>`; reviewContainer.appendChild(mBlock);
                                     }
                                     t += lookahead; synced = true; break;
                                 }
@@ -1381,15 +1360,11 @@
                     }
 
                     if (!synced) {
+                        if (nT.toLowerCase() === nS.toLowerCase() || Math.abs(nT.length - nS.length) <= 1) halfMistakesCount++; else fullMistakesCount++;
                         const wordBlock = document.createElement('div'); wordBlock.className = 'word-block';
-                        
-                        if (nT.toLowerCase() === nS.toLowerCase() || Math.abs(nT.length - nS.length) <= 1) {
-                            halfMistakesCount++;
-                            wordBlock.innerHTML = `<span class="rev-half-wrong">${escapeHTML(typedTokens[t])}</span><span class="rev-half-expected">{${escapeHTML(sourceWords[s])}}</span>`;
-                        } else {
-                            fullMistakesCount++;
-                            wordBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span><span class="rev-expected-word">(${escapeHTML(sourceWords[s])})</span>`;
-                        }
+                        const wrongSpan = document.createElement('span'); wrongSpan.className = 'rev-wrong-text'; wrongSpan.innerText = typedTokens[t];
+                        const expectedSpan = document.createElement('span'); expectedSpan.className = 'rev-expected-word'; expectedSpan.innerText = sourceWords[s];
+                        wordBlock.appendChild(wrongSpan); wordBlock.appendChild(document.createTextNode(' ')); wordBlock.appendChild(expectedSpan);
                         reviewContainer.appendChild(wordBlock); t++; s++;
                     }
                 }
@@ -1397,81 +1372,97 @@
 
             while(t < typedTokens.length) { 
                 fullMistakesCount++; 
-                const wordBlock = document.createElement('div'); wordBlock.className = 'word-block'; 
-                wordBlock.innerHTML = `<span class="rev-wrong-text">(+ ${escapeHTML(typedTokens[t])})</span>`; 
+                const wordBlock = document.createElement('div'); 
+                wordBlock.className = 'word-block'; 
+                wordBlock.innerHTML = `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span>`; 
                 reviewContainer.appendChild(wordBlock); 
                 t++; 
-            }
-
-            while(s < sourceWords.length) {
-                fullMistakesCount++;
-                const wordBlock = document.createElement('div'); wordBlock.className = 'word-block'; 
-                wordBlock.innerHTML = `<span class="rev-expected-word">(- ${escapeHTML(sourceWords[s])})</span>`; 
-                reviewContainer.appendChild(wordBlock); 
-                s++;
             }
         }
         
         let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
         let selectedExamType = document.getElementById('examTargetSelector').value;
-
-        // ==========================================
-        // DUAL EVALUATION CALCULATION
-        // ==========================================
-        
         let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
+
+        const fallbackLang = exerciseDatabaseBank[currentMode][activeLanguage] ? activeLanguage : 'EN';
+        let activeObject = exerciseDatabaseBank[currentMode][fallbackLang][selectedStenoIndex];
+        let testName = activeObject ? activeObject.name : "Custom Test";
+
+        const tableHead = document.getElementById('reportTableHead'); const tableBody = document.getElementById('reportTableBody');
+        let finalMarksStr = ""; let histSpeed = "", histAcc = "", histMarks = "";
         
-        // Method 1: 5 Keystrokes = 1 Word
-        let m1_grossStrokes = actualStrokes;
-        let m1_grossWPM = (m1_grossStrokes / 5) / minutesElapsed;
-        let m1_netStrokes = Math.max(0, m1_grossStrokes - (totalErrorsCalculated * 5)); 
-        let m1_netWPM = (m1_netStrokes / 5) / minutesElapsed;
-        let m1_dph = (m1_netStrokes / minutesElapsed) * 60;
-        let m1_acc = m1_grossStrokes > 0 ? (m1_netStrokes / m1_grossStrokes) * 100 : 0;
-        let m1_marks = Math.min(50, Math.max(0, (20 / 8000) * m1_dph)); 
+        // Detailed Object to save in history
+        let finalDetailsObject = {};
 
-        // Method 2: Space Separated Words
-        let m2_totalWords = typedTokens.length;
-        let m2_grossWPM = m2_totalWords / minutesElapsed;
-        let m2_rightWords = Math.max(0, m2_totalWords - totalErrorsCalculated);
-        let m2_netWPM = m2_rightWords / minutesElapsed;
-        let m2_acc = m2_totalWords > 0 ? (m2_rightWords / m2_totalWords) * 100 : 0;
+        if (currentMode === 'STENO') {
+            let evaluatedWords = typedTokens.length; let errorPercentage = 0;
+            if(evaluatedWords > 0) { errorPercentage = (totalErrorsCalculated / evaluatedWords) * 100; } else { errorPercentage = 100; }
+            errorPercentage = Math.min(100, errorPercentage); let accuracy = Math.max(0, 100 - errorPercentage);
+            let ruleText = (selectedExamType === "RAJ_HC") ? "Rajasthan High Court Steno" : "SSC Steno Standard";
+            
+            if (selectedExamType === "SSC_STENO") {
+                finalMarksStr = errorPercentage.toFixed(2) + "%";
+                tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>⚠️ Error %</th></tr>`;
+                tableBody.innerHTML = `<tr><td class="metric-number">${sourceWords.length}</td><td class="metric-number" style="color:var(--active-theme-color);">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--danger);">${finalMarksStr}</td></tr>`;
+            } else {
+                finalMarksStr = accuracy.toFixed(2);
+                tableHead.innerHTML = `<tr><th>📝 Total Words</th><th>✍️ Typed Words</th><th>❌ Full Mistakes</th><th>⚠️ Half Mistakes</th><th>📊 Total Errors</th><th>🎯 Accuracy</th><th>🏆 Marks (100)</th></tr>`;
+                tableBody.innerHTML = `<tr><td class="metric-number">${sourceWords.length}</td><td class="metric-number" style="color:var(--active-theme-color);">${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:var(--danger);">${fullMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#d97706;">${halfMistakesCount}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td class="accuracy-number">${accuracy.toFixed(2)}%</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${finalMarksStr}</td></tr>`;
+            }
 
-        // Anti-Cheat
-        if (m1_grossWPM > 150) {
-            alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
-            m1_grossWPM = 0; m1_netWPM = 0; m1_acc = 0; m1_marks = 0;
-            m2_grossWPM = 0; m2_netWPM = 0; m2_acc = 0;
+            document.getElementById('resMethod').innerText = ruleText;
+            
+            finalDetailsObject = { totalWords: sourceWords.length, typedWords: typedTokens.length, fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount, totalErrors: totalErrorsCalculated, accuracy: accuracy.toFixed(2), marks: finalMarksStr, reviewHTML: reviewContainer.innerHTML, examRule: ruleText };
+            completedTests[currentMode][activeLanguage][selectedStenoIndex] = finalDetailsObject;
+            
+            histSpeed = "-"; histAcc = accuracy.toFixed(2) + "%"; histMarks = finalMarksStr;
+        } else {
+            let grossWords = actualStrokes / 5; let grossWPM = Math.round(grossWords / minutesElapsed); 
+            let netWords = Math.max(0, grossWords - totalErrorsCalculated); let netWPM = Math.round(netWords / minutesElapsed); 
+            
+            let accuracy = 0; if (grossWords > 0) accuracy = Math.round((netWords / grossWords) * 100);
+            if (accuracy < 0 || actualStrokes === 0) accuracy = 0; if (actualStrokes === 0) { grossWPM = 0; netWPM = 0; }
+            
+            if (grossWPM > 150) {
+                alert("🚨 Suspicious activity detected! Speed exceeds human limits. Test invalidated.");
+                grossWPM = 0; netWPM = 0; accuracy = 0; totalErrorsCalculated = "N/A";
+                typingMarks = "CHEAT DETECTED";
+            } else {
+                typingMarks = Math.min(50, Math.max(0, netWPM * 0.75)).toFixed(2);
+            }
+
+            if (selectedExamType === "RAJ_HC") document.getElementById('resMethod').innerText = "Rajasthan High Court Typing Mode"; 
+            else if (selectedExamType === "SSC_STENO") document.getElementById('resMethod').innerText = "SSC (CHSL) Typing Standard"; 
+            else if (selectedExamType === "RPSC_LDC") document.getElementById('resMethod').innerText = "RPSC LDC Mode"; 
+            else if (selectedExamType === "RRB_NTPC") document.getElementById('resMethod').innerText = "RRB NTPC Rule"; 
+            else document.getElementById('resMethod').innerText = selectedExamType + " Standard";
+            
+            tableHead.innerHTML = `<tr><th>Gross Speed</th><th>Net Speed</th><th>Accuracy</th><th>⌨️ Strokes / Words</th><th>📊 Total Errors</th><th>🏆 Marks (50)</th></tr>`;
+            tableBody.innerHTML = `<tr><td class="speed-number">${grossWPM} WPM</td><td class="net-speed-number">${netWPM} WPM</td><td class="accuracy-number">${accuracy}%</td><td class="metric-number">${actualStrokes} / ${typedTokens.length}</td><td style="font-size:1.3rem; font-weight:bold; color:#b91c1c;">${totalErrorsCalculated}</td><td style="font-size:1.4rem; font-weight:bold; color:var(--secondary);">${typingMarks}</td></tr>`;
+            
+            finalDetailsObject = { grossWPM: grossWPM, netWPM: netWPM, accuracy: accuracy.toFixed(2), strokes: actualStrokes, typedWords: typedTokens.length, totalErrors: totalErrorsCalculated, marks: typingMarks, reviewHTML: reviewContainer.innerHTML, examRule: document.getElementById('resMethod').innerText };
+            completedTests[currentMode][activeLanguage][selectedStenoIndex] = finalDetailsObject;
+            
+            histSpeed = `${grossWPM} / ${netWPM} WPM`; histAcc = accuracy.toFixed(2) + "%"; histMarks = typingMarks;
         }
-
-        let ruleText = selectedExamType + " Rule";
-        if (selectedExamType === "RAJ_HC") ruleText = "Rajasthan High Court LDC Mode";
-        document.getElementById('resMethod').innerText = ruleText;
         
-        // Store Result Data
-        completedTests[currentMode][activeLanguage][selectedStenoIndex] = { 
-            examRule: ruleText,
-            fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount,
-            
-            m1_grossStrokes: m1_grossStrokes, m1_netStrokes: m1_netStrokes.toFixed(1),
-            m1_grossWPM: m1_grossWPM.toFixed(1), m1_netWPM: m1_netWPM.toFixed(1),
-            m1_dph: m1_dph.toFixed(1), m1_totalErrors: totalErrorsCalculated.toFixed(1),
-            m1_acc: m1_acc.toFixed(1), m1_marks: m1_marks.toFixed(2),
-            
-            m2_totalWords: m2_totalWords, m2_rightWords: m2_rightWords.toFixed(1),
-            m2_grossWPM: m2_grossWPM.toFixed(1), m2_netWPM: m2_netWPM.toFixed(1),
-            m2_acc: m2_acc.toFixed(1),
-            
-            reviewHTML: reviewContainer.innerHTML
-        };
-
-        let histSpeed = `${m1_grossWPM.toFixed(1)} / ${m1_netWPM.toFixed(1)} WPM`; 
-        let histAcc = m1_acc.toFixed(1) + "%"; 
-        let histMarks = m1_marks.toFixed(2);
+        // 🛠️ NEW: Added details object and language to history record
+        saveToHistory({ 
+            date: new Date().toLocaleString(), 
+            name: testName, 
+            mode: currentMode, 
+            rule: document.getElementById('resMethod').innerText, 
+            speed: histSpeed, 
+            acc: histAcc, 
+            marks: histMarks, 
+            details: finalDetailsObject, 
+            language: activeLanguage 
+        });
         
-        saveToHistory({ date: new Date().toLocaleString(), name: exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex]?.name || "Custom Test", mode: currentMode, rule: ruleText, speed: histSpeed, acc: histAcc, marks: histMarks });
+        document.getElementById('resName').innerText = escapeHTML(studentIdentity.name);
         
-        viewStenoResult(selectedStenoIndex);
+        previousScreen = 'stenoSelectionScreen';
+        hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
     }
 })();
 </script>
