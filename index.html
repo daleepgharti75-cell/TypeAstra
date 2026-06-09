@@ -155,26 +155,20 @@
         .report-header { display: flex; align-items: center; gap: 10px; font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
         .review-heading { text-align: left; font-weight: 800; font-size: 1.15rem; margin: 30px 0 15px 0; color: var(--text-dark); }
         
+        /* 🔥 CLEAN PARAGRAPH REVIEW BOX CSS */
         .review-box { 
             background: #ffffff; 
             border: 1px solid var(--border-light); 
             padding: 25px; 
             max-height: 400px; 
             overflow-y: auto; 
-            text-align: left; 
+            text-align: justify; 
             border-radius: 12px; 
-            line-height: 2.6; 
+            line-height: 2.4; 
             box-shadow: inset 0 4px 6px rgba(0,0,0,0.03);
-            white-space: pre-wrap; /* Keeps normal paragraph flow */
+            white-space: pre-wrap; 
             word-wrap: break-word;
         }
-        
-        /* Updated Clean Classes for Review */
-        .rev-correct { color: #334155; font-weight: 600; }
-        .rev-wrong-text { color: #ef4444 !important; font-weight: 700; }
-        .rev-expected-word { color: #2563eb !important; font-weight: 700; }
-        .rev-half-wrong { color: #d97706 !important; font-weight: 700; }
-        .rev-half-expected { color: #059669 !important; font-weight: 700; }
     </style>
 </head>
 <body>
@@ -417,7 +411,7 @@
                         <div style="font-size: 0.8rem; color: #16a34a; font-weight: 600;">Words Per Minute</div>
                     </div>
                     <div style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 1px solid var(--border-light); padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                        <div style="font-size: 0.9rem; color: var(--text-dark); font-weight: 800; text-transform: uppercase;">Precision Rating</div>
+                        <div style="font-size: 0.9rem; color: var(--text-dark); font-weight: 800; text-transform: uppercase;">Accuracy</div>
                         <div style="font-size: 2.5rem; font-weight: 900; color: var(--text-dark); margin-top: 5px;" id="ta_accuracy">0.0%</div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Overall Keystroke Accuracy</div>
                     </div>
@@ -426,7 +420,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; text-align: left;">
                     
                     <div style="border: 1px solid var(--border-light); border-radius: 12px; overflow: hidden;">
-                        <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid var(--border-light); font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">⌨️ Standard Stroke Engine Data</div>
+                        <div style="background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid var(--border-light); font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">⌨️ Standard Stroke Data</div>
                         <div style="padding: 15px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Gross / Net Strokes</div><div style="font-size: 1.1rem; font-weight: 800; color: var(--text-dark);" id="ta_strokes">0 / 0</div></div>
                             <div><div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700;">Depressions / Hour (DPH)</div><div style="font-size: 1.1rem; font-weight: 800; color: var(--primary);" id="ta_dph">0</div></div>
@@ -450,12 +444,12 @@
                     <div style="background: #f1f5f9; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); flex-wrap: wrap; gap: 10px;">
                         <span style="font-weight: 800; color: var(--text-dark);">Transcription Review</span>
                         <div style="display: flex; gap: 15px; font-size: 0.85rem; font-weight: 700;">
-                            <span style="display: flex; align-items: center; gap: 5px;"><span style="color:#ef4444; font-weight:900;">Wrong(Right)</span> Full Error</span>
-                            <span style="display: flex; align-items: center; gap: 5px;"><span style="color:#d97706; font-weight:900;">Wrong{Right}</span> Half Error</span>
+                            <span style="display: flex; align-items: center; gap: 5px;"><span style="color:#ef4444; font-weight:900;">Wrong(word)</span> Full Error</span>
+                            <span style="display: flex; align-items: center; gap: 5px;"><span style="color:#d97706; font-weight:900;">Wrong{word}</span> Half Error</span>
                             <span style="display: flex; align-items: center; gap: 5px;"><span style="color:#2563eb; font-weight:900;">- Missed</span> | <span style="color:#ef4444; font-weight:900;">+ Extra</span></span>
                         </div>
                     </div>
-                    <div class="review-box" id="textReviewLogBox" style="background:#ffffff; padding: 25px; border: none; border-radius: 0;"></div>
+                    <div class="review-box" id="textReviewLogBox"></div>
                 </div>
                 
                 <button class="dynamic-btn" id="backFromReportBtn" onclick="exitResultScreen()" style="margin-top:25px; padding:15px; font-weight:bold; font-size:1.1rem; border-radius:8px; cursor:pointer; width: 100%; text-transform: uppercase; letter-spacing: 1px;">🔙 Return to Dashboard</button>
@@ -890,7 +884,7 @@
                 hist = hist.slice(0, 10);
             }
             
-            window.currentHistoryList = hist; // Save it to global for onclick usage
+            window.currentHistoryList = hist; 
             
             if(hist.length === 0) { container.innerHTML = `<p style="text-align:center; color:var(--text-muted); font-size:1.1rem; margin-top:30px;">No history found. Please take a test first!</p>`; return; }
             
@@ -902,7 +896,6 @@
                 html += `<tr><td style="font-weight:600; color:var(--text-dark);">${escapeHTML(h.date)}</td>`;
                 if (isAdmin) html += `<td style="color:var(--text-dark); font-weight:bold;">${escapeHTML(h.studentName || '-')}</td>`;
                 
-                // Mode Column (Made Clickable)
                 html += `<td style="color:var(--text-muted);">${escapeHTML(h.name)}</td>
                 <td style="cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'" onclick="viewHistoryResult(${index})" title="Click to view full scorecard">
                     <span style="font-weight:bold; color:var(--primary); text-decoration:underline;">${escapeHTML(h.mode)}</span> <br> 
@@ -917,7 +910,6 @@
         }
     }
 
-    // NEW FUNCTION: View Result directly from History
     window.viewHistoryResult = function(index) {
         let h = window.currentHistoryList[index];
         let res = h.resultObj;
@@ -926,25 +918,19 @@
             return;
         }
         
-        // 🌟 Populate Primary Scorecard
         document.getElementById('ta_marks').innerText = res.m1_marks;
         document.getElementById('ta_netSpeed').innerText = res.m1_netWPM;
         document.getElementById('ta_accuracy').innerText = `${res.m1_acc}%`;
-
-        // ⌨️ Populate Stroke Engine Data
         document.getElementById('ta_strokes').innerText = `${res.m1_grossStrokes} / ${res.m1_netStrokes}`;
         document.getElementById('ta_dph').innerText = res.m1_dph;
         document.getElementById('ta_grossWPM').innerText = res.m1_grossWPM;
         document.getElementById('ta_errHits').innerText = res.m1_totalErrors;
-
-        // 📝 Populate Mistake & Word Breakdown
         document.getElementById('ta_fullMistakes').innerText = res.fullMistakes;
         document.getElementById('ta_halfMistakes').innerText = res.halfMistakes;
         document.getElementById('ta_totalWords').innerText = res.m2_totalWords;
         document.getElementById('ta_correctWords').innerText = res.m2_rightWords;
         document.getElementById('ta_wordSpeed').innerText = `${res.m2_netWPM} WPM`;
 
-        // Render Review Box & assign Font Class
         document.getElementById('textReviewLogBox').innerHTML = res.reviewHTML;
         let langClass = res.lang === 'HI_KRUTI' ? 'font-kruti' : (res.lang === 'HI_MANGAL' ? 'font-mangal' : 'font-english');
         document.getElementById('textReviewLogBox').className = 'review-box ' + langClass;
@@ -952,7 +938,6 @@
         document.getElementById('resName').innerText = escapeHTML(h.studentName || studentIdentity.name); 
         document.getElementById('resMethod').innerText = escapeHTML(res.examRule);
         
-        // Change Return Button to go back to History
         document.getElementById('backFromReportBtn').innerText = "🔙 Back to History";
         document.getElementById('backFromReportBtn').onclick = function() {
             hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
@@ -1346,6 +1331,7 @@
         hideAllScreens(); document.getElementById('analysisReportScreen').classList.add('active-view');
     }
 
+    // 🔥 THE FIX: Brand New Evaluation Method
     window.finishEvaluationTest = function() {
         typingAreaInput.disabled = true; clearInterval(coreTimerLoop); 
         
@@ -1373,8 +1359,8 @@
             let nS = activeLanguage === 'HI_KRUTI' ? normalizeHindi(sourceWords[s]) : sourceWords[s];
 
             if (nT === nS) {
-                // CORRECT
-                reviewHTMLStr += `<span class="rev-correct">${escapeHTML(sourceWords[s])}</span> `;
+                // CORRECT (Normal Text)
+                reviewHTMLStr += `<span style="color:#1e293b; font-weight:600;">${escapeHTML(sourceWords[s])}</span> `;
                 t++; s++;
             } else {
                 let synced = false;
@@ -1386,7 +1372,7 @@
                         if (nT === nextS) {
                             for(let skip = 0; skip < lookahead; skip++) {
                                 fullMistakesCount++; 
-                                reviewHTMLStr += `<span class="rev-expected-word">- ${escapeHTML(sourceWords[s + skip])}</span> `;
+                                reviewHTMLStr += `<span style="color:#2563eb; font-weight:800;">- ${escapeHTML(sourceWords[s + skip])}</span> `;
                             }
                             s += lookahead; synced = true; break;
                         }
@@ -1401,7 +1387,7 @@
                             if (nextT === nS) {
                                 for(let ext = 0; ext < lookahead; ext++) {
                                     fullMistakesCount++; 
-                                    reviewHTMLStr += `<span class="rev-wrong-text">+ ${escapeHTML(typedTokens[t + ext])}</span> `;
+                                    reviewHTMLStr += `<span style="color:#ef4444; font-weight:800;">+ ${escapeHTML(typedTokens[t + ext])}</span> `;
                                 }
                                 t += lookahead; synced = true; break;
                             }
@@ -1414,11 +1400,11 @@
                     if (nT.toLowerCase() === nS.toLowerCase() || Math.abs(nT.length - nS.length) <= 1) {
                         // Half Mistake
                         halfMistakesCount++;
-                        reviewHTMLStr += `<span class="rev-half-wrong">${escapeHTML(typedTokens[t])}</span><span class="rev-half-expected">{${escapeHTML(sourceWords[s])}}</span> `;
+                        reviewHTMLStr += `<span style="color:#d97706; font-weight:800;">${escapeHTML(typedTokens[t])}{${escapeHTML(sourceWords[s])}}</span> `;
                     } else {
                         // Full Mistake
                         fullMistakesCount++;
-                        reviewHTMLStr += `<span class="rev-wrong-text">${escapeHTML(typedTokens[t])}</span><span class="rev-expected-word">(${escapeHTML(sourceWords[s])})</span> `;
+                        reviewHTMLStr += `<span style="color:#ef4444; font-weight:800;">${escapeHTML(typedTokens[t])}(${escapeHTML(sourceWords[s])})</span> `;
                     }
                     t++; s++;
                 }
@@ -1428,13 +1414,13 @@
         // REMAINING TYPED WORDS (EXTRA)
         while(t < typedTokens.length) { 
             fullMistakesCount++; 
-            reviewHTMLStr += `<span class="rev-wrong-text">+ ${escapeHTML(typedTokens[t])}</span> `;
+            reviewHTMLStr += `<span style="color:#ef4444; font-weight:800;">+ ${escapeHTML(typedTokens[t])}</span> `;
             t++; 
         }
 
-        // REMAINING SOURCE WORDS (UNREACHED)
+        // REMAINING SOURCE WORDS (UNREACHED - No penalty)
         if (s < sourceWords.length) {
-            reviewHTMLStr += `<br><br><span style="color:var(--text-muted); font-size:0.85rem; font-style:italic;">... (Test Ended Here)</span>`;
+            reviewHTMLStr += `<br><br><span style="color:#94a3b8; font-size:0.9rem; font-style:italic;">... (Test Ended Here)</span>`;
         }
         
         reviewContainer.innerHTML = reviewHTMLStr;
@@ -1471,7 +1457,7 @@
         if (selectedExamType === "RAJ_HC") ruleText = "Rajasthan High Court LDC Mode";
         document.getElementById('resMethod').innerText = ruleText;
         
-        // Store Result Data (Added language info for History retrieval)
+        // Store Result Data
         completedTests[currentMode][activeLanguage][selectedStenoIndex] = { 
             lang: activeLanguage, 
             examRule: ruleText,
@@ -1493,7 +1479,6 @@
         let histAcc = m1_acc.toFixed(1) + "%"; 
         let histMarks = m1_marks.toFixed(2);
         
-        // Save to Database along with the Full Result Object
         saveToHistory({ 
             date: new Date().toLocaleString(), 
             name: exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex]?.name || "Custom Test", 
