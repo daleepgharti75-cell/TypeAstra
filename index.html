@@ -347,6 +347,37 @@
         </div>
     </div>
 
+    <div class="custom-matter-modal" id="customMatterModal">
+        <div class="modal-box">
+            <h3 id="modalBoxTitle" style="color:var(--text-dark); margin-top:0; font-weight:800;">Add New Track</h3>
+            <label style="font-size:0.85rem; font-weight:bold; color:var(--text-muted);">Exercise Name (English Only):</label>
+            <input type="text" id="customExerciseNameInput" style="font-family: Arial, sans-serif !important; width:100%; padding:10px; margin:5px 0; border:1px solid var(--border-light); border-radius:6px; box-sizing:border-box;">
+            
+            <div id="stenoExtraFields" style="display:none; flex-wrap: wrap; gap:10px; margin-top:10px;">
+                <div id="wrapCustomDate" style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Test Date:</label><input type="date" id="customDate" style="width:100%; padding:8px; border:1px solid var(--border-light); border-radius:6px;"></div>
+                <div id="wrapCustomDictTime" style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Dict Time:</label><input type="text" id="customDictTime" style="width:100%; padding:8px; border:1px solid var(--border-light); border-radius:6px;" placeholder="10 Min"></div>
+                <div id="wrapCustomSpeed" style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Speed(WPM):</label><input type="number" id="customSpeed" style="width:100%; padding:8px; border:1px solid var(--border-light); border-radius:6px;" placeholder="80"></div>
+                <div id="wrapCustomDuration" style="flex:1; min-width:100px;"><label style="font-size:0.8rem; font-weight:bold; color:var(--text-muted);">Duration:</label><input type="number" id="customDuration" style="width:100%; padding:8px; border:1px solid var(--border-light); border-radius:6px;" placeholder="50"></div>
+            </div>
+
+            <div id="modalAudioSection" style="margin-top:15px; display:none; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid var(--border-light);">
+                <label style="font-size:0.85rem; font-weight:bold; color:var(--primary);">Option 1: Paste Audio Link (Fastest)</label>
+                <input type="text" id="customAudioUrlInput" placeholder="Paste link from Firebase Storage / Drive..." style="width:100%; padding:8px; margin:5px 0 10px 0; border:1px solid var(--border-light); border-radius:6px; box-sizing:border-box;">
+                
+                <label style="font-size:0.85rem; font-weight:bold; color:var(--text-muted);">Option 2: Upload File (Takes time)</label>
+                <input type="file" id="customAudioFileInput" accept="audio/*" style="width:100%; margin-top:5px; font-size:0.85rem;">
+            </div>
+
+            <label style="font-size:0.85rem; font-weight:bold; color:var(--text-muted); margin-top:15px; display:block;">Exercise Matter / Paragraph:</label>
+            <textarea class="modal-textarea" id="customMatterTextArea" spellcheck="false" autocomplete="off" autocorrect="off"></textarea>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn" id="modalCancelBtn" style="background:#e2e8f0; color:var(--text-dark);" onclick="closeCustomMatterModal()">Cancel</button>
+                <button class="modal-btn" id="modalSaveBtn" style="background:var(--primary); color:white;" onclick="saveExerciseManagerAction()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <div class="app-view" id="analysisReportScreen">
         <div style="margin: auto; width:100%; max-width: 1050px;">
             <div class="report-view" id="reportViewPanel" style="padding: 35px; background: #ffffff;">
@@ -481,16 +512,40 @@
     let isAdmin = false; 
     let isAuthPaused = false; 
 
-    const displayWindow = document.getElementById('displayParagraphFrame');
-    const typeDivider = document.getElementById('typeDivider');
-    const typingAreaInput = document.getElementById('typingAreaInput');
-    const clockLabel = document.getElementById('clockLabel');
-    const modalTextArea = document.getElementById('customMatterTextArea');
-    const modalNameInput = document.getElementById('customExerciseNameInput');
-    const exerciseSelector = document.getElementById('exerciseSelector');
-    const examTargetSelector = document.getElementById('examTargetSelector');
-    const dictationAudioPlayer = document.getElementById('mainDictationAudio');
-    const timeSelector = document.getElementById('timeSelector');
+    // Cache elements globally so they aren't lost
+    let displayWindow, typingAreaInput, clockLabel, timeSelector, examTargetSelector;
+
+    // Must wait for DOM to load fully
+    window.addEventListener('DOMContentLoaded', () => {
+        displayWindow = document.getElementById('displayParagraphFrame');
+        typingAreaInput = document.getElementById('typingAreaInput');
+        clockLabel = document.getElementById('clockLabel');
+        timeSelector = document.getElementById('timeSelector');
+        examTargetSelector = document.getElementById('examTargetSelector');
+
+        typingAreaInput.addEventListener('paste', e => e.preventDefault()); typingAreaInput.addEventListener('copy', e => e.preventDefault());
+        typingAreaInput.addEventListener('cut', e => e.preventDefault()); typingAreaInput.addEventListener('drop', e => e.preventDefault());
+        typingAreaInput.addEventListener('dragover', e => e.preventDefault()); typingAreaInput.addEventListener('contextmenu', e => e.preventDefault());
+        document.getElementById('displayParagraphFrame').addEventListener('contextmenu', e => e.preventDefault());
+
+        typingAreaInput.addEventListener('mousedown', function(e) { if (currentMode === 'STENO') setTimeout(() => { this.selectionStart = this.selectionEnd = this.value.length; }, 0); });
+        typingAreaInput.addEventListener('click', function(e) { if (currentMode === 'STENO') this.selectionStart = this.selectionEnd = this.value.length; });
+
+        typingAreaInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && ['c', 'v', 'x', 'a', 'C', 'V', 'X', 'A'].includes(e.key)) { e.preventDefault(); return; }
+            if (e.key === 'Backspace' && document.getElementById('bkspControl').value === 'DISABLE') return e.preventDefault();
+            if (currentMode === 'STENO') { 
+                const blockedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']; 
+                if (blockedKeys.includes(e.key)) { e.preventDefault(); return; } 
+            }
+            
+            if(!liveSystemRunning) { 
+                liveSystemRunning = true; 
+                executeTimerCountdownLoop(); 
+            }
+            if (e.key.length === 1) { strokeCounter++; } 
+        });
+    });
 
     function setAppTheme(lang, mode) {
         let color, grad;
@@ -908,7 +963,7 @@
             document.getElementById('box1Title').innerText = "Marks Obtained";
             document.getElementById('ta_box1Val').innerText = res.m1_marks;
             document.getElementById('ta_box1Val').style.color = "#1d4ed8";
-            document.getElementById('box1Sub').innerText = `Calculated Out of ${res.maxMarks || 50}`;
+            document.getElementById('box1Sub').innerText = `Calculated Out of 50`; 
 
             document.getElementById('box2Title').innerText = "Final Net Speed";
             document.getElementById('ta_box2Val').innerText = res.m1_netWPM;
@@ -1172,38 +1227,79 @@
         window.modifyDurationConfig(); 
     }
 
+    // 🔥 FOOLPROOF MODAL LAUNCH SCRIPT
     window.openUploadModal = function(mode) {
-        if(!isAdmin) return alert("Only Admin can add or edit tests!");
-        currentManagerMode = mode;
-        
-        modalTextArea.className = 'modal-textarea ' + (activeLanguage==='HI_KRUTI'?'font-kruti':(activeLanguage==='HI_MANGAL'?'font-mangal':'font-english'));
-        document.getElementById('customAudioFileInput').value = ""; document.getElementById('customAudioUrlInput').value = "";
-        document.getElementById('modalSaveBtn').innerText = "Save Changes"; document.getElementById('modalSaveBtn').disabled = false;
-        
-        if (currentMode === 'STENO') { 
-            document.getElementById('modalAudioSection').style.display = 'block'; document.getElementById('stenoExtraFields').style.display = 'flex';
-            document.getElementById('customDate').value = new Date().toISOString().split('T')[0]; document.getElementById('customDictTime').value = "10 Min"; document.getElementById('customSpeed').value = "80"; document.getElementById('customDuration').value = "50";
-        } else { 
-            document.getElementById('modalAudioSection').style.display = 'none'; document.getElementById('stenoExtraFields').style.display = 'flex'; 
-            document.getElementById('customDate').style.display = 'none'; document.getElementById('customDictTime').style.display = 'none'; document.getElementById('customSpeed').style.display = 'none';
-            document.getElementById('customDuration').value = "10";
-        }
-        
-        if (mode === 'ADD') {
-            document.getElementById('modalBoxTitle').innerText = currentMode==='STENO' ? "Add New Cloud Dictation" : "Add New Cloud Typing Test";
-            modalNameInput.value = `New Track ${exerciseDatabaseBank[currentMode][activeLanguage].length + 1}`; modalTextArea.value = "";
-        } else if (mode === 'EDIT') {
-            const currentActive = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex];
-            if(!currentActive) return alert("No exercise to edit!");
-            
-            document.getElementById('modalBoxTitle').innerText = "Edit Cloud Details"; modalNameInput.value = currentActive.name; modalTextArea.value = currentActive.text;
-            document.getElementById('customDuration').value = currentActive.duration || "";
+        try {
+            if(!isAdmin) return alert("Only Admin can add or edit tests!");
+            currentManagerMode = mode;
+
+            // Fetch elements directly to avoid undefined references
+            const txtArea = document.getElementById('customMatterTextArea');
+            const nameInp = document.getElementById('customExerciseNameInput');
+
+            txtArea.className = 'modal-textarea ' + (activeLanguage==='HI_KRUTI'?'font-kruti':(activeLanguage==='HI_MANGAL'?'font-mangal':'font-english'));
+            document.getElementById('customAudioFileInput').value = ""; 
+            document.getElementById('customAudioUrlInput').value = "";
+            document.getElementById('modalSaveBtn').innerText = "Save Changes"; 
+            document.getElementById('modalSaveBtn').disabled = false;
+
+            const stenoFields = document.getElementById('stenoExtraFields');
+            const audioSec = document.getElementById('modalAudioSection');
+
+            const dateWrap = document.getElementById('wrapCustomDate');
+            const timeWrap = document.getElementById('wrapCustomDictTime');
+            const speedWrap = document.getElementById('wrapCustomSpeed');
+
             if (currentMode === 'STENO') {
-                document.getElementById('customDate').value = currentActive.date || ""; document.getElementById('customDictTime').value = currentActive.dictTime || "";
-                document.getElementById('customSpeed').value = currentActive.speed || ""; document.getElementById('customAudioUrlInput').value = currentActive.audio || ""; 
+                audioSec.style.display = 'block';
+                stenoFields.style.display = 'flex';
+                
+                dateWrap.style.display = 'block';
+                timeWrap.style.display = 'block';
+                speedWrap.style.display = 'block';
+
+                document.getElementById('customDate').value = new Date().toISOString().split('T')[0]; 
+                document.getElementById('customDictTime').value = "10 Min"; 
+                document.getElementById('customSpeed').value = "80"; 
+                document.getElementById('customDuration').value = "50";
+            } else {
+                audioSec.style.display = 'none'; 
+                stenoFields.style.display = 'flex'; 
+
+                dateWrap.style.display = 'none';
+                timeWrap.style.display = 'none';
+                speedWrap.style.display = 'none';
+
+                document.getElementById('customDuration').value = "10";
             }
+
+            if (mode === 'ADD') {
+                document.getElementById('modalBoxTitle').innerText = currentMode==='STENO' ? "Add New Cloud Dictation" : "Add New Cloud Typing Test";
+                let arr = exerciseDatabaseBank[currentMode][activeLanguage] || [];
+                nameInp.value = `New Track ${arr.length + 1}`; 
+                txtArea.value = "";
+            } else if (mode === 'EDIT') {
+                let activeArr = exerciseDatabaseBank[currentMode][activeLanguage] || [];
+                const currentActive = activeArr[selectedStenoIndex];
+                if(!currentActive) return alert("No exercise to edit!");
+
+                document.getElementById('modalBoxTitle').innerText = "Edit Cloud Details"; 
+                nameInp.value = currentActive.name; 
+                txtArea.value = currentActive.text;
+                document.getElementById('customDuration').value = currentActive.duration || "";
+                
+                if (currentMode === 'STENO') {
+                    document.getElementById('customDate').value = currentActive.date || ""; 
+                    document.getElementById('customDictTime').value = currentActive.dictTime || "";
+                    document.getElementById('customSpeed').value = currentActive.speed || ""; 
+                    document.getElementById('customAudioUrlInput').value = currentActive.audio || ""; 
+                }
+            }
+            document.getElementById('customMatterModal').style.display = 'flex';
+        } catch(err) {
+            console.error("Modal Error:", err);
+            alert("⚠️ Something went wrong opening the panel. Refresh the page and try again.");
         }
-        document.getElementById('customMatterModal').style.display = 'flex';
     }
 
     window.editStenoTest = function(index) { selectedStenoIndex = index; window.openUploadModal('EDIT'); }
@@ -1235,25 +1331,53 @@
 
     window.closeCustomMatterModal = function() { document.getElementById('customMatterModal').style.display = 'none'; }
 
+    // 🔥 FOOLPROOF SAVE SCRIPT
     window.saveExerciseManagerAction = async function() {
-        const nameVal = modalNameInput.value.trim(); const textVal = modalTextArea.value.trim();
-        if (nameVal === "" || textVal === "") return alert("Fields cannot be empty!");
-        
-        const saveBtn = document.getElementById('modalSaveBtn'); saveBtn.innerText = "Saving to Cloud..."; saveBtn.disabled = true;
-
         try {
-            let audioUrl = document.getElementById('customAudioUrlInput').value.trim(); const fileInput = document.getElementById('customAudioFileInput');
-            if (currentManagerMode === 'EDIT' && exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex]) { if(!audioUrl && fileInput.files.length === 0) { audioUrl = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex].audio || ""; } }
+            const nameVal = document.getElementById('customExerciseNameInput').value.trim(); 
+            const textVal = document.getElementById('customMatterTextArea').value.trim();
+            if (nameVal === "" || textVal === "") return alert("Fields cannot be empty!");
+            
+            const saveBtn = document.getElementById('modalSaveBtn'); 
+            saveBtn.innerText = "Saving to Cloud..."; 
+            saveBtn.disabled = true;
+
+            let audioUrl = document.getElementById('customAudioUrlInput').value.trim(); 
+            const fileInput = document.getElementById('customAudioFileInput');
+            
+            if (currentManagerMode === 'EDIT') {
+                let currentActive = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex];
+                if (currentActive && !audioUrl && fileInput.files.length === 0) { 
+                    audioUrl = currentActive.audio || ""; 
+                } 
+            }
 
             if (fileInput.files.length > 0) {
                 saveBtn.innerText = "Uploading Audio...";
-                const file = fileInput.files[0]; const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
-                const snapshot = await storageRef.put(file); audioUrl = await snapshot.ref.getDownloadURL();
+                const file = fileInput.files[0]; 
+                const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
+                const snapshot = await storageRef.put(file); 
+                audioUrl = await snapshot.ref.getDownloadURL();
             }
 
-            const dataObj = { language: activeLanguage, mode: currentMode, name: nameVal, text: textVal, audio: audioUrl, date: currentMode==='STENO' ? document.getElementById('customDate').value || "" : "", dictTime: currentMode==='STENO' ? document.getElementById('customDictTime').value || "" : "", speed: currentMode==='STENO' ? document.getElementById('customSpeed').value || "" : "", duration: document.getElementById('customDuration').value || "" };
+            const dataObj = { 
+                language: activeLanguage, 
+                mode: currentMode, 
+                name: nameVal, 
+                text: textVal, 
+                audio: audioUrl, 
+                date: currentMode==='STENO' ? document.getElementById('customDate').value || "" : "", 
+                dictTime: currentMode==='STENO' ? document.getElementById('customDictTime').value || "" : "", 
+                speed: currentMode==='STENO' ? document.getElementById('customSpeed').value || "" : "", 
+                duration: document.getElementById('customDuration').value || "" 
+            };
 
             saveBtn.innerText = "Writing Data...";
+            
+            if (!exerciseDatabaseBank[currentMode][activeLanguage]) {
+                exerciseDatabaseBank[currentMode][activeLanguage] = [];
+            }
+
             if (currentManagerMode === 'ADD') {
                 const docRef = await db.collection("exercises").add(dataObj);
                 exerciseDatabaseBank[currentMode][activeLanguage].push({ id: docRef.id, ...dataObj });
@@ -1263,11 +1387,15 @@
                 exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex] = { id: docId, ...dataObj };
             }
             
-            saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; window.closeCustomMatterModal(); renderStenoList();
+            saveBtn.innerText = "Save Changes"; 
+            saveBtn.disabled = false; 
+            window.closeCustomMatterModal(); 
+            renderStenoList();
             alert("✅ Track saved successfully!");
         } catch(e) { 
             alert("❌ Error saving data: " + e.message + "\n\n(Agar Permission Denied error hai, toh apna Firebase Rule check karein)"); 
-            saveBtn.innerText = "Save Changes"; saveBtn.disabled = false; 
+            document.getElementById('modalSaveBtn').innerText = "Save Changes"; 
+            document.getElementById('modalSaveBtn').disabled = false; 
         }
     }
 
@@ -1280,30 +1408,6 @@
     }
     
     window.toggleTimerVisibility = function() { clockLabel.style.opacity = (clockLabel.style.opacity === '0') ? '1' : '0'; }
-
-    typingAreaInput.addEventListener('paste', e => e.preventDefault()); typingAreaInput.addEventListener('copy', e => e.preventDefault());
-    typingAreaInput.addEventListener('cut', e => e.preventDefault()); typingAreaInput.addEventListener('drop', e => e.preventDefault());
-    typingAreaInput.addEventListener('dragover', e => e.preventDefault()); typingAreaInput.addEventListener('contextmenu', e => e.preventDefault());
-    document.getElementById('displayParagraphFrame').addEventListener('contextmenu', e => e.preventDefault());
-
-    typingAreaInput.addEventListener('mousedown', function(e) { if (currentMode === 'STENO') setTimeout(() => { this.selectionStart = this.selectionEnd = this.value.length; }, 0); });
-    typingAreaInput.addEventListener('click', function(e) { if (currentMode === 'STENO') this.selectionStart = this.selectionEnd = this.value.length; });
-
-    typingAreaInput.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && ['c', 'v', 'x', 'a', 'C', 'V', 'X', 'A'].includes(e.key)) { e.preventDefault(); return; }
-        if (e.key === 'Backspace' && document.getElementById('bkspControl').value === 'DISABLE') return e.preventDefault();
-        if (currentMode === 'STENO') { 
-            const blockedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown']; 
-            if (blockedKeys.includes(e.key)) { e.preventDefault(); return; } 
-        }
-        
-        if(!liveSystemRunning) { 
-            liveSystemRunning = true; 
-            executeTimerCountdownLoop(); 
-        }
-        
-        if (e.key.length === 1) { strokeCounter++; } 
-    });
 
     function executeTimerCountdownLoop() {
         coreTimerLoop = setInterval(() => {
@@ -1423,10 +1527,6 @@
         // ==========================================
         let totalErrorsCalculated = fullMistakesCount + (halfMistakesCount / 2);
         
-        // 🔥 TIME-SCALED MAX MARKS
-        let baseMaxMarks = 50; 
-        let timeScaledMaxMarks = (selectedMins / 10) * baseMaxMarks;
-
         // TYPE Engine
         let m1_grossStrokes = actualStrokes;
         let m1_grossWPM = (m1_grossStrokes / 5) / minutesElapsed;
@@ -1435,9 +1535,9 @@
         let m1_dph = (m1_netStrokes / minutesElapsed) * 60;
         let m1_acc = m1_grossStrokes > 0 ? (m1_netStrokes / m1_grossStrokes) * 100 : 0;
         
-        // 🔥 FIX: Exact Raj HC LDC Formula applied here dynamically!
-        let rawMarks = (20 / 8000) * m1_dph * (selectedMins / 10);
-        let m1_marks = Math.min(timeScaledMaxMarks, Math.max(0, rawMarks)); 
+        // 🔥 EXACT RAJ HC LDC FORMULA APPLIED (Always Max 50)
+        let rawMarks = (20 / 8000) * m1_dph;
+        let m1_marks = Math.min(50, Math.max(0, rawMarks)); 
 
         // WORD Engine (Primary for STENO)
         let m2_totalWords = typedTokens.length;
@@ -1468,7 +1568,7 @@
             lang: activeLanguage, 
             examRule: ruleText,
             testDuration: `${selectedMins} Min`,
-            maxMarks: timeScaledMaxMarks,
+            maxMarks: 50, // 🔥 Now permanently 50
             fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount,
             
             m1_grossStrokes: m1_grossStrokes, m1_netStrokes: m1_netStrokes.toFixed(1),
