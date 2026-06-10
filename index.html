@@ -1434,7 +1434,10 @@
         let m1_netWPM = (m1_netStrokes / 5) / minutesElapsed;
         let m1_dph = (m1_netStrokes / minutesElapsed) * 60;
         let m1_acc = m1_grossStrokes > 0 ? (m1_netStrokes / m1_grossStrokes) * 100 : 0;
-        let m1_marks = Math.min(timeScaledMaxMarks, Math.max(0, (m1_dph / 8000) * timeScaledMaxMarks)); 
+        
+        // 🔥 FIX: Exact Raj HC LDC Formula applied here dynamically!
+        let rawMarks = (20 / 8000) * m1_dph * (selectedMins / 10);
+        let m1_marks = Math.min(timeScaledMaxMarks, Math.max(0, rawMarks)); 
 
         // WORD Engine (Primary for STENO)
         let m2_totalWords = typedTokens.length;
