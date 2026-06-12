@@ -27,6 +27,18 @@
             --active-theme-grad: linear-gradient(135deg, #4f46e5, #6366f1);
         }
 
+        /* 🔤 BUG FIX: Hindi Custom Fonts Integration */
+        @font-face {
+            font-family: 'Kruti Dev 010';
+            src: local('Kruti Dev 010'), url('fonts/KrutiDev010.ttf') format('truetype');
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'Mangal';
+            src: local('Mangal'), url('fonts/Mangal.ttf') format('truetype');
+            font-display: swap;
+        }
+
         body { 
             background: linear-gradient(135deg, #f6f8fd 0%, #edf2f7 100%);
             color: var(--text-dark); 
@@ -479,11 +491,6 @@
     const auth = firebase.auth(); 
     const storage = firebase.storage();
 
-    // ==========================================
-    // ⚠️ SECURE ADMIN ID
-    // ==========================================
-    const MASTER_ADMIN_UID = "WCy4mXts5dZwxqGZA3kJM0RZGIy1";
-
     function escapeHTML(str) {
         if (!str) return "";
         return str.toString().replace(/[&<>'"]/g, 
@@ -512,8 +519,8 @@
     let isAdmin = false; 
     let isAuthPaused = false; 
 
-    // Cache elements globally so they aren't lost
-    let displayWindow, typingAreaInput, clockLabel, timeSelector, examTargetSelector;
+    // 🐛 BUG FIX: Added dictationAudioPlayer & typeDivider globally
+    let displayWindow, typingAreaInput, clockLabel, timeSelector, examTargetSelector, dictationAudioPlayer, typeDivider;
 
     // Must wait for DOM to load fully
     window.addEventListener('DOMContentLoaded', () => {
@@ -522,6 +529,10 @@
         clockLabel = document.getElementById('clockLabel');
         timeSelector = document.getElementById('timeSelector');
         examTargetSelector = document.getElementById('examTargetSelector');
+        
+        // 🐛 BUG FIX: Initialized properly
+        dictationAudioPlayer = document.getElementById('mainDictationAudio');
+        typeDivider = document.getElementById('typeDivider');
 
         typingAreaInput.addEventListener('paste', e => e.preventDefault()); typingAreaInput.addEventListener('copy', e => e.preventDefault());
         typingAreaInput.addEventListener('cut', e => e.preventDefault()); typingAreaInput.addEventListener('drop', e => e.preventDefault());
@@ -581,7 +592,11 @@
             document.getElementById('loadingOverlay').style.display = 'flex';
             document.getElementById('loadingText').innerText = "Resuming Session...";
             try {
-                if (user.uid === MASTER_ADMIN_UID) {
+                // 🔒 SECURITY FIX: Fetching user data first to check role securely
+                const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
+                const userData = userDoc.exists ? userDoc.data() : null;
+
+                if (userData && userData.role === "admin") {
                     isAdmin = true;
                     studentIdentity = { name: "Portal Admin", uid: user.uid, hasTypingAccess: true, hasStenoAccess: true };
                     document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
@@ -591,32 +606,28 @@
                     await fetchDatabaseFromCloud();
                     hideAllScreens(); 
                     document.getElementById('dashboardScreen').classList.add('active-view');
+                } else if (userData && userData.status === "approved") {
+                    isAdmin = false;
+                    studentIdentity = { 
+                        name: userData.name, 
+                        uid: user.uid, 
+                        hasTypingAccess: userData.hasTypingAccess || false, 
+                        hasStenoAccess: userData.hasStenoAccess || false 
+                    };
+                    
+                    document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
+                    document.getElementById('adminManageBtn').classList.add('admin-only');
+                    document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
+                    
+                    await fetchDatabaseFromCloud();
+                    hideAllScreens(); 
+                    document.getElementById('dashboardScreen').classList.add('active-view');
                 } else {
-                    const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
-                    if (userDoc.exists && userDoc.data().status === "approved") {
-                        const userData = userDoc.data();
-                        isAdmin = false;
-                        
-                        studentIdentity = { 
-                            name: userData.name, 
-                            uid: user.uid, 
-                            hasTypingAccess: userData.hasTypingAccess || false, 
-                            hasStenoAccess: userData.hasStenoAccess || false 
-                        };
-                        
-                        document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
-                        document.getElementById('adminManageBtn').classList.add('admin-only');
-                        document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
-                        
-                        await fetchDatabaseFromCloud();
-                        hideAllScreens(); 
-                        document.getElementById('dashboardScreen').classList.add('active-view');
-                    } else {
-                        await auth.signOut();
-                        hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
-                    }
+                    await auth.signOut();
+                    hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
                 }
             } catch(error) {
+                console.error("Auth Resume Error:", error);
                 hideAllScreens(); document.getElementById('loginScreen').classList.add('active-view');
             }
             document.getElementById('loadingOverlay').style.display = 'none';
@@ -737,45 +748,44 @@
 
         try {
             await auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
-
             const userCredential = await auth.signInWithEmailAndPassword(lEmail, lPass);
             const user = userCredential.user;
 
-            if (user.uid === MASTER_ADMIN_UID) {
-                isAdmin = true; 
-                studentIdentity = { name: "Portal Admin", uid: user.uid, hasTypingAccess: true, hasStenoAccess: true };
-                document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
-                document.getElementById('adminManageBtn').classList.remove('admin-only');
-                document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
-                
-                btn.innerText = "Syncing Cloud Data...";
-                await fetchDatabaseFromCloud(); 
-                hideAllScreens(); 
-                document.getElementById('dashboardScreen').classList.add('active-view');
+            // 🔒 SECURITY FIX: Fetch role securely
+            const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
+            
+            if (!userDoc.exists) {
+                await auth.signOut(); alert("❌ Account data not found."); 
             } else {
-                const userDoc = await db.collection("students").doc(user.uid).get({ source: 'server' });
-                if (!userDoc.exists) {
-                    await auth.signOut(); alert("❌ Account data not found."); 
+                const userData = userDoc.data();
+                if (userData.role === "admin") {
+                    isAdmin = true; 
+                    studentIdentity = { name: "Portal Admin", uid: user.uid, hasTypingAccess: true, hasStenoAccess: true };
+                    document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.remove('admin-only'));
+                    document.getElementById('adminManageBtn').classList.remove('admin-only');
+                    document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
+                    
+                    btn.innerText = "Syncing Cloud Data...";
+                    await fetchDatabaseFromCloud(); 
+                    hideAllScreens(); 
+                    document.getElementById('dashboardScreen').classList.add('active-view');
+                } else if (userData.status !== "approved") { 
+                    await auth.signOut(); alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
                 } else {
-                    const userData = userDoc.data();
-                    if(userData.status !== "approved") { 
-                        await auth.signOut(); alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
-                    } else {
-                        isAdmin = false; 
-                        studentIdentity = { 
-                            name: userData.name, 
-                            uid: user.uid, 
-                            hasTypingAccess: userData.hasTypingAccess || false, 
-                            hasStenoAccess: userData.hasStenoAccess || false 
-                        };
-                        document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
-                        document.getElementById('adminManageBtn').classList.add('admin-only');
-                        document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
-                        
-                        btn.innerText = "Syncing Cloud Data...";
-                        await fetchDatabaseFromCloud(); 
-                        hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
-                    }
+                    isAdmin = false; 
+                    studentIdentity = { 
+                        name: userData.name, 
+                        uid: user.uid, 
+                        hasTypingAccess: userData.hasTypingAccess || false, 
+                        hasStenoAccess: userData.hasStenoAccess || false 
+                    };
+                    document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
+                    document.getElementById('adminManageBtn').classList.add('admin-only');
+                    document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
+                    
+                    btn.innerText = "Syncing Cloud Data...";
+                    await fetchDatabaseFromCloud(); 
+                    hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
                 }
             }
         } catch(error) { 
@@ -814,6 +824,8 @@
             let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Login Status</th><th>Course Access</th><th>Action</th></tr></thead><tbody>`;
             snapshot.forEach(doc => {
                 let user = doc.data();
+                if(user.role === 'admin') return; // Skip admin from list
+                
                 let statusHTML = user.status === 'approved' ? `<span style="color:var(--secondary); font-weight:bold;">Approved</span>` : `<span style="color:#d97706; font-weight:bold;">Pending</span>`;
                 
                 let accessSelectHTML = `
@@ -937,7 +949,6 @@
         }
     }
 
-    // 🔥 SMART HELPER: UI Change per Mode
     function renderResultUI(res, mode, studentName, rule) {
         document.getElementById('resTime').innerText = res.testDuration || "10 Min";
 
@@ -956,7 +967,6 @@
             document.getElementById('ta_box3Val').innerText = `${res.m2_acc}%`;
             document.getElementById('box3Sub').innerText = "Word-Based Precision";
 
-            // Hide Typing Panel, Focus strictly on Words!
             document.getElementById('strokeDataPanel').style.display = "none";
             document.getElementById('wordDataPanel').style.gridColumn = "1 / -1";
         } else {
@@ -1233,7 +1243,6 @@
             if(!isAdmin) return alert("Only Admin can add or edit tests!");
             currentManagerMode = mode;
 
-            // Fetch elements directly to avoid undefined references
             const txtArea = document.getElementById('customMatterTextArea');
             const nameInp = document.getElementById('customExerciseNameInput');
 
@@ -1518,7 +1527,10 @@
         
         reviewContainer.innerHTML = reviewHTMLStr;
         
-        let minutesElapsed = secondsCounter / 60; if(minutesElapsed === 0) minutesElapsed = 0.1;
+        // ⏱️ BUG FIX: Accurate Time Calculation to avoid Infinity WPM
+        let minutesElapsed = secondsCounter / 60; 
+        if(minutesElapsed === 0) minutesElapsed = 1 / 60; // Agar 0 seconds hain, toh minimum 1 second assume karein
+        
         let selectedMins = parseInt(timeSelector.value) || 10;
         let selectedExamType = document.getElementById('examTargetSelector').value;
 
