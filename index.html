@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script> 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
     <style>
         /* 🎨 PREMIUM MODERN COLOR PALETTE & DYNAMIC THEMES */
@@ -373,11 +372,8 @@
             </div>
 
             <div id="modalAudioSection" style="margin-top:15px; display:none; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid var(--border-light);">
-                <label style="font-size:0.85rem; font-weight:bold; color:var(--primary);">Option 1: Paste Audio Link (Fastest)</label>
-                <input type="text" id="customAudioUrlInput" placeholder="Paste link from Firebase Storage / Drive..." style="width:100%; padding:8px; margin:5px 0 10px 0; border:1px solid var(--border-light); border-radius:6px; box-sizing:border-box;">
-                
-                <label style="font-size:0.85rem; font-weight:bold; color:var(--text-muted);">Option 2: Upload File (Takes time)</label>
-                <input type="file" id="customAudioFileInput" accept="audio/*" style="width:100%; margin-top:5px; font-size:0.85rem;">
+                <label style="font-size:0.85rem; font-weight:bold; color:var(--primary);">Paste Cloudinary Audio Link</label>
+                <input type="text" id="customAudioUrlInput" placeholder="Paste Cloudinary link here... (ends with .mp3)" style="width:100%; padding:8px; margin:5px 0 10px 0; border:1px solid var(--border-light); border-radius:6px; box-sizing:border-box;">
             </div>
 
             <label style="font-size:0.85rem; font-weight:bold; color:var(--text-muted); margin-top:15px; display:block;">Exercise Matter / Paragraph:</label>
@@ -489,7 +485,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth(); 
-    const storage = firebase.storage();
 
     function escapeHTML(str) {
         if (!str) return "";
@@ -1247,7 +1242,6 @@
             const nameInp = document.getElementById('customExerciseNameInput');
 
             txtArea.className = 'modal-textarea ' + (activeLanguage==='HI_KRUTI'?'font-kruti':(activeLanguage==='HI_MANGAL'?'font-mangal':'font-english'));
-            document.getElementById('customAudioFileInput').value = ""; 
             document.getElementById('customAudioUrlInput').value = "";
             document.getElementById('modalSaveBtn').innerText = "Save Changes"; 
             document.getElementById('modalSaveBtn').disabled = false;
@@ -1352,21 +1346,12 @@
             saveBtn.disabled = true;
 
             let audioUrl = document.getElementById('customAudioUrlInput').value.trim(); 
-            const fileInput = document.getElementById('customAudioFileInput');
             
             if (currentManagerMode === 'EDIT') {
                 let currentActive = exerciseDatabaseBank[currentMode][activeLanguage][selectedStenoIndex];
-                if (currentActive && !audioUrl && fileInput.files.length === 0) { 
+                if (currentActive && !audioUrl) { 
                     audioUrl = currentActive.audio || ""; 
                 } 
-            }
-
-            if (fileInput.files.length > 0) {
-                saveBtn.innerText = "Uploading Audio...";
-                const file = fileInput.files[0]; 
-                const storageRef = storage.ref(`audio/${Date.now()}_${file.name}`);
-                const snapshot = await storageRef.put(file); 
-                audioUrl = await snapshot.ref.getDownloadURL();
             }
 
             const dataObj = { 
