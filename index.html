@@ -480,7 +480,38 @@
         storageBucket: "typeastra-8fa16.firebasestorage.app",
         messagingSenderId: "419734717016",
         appId: "1:419734717016:web:e260cf53a46a040709802d"
-    };
+        
+    };// 🛡️ ANTI-CHEAT SYSTEM: Block Right-Click, F12, and Inspect Element shortcuts
+    document.addEventListener('contextmenu', event => event.preventDefault()); // Right Click Block
+    
+    document.addEventListener('keydown', function(event) {
+        // Block F12
+        if (event.key === 'F12' || event.keyCode === 123) {
+            event.preventDefault();
+        }
+        // Block Ctrl+Shift+I (Inspect)
+        if (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i')) {
+            event.preventDefault();
+        }
+        // Block Ctrl+Shift+J (Console)
+        if (event.ctrlKey && event.shiftKey && (event.key === 'J' || event.key === 'j')) {
+            event.preventDefault();
+        }
+        // Block Ctrl+U (View Source)
+        if (event.ctrlKey && (event.key === 'U' || event.key === 'u')) {
+            event.preventDefault();
+        }
+    });
+
+    // 🚨 EXTRA PROTECTION: Agar koi Inspect khol le toh debugger usko test nahi dene dega
+    setInterval(function() {
+        let before = new Date().getTime();
+        debugger;
+        let after = new Date().getTime();
+        if (after - before > 100) {
+            document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:20%;'>🚨 Cheating Detected! Please close Inspect Element and refresh.</h1>";
+        }
+    }, 2000);
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
