@@ -414,7 +414,7 @@
                     <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                         <div id="box1Title" style="font-size: 0.9rem; color: #1e3a8a; font-weight: 800; text-transform: uppercase;">Marks Obtained</div>
                         <div id="ta_box1Val" style="font-size: 2.5rem; font-weight: 900; color: #1d4ed8; margin-top: 5px;">0.00</div>
-                        <div id="box1Sub" style="font-size: 0.8rem; color: #3b82f6; font-weight: 600;">Calculated Out of 50</div>
+                        <div id="box1Sub" style="font-size: 0.8rem; color: #3b82f6; font-weight: 600;">Calculated Out of <span id="dynamicMaxMarksDisplay">50</span></div>
                     </div>
                     <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
                         <div id="box2Title" style="font-size: 0.9rem; color: #14532d; font-weight: 800; text-transform: uppercase;">Final Net Speed</div>
@@ -983,6 +983,7 @@
             document.getElementById('ta_box1Val').innerText = res.m1_totalErrors || res.fullMistakes;
             document.getElementById('ta_box1Val').style.color = "var(--danger)";
             document.getElementById('box1Sub').innerText = "Full + Half Errors";
+            document.getElementById('dynamicMaxMarksDisplay').innerText = ""; // Hide for steno mistakes view
 
             document.getElementById('box2Title').innerText = "Correct Words";
             document.getElementById('ta_box2Val').innerText = res.m2_rightWords;
@@ -999,7 +1000,7 @@
             document.getElementById('box1Title').innerText = "Marks Obtained";
             document.getElementById('ta_box1Val').innerText = res.m1_marks;
             document.getElementById('ta_box1Val').style.color = "#1d4ed8";
-            document.getElementById('box1Sub').innerText = `Calculated Out of 50`; 
+            document.getElementById('box1Sub').innerHTML = `Calculated Out of <span id="dynamicMaxMarksDisplay">${res.maxMarks || 50}</span>`; 
 
             document.getElementById('box2Title').innerText = "Final Net Speed";
             document.getElementById('ta_box2Val').innerText = res.m1_netWPM;
@@ -1113,6 +1114,11 @@
                 alert("🔒 ACCESS DENIED\n\nYou do not have permission to access the Stenography Audio Transcription module. Please contact Admin to activate this course.");
                 return;
             }
+        }
+
+        // 🔥 INSTRUCTIONAL ALERT FOR MANGAL
+        if (lang === 'HI_MANGAL') {
+            alert("⚠️ Instruction / निर्देश:\n\nEnglish: For Hindi Mangal, please ensure your system keyboard is set to 'Hindi Inscript' layout.\n\nहिंदी: हिंदी मंगल टाइपिंग के लिए सुनिश्चित करें कि आपके सिस्टम कीबोर्ड में 'Hindi Inscript' लेआउट सेट है।");
         }
 
         activeLanguage = lang; currentMode = mode; 
@@ -1566,6 +1572,47 @@
         // 🔥 EXACT RAJ HC LDC FORMULA APPLIED (Always Max 50)
         let rawMarks = (20 / 8000) * m1_dph;
         let m1_marks = Math.min(50, Math.max(0, rawMarks)); 
+        let dynamicMaxMarks = 50;
+
+        // 🔥 DYNAMIC EXAM LOGIC 🔥
+        if (selectedExamType === "RRB_NTPC") {
+            let totalWordsForCalc = typedTokens.length;
+            let allowedErrors = Math.floor(totalWordsForCalc * 0.05); // 5% errors ignored
+            let penaltyErrors = Math.max(0, totalErrorsCalculated - allowedErrors);
+            let finalWords = Math.max(0, totalWordsForCalc - (penaltyErrors * 10)); // 1 mistake = 10 words penalty
+            
+            m1_netWPM = finalWords / minutesElapsed;
+            m1_acc = totalWordsForCalc > 0 ? (finalWords / totalWordsForCalc) * 100 : 0;
+            m1_marks = m1_acc;
+            dynamicMaxMarks = 100;
+        } 
+        else if (selectedExamType === "SSC_STENO") {
+            let totalWordsForCalc = typedTokens.length;
+            
+            m1_netWPM = Math.max(0, m1_grossWPM - (totalErrorsCalculated / minutesElapsed));
+            m1_acc = totalWordsForCalc > 0 ? ((totalWordsForCalc - totalErrorsCalculated) / totalWordsForCalc) * 100 : 0;
+            m1_marks = m1_acc;
+            dynamicMaxMarks = 100;
+        } 
+        else if (selectedExamType === "RPSC_LDC") {
+            // Speed linearly maps to marks (up to 50 WPM = 50 marks)
+            m1_marks = Math.min(50, Math.max(0, m1_netWPM)); 
+            dynamicMaxMarks = 50;
+        } 
+        else if (selectedExamType === "UP_POLICE" || selectedExamType === "UPSSSC") {
+            let totalWordsForCalc = typedTokens.length;
+            
+            m1_acc = totalWordsForCalc > 0 ? ((totalWordsForCalc - totalErrorsCalculated) / totalWordsForCalc) * 100 : 0;
+            m1_netWPM = Math.max(0, (totalWordsForCalc - totalErrorsCalculated) / minutesElapsed);
+            
+            if (selectedExamType === "UP_POLICE" && m1_acc < 85) {
+                m1_netWPM = 0; // Disqualified if acc < 85%
+                m1_marks = 0;
+            } else {
+                m1_marks = m1_acc;
+            }
+            dynamicMaxMarks = 100;
+        }
 
         // WORD Engine (Primary for STENO)
         let m2_totalWords = typedTokens.length;
@@ -1590,13 +1637,18 @@
 
         let ruleText = selectedExamType + " Rule";
         if (selectedExamType === "RAJ_HC") ruleText = "Rajasthan High Court Mode";
+        else if (selectedExamType === "SSC_STENO") ruleText = "SSC Standard Mode";
+        else if (selectedExamType === "RPSC_LDC") ruleText = "RPSC LDC Mode";
+        else if (selectedExamType === "RRB_NTPC") ruleText = "RRB NTPC Mode";
+        else if (selectedExamType === "UP_POLICE") ruleText = "UP Police Mode";
+        else if (selectedExamType === "UPSSSC") ruleText = "UPSSSC Mode";
         
         // Store Result Data
         completedTests[currentMode][activeLanguage][selectedStenoIndex] = { 
             lang: activeLanguage, 
             examRule: ruleText,
             testDuration: `${selectedMins} Min`,
-            maxMarks: 50, // 🔥 Now permanently 50
+            maxMarks: dynamicMaxMarks, 
             fullMistakes: fullMistakesCount, halfMistakes: halfMistakesCount,
             
             m1_grossStrokes: m1_grossStrokes, m1_netStrokes: m1_netStrokes.toFixed(1),
