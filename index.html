@@ -216,6 +216,9 @@
         
         <div style="margin: auto; width:100%;">
             <div class="dashboard-main-title">Type Astra</div>
+
+            <!-- 🔥 NEW PREMIUM STATUS BOX ADDED HERE 🔥 -->
+            <div id="premiumStatusBox" style="text-align:center; margin-bottom: 25px; font-weight:bold; font-size:1.1rem;"></div>
             
             <div class="dashboard-box">
                 <h2>Stenography Audio Transcription</h2>
@@ -538,6 +541,9 @@
     let activeLanguage = 'EN', currentMode = 'TYPE', sourceWords = [], pointerIdx = 0, secondsCounter = 0, totalTargetSeconds = 600;
     let coreTimerLoop = null, liveSystemRunning = false, strokeCounter = 0, studentSubmissionLogs = [];
     
+    // 🔥 NEW: Exam Lock State
+    let isExamActive = false; 
+    
     let studentIdentity = { name: "", uid: "", hasTypingAccess: false, hasStenoAccess: false }; 
     
     let currentManagerMode = "ADD", selectedStenoIndex = 0;
@@ -582,6 +588,14 @@
             }
             if (e.key.length === 1) { strokeCounter++; } 
         });
+    });
+
+    // 🔥 NEW: Prevent accidental refresh or back during exam
+    window.addEventListener('beforeunload', function (e) {
+        if (isExamActive) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
     });
 
     function setAppTheme(lang, mode) {
@@ -629,17 +643,37 @@
                     document.getElementById('adminManageBtn').classList.remove('admin-only');
                     document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
                     
+                    let statusBox = document.getElementById('premiumStatusBox');
+                    if (statusBox) statusBox.innerHTML = ``;
+
                     await fetchDatabaseFromCloud();
                     hideAllScreens(); 
                     document.getElementById('dashboardScreen').classList.add('active-view');
                 } else if (userData && userData.status === "approved") {
                     isAdmin = false;
+                    
+                    // 🔥 NEW: Premium Auto-Expiry Check
+                    let currentServerTime = Date.now();
+                    let isExpired = (userData.premiumExpiryDate && currentServerTime > userData.premiumExpiryDate);
+
                     studentIdentity = { 
                         name: userData.name, 
                         uid: user.uid, 
-                        hasTypingAccess: userData.hasTypingAccess || false, 
-                        hasStenoAccess: userData.hasStenoAccess || false 
+                        hasTypingAccess: isExpired ? false : (userData.hasTypingAccess || false), 
+                        hasStenoAccess: isExpired ? false : (userData.hasStenoAccess || false) 
                     };
+                    
+                    let statusBox = document.getElementById('premiumStatusBox');
+                    if(statusBox) {
+                        if (isExpired) {
+                            statusBox.innerHTML = `<span style="color:#ef4444; background:#fee2e2; padding:8px 15px; border-radius:8px; border: 1px solid #fca5a5;">⚠️ Your Premium Plan has Expired! Please contact Admin.</span>`;
+                        } else if (userData.premiumExpiryDate) {
+                            let expDateObj = new Date(userData.premiumExpiryDate);
+                            statusBox.innerHTML = `<span style="color:#15803d; background:#dcfce7; padding:8px 15px; border-radius:8px; border: 1px solid #86efac;">✅ Premium Active valid till: ${expDateObj.toLocaleDateString('en-IN')}</span>`;
+                        } else {
+                            statusBox.innerHTML = ``;
+                        }
+                    }
                     
                     document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
                     document.getElementById('adminManageBtn').classList.add('admin-only');
@@ -764,7 +798,7 @@
         btn.innerText = "Send Request"; btn.disabled = false;
     }
 
-    // 🔑 UPDATED LOGIN FUNCTION (Wrong Password Alert Added)
+    // 🔑 UPDATED LOGIN FUNCTION
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
         const lPass = document.getElementById('loginPass').value.trim();
@@ -792,6 +826,9 @@
                     document.getElementById('adminManageBtn').classList.remove('admin-only');
                     document.getElementById('barName').innerText = "Portal Admin (Admin Mode)";
                     
+                    let statusBox = document.getElementById('premiumStatusBox');
+                    if (statusBox) statusBox.innerHTML = ``;
+
                     btn.innerText = "Syncing Cloud Data...";
                     await fetchDatabaseFromCloud(); 
                     hideAllScreens(); 
@@ -800,12 +837,30 @@
                     await auth.signOut(); alert("⏳ Your account is still Pending. Please wait for Admin approval."); 
                 } else {
                     isAdmin = false; 
+                    
+                    // 🔥 NEW: Premium Auto-Expiry Check
+                    let currentServerTime = Date.now();
+                    let isExpired = (userData.premiumExpiryDate && currentServerTime > userData.premiumExpiryDate);
+                    
                     studentIdentity = { 
                         name: userData.name, 
                         uid: user.uid, 
-                        hasTypingAccess: userData.hasTypingAccess || false, 
-                        hasStenoAccess: userData.hasStenoAccess || false 
+                        hasTypingAccess: isExpired ? false : (userData.hasTypingAccess || false), 
+                        hasStenoAccess: isExpired ? false : (userData.hasStenoAccess || false) 
                     };
+
+                    let statusBox = document.getElementById('premiumStatusBox');
+                    if(statusBox) {
+                        if (isExpired) {
+                            statusBox.innerHTML = `<span style="color:#ef4444; background:#fee2e2; padding:8px 15px; border-radius:8px; border: 1px solid #fca5a5;">⚠️ Your Premium Plan has Expired! Please contact Admin.</span>`;
+                        } else if (userData.premiumExpiryDate) {
+                            let expDateObj = new Date(userData.premiumExpiryDate);
+                            statusBox.innerHTML = `<span style="color:#15803d; background:#dcfce7; padding:8px 15px; border-radius:8px; border: 1px solid #86efac;">✅ Premium Active valid till: ${expDateObj.toLocaleDateString('en-IN')}</span>`;
+                        } else {
+                            statusBox.innerHTML = ``;
+                        }
+                    }
+
                     document.querySelectorAll('.admin-only-btn').forEach(b => b.classList.add('admin-only'));
                     document.getElementById('adminManageBtn').classList.add('admin-only');
                     document.getElementById('barName').innerText = escapeHTML(studentIdentity.name);
@@ -816,7 +871,6 @@
                 }
             }
         } catch(error) { 
-            // 🚨 WRONG PASSWORD ALERT LOGIC ADDED HERE 
             if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                 alert("❌ Wrong Password! Kripya sahi password enter karein.");
             } else {
@@ -853,20 +907,34 @@
             const snapshot = await db.collection("students").limit(100).get({ source: 'server' });
             if(snapshot.empty) { container.innerHTML = `<p style="text-align:center;">No students found.</p>`; return; }
             
-            let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Login Status</th><th>Course Access</th><th>Action</th></tr></thead><tbody>`;
+            let html = `<table class="steno-table"><thead><tr><th>Name</th><th>Email</th><th>Login Status</th><th>Course Access & Premium Update</th><th>Action</th></tr></thead><tbody>`;
             snapshot.forEach(doc => {
                 let user = doc.data();
                 if(user.role === 'admin') return; // Skip admin from list
                 
                 let statusHTML = user.status === 'approved' ? `<span style="color:var(--secondary); font-weight:bold;">Approved</span>` : `<span style="color:#d97706; font-weight:bold;">Pending</span>`;
+                if(user.premiumExpiryDate && Date.now() > user.premiumExpiryDate) {
+                    statusHTML += `<br><span style="color:var(--danger); font-size:0.8rem;">(Expired)</span>`;
+                }
                 
+                // 🔥 NEW: Stacked Dropdown and Save button for Admin
                 let accessSelectHTML = `
-                    <select onchange="updateUserAccess('${escapeHTML(doc.id)}', this.value)" style="padding:5px; border-radius:6px; border:1px solid var(--border-light); font-weight:bold; color:var(--text-dark); background:#f8fafc; cursor:pointer;">
-                        <option value="NONE" ${!user.hasTypingAccess && !user.hasStenoAccess ? 'selected' : ''}>🔒 No Access</option>
-                        <option value="TYPING" ${user.hasTypingAccess && !user.hasStenoAccess ? 'selected' : ''}>⌨️ Typing Only</option>
-                        <option value="STENO" ${!user.hasTypingAccess && user.hasStenoAccess ? 'selected' : ''}>🎧 Steno Only</option>
-                        <option value="BOTH" ${user.hasTypingAccess && user.hasStenoAccess ? 'selected' : ''}>🌟 Both Courses</option>
-                    </select>
+                    <div style="display:flex; flex-direction:column; gap:5px;">
+                        <select id="access_${escapeHTML(doc.id)}" style="padding:5px; border-radius:6px; border:1px solid var(--border-light); font-weight:bold; color:var(--text-dark); background:#f8fafc; cursor:pointer;">
+                            <option value="NONE" ${!user.hasTypingAccess && !user.hasStenoAccess ? 'selected' : ''}>🔒 No Access</option>
+                            <option value="TYPING" ${user.hasTypingAccess && !user.hasStenoAccess ? 'selected' : ''}>⌨️ Typing Only</option>
+                            <option value="STENO" ${!user.hasTypingAccess && user.hasStenoAccess ? 'selected' : ''}>🎧 Steno Only</option>
+                            <option value="BOTH" ${user.hasTypingAccess && user.hasStenoAccess ? 'selected' : ''}>🌟 Both Courses</option>
+                        </select>
+                        <select id="duration_${escapeHTML(doc.id)}" style="padding:5px; border-radius:6px; border:1px solid var(--border-light); font-weight:bold; background:#eff6ff; color:#1d4ed8; cursor:pointer;">
+                            <option value="0">Select Validity</option>
+                            <option value="30">1 Month (30 Days)</option>
+                            <option value="90">3 Months (90 Days)</option>
+                            <option value="180">6 Months (180 Days)</option>
+                            <option value="365">1 Year (365 Days)</option>
+                        </select>
+                        <button class="action-btn-mini" style="background:#10b981; color:white; justify-content:center; border:none;" onclick="updateUserAccess('${escapeHTML(doc.id)}')">💾 Update Premium</button>
+                    </div>
                 `;
 
                 let btnHTML = user.status === 'pending' ? `<button class="action-btn-mini" style="background:#dcfce7; color:var(--secondary);" onclick="approveStudent('${escapeHTML(doc.id)}')">✅ Approve Login</button>` : `<button class="action-btn-mini" style="background:#fef08a; color:#d97706;" onclick="revokeStudent('${escapeHTML(doc.id)}')">⏸️ Revoke Login</button>`;
@@ -878,18 +946,42 @@
         } catch(e) { container.innerHTML = `<p style="text-align:center; color:var(--danger);">Error loading students.</p>`; }
     }
 
-    window.updateUserAccess = async function(docId, accessType) {
+    // 🔥 NEW: Function to handle both Access and Days
+    window.updateUserAccess = async function(docId) {
+        let accessType = document.getElementById(`access_${docId}`).value;
+        let durationDays = parseInt(document.getElementById(`duration_${docId}`).value);
+        
+        if (accessType !== 'NONE' && durationDays === 0) {
+            return alert("⚠️ Please select Premium Validity (e.g., 1 Month) before updating access!");
+        }
+
         let hasTyping = false;
         let hasSteno = false;
         if (accessType === 'TYPING' || accessType === 'BOTH') hasTyping = true;
         if (accessType === 'STENO' || accessType === 'BOTH') hasSteno = true;
         
+        // Calculate Expiry Date in Milliseconds
+        let currentDate = Date.now();
+        let expiryTimestamp = currentDate + (durationDays * 24 * 60 * 60 * 1000); 
+        
         try {
-            await db.collection("students").doc(docId).update({
+            let updateData = {
                 hasTypingAccess: hasTyping,
-                hasStenoAccess: hasSteno
-            });
-            console.log("Access updated successfully.");
+                hasStenoAccess: hasSteno,
+                premiumStartDate: currentDate,
+                premiumExpiryDate: expiryTimestamp,
+                status: "approved" // Auto-approve if giving premium
+            };
+            
+            // Agar admin ne "No Access" kiya hai, toh premium clear kar do
+            if (accessType === 'NONE') {
+                updateData.premiumExpiryDate = 0;
+                updateData.status = "pending";
+            }
+
+            await db.collection("students").doc(docId).update(updateData);
+            alert("✅ Student Access & Premium Expiry updated successfully!");
+            window.showAdminUserPanel(); // Refresh list
         } catch(e) {
             alert("⚠️ Update Failed: " + e.message);
         }
@@ -936,6 +1028,9 @@
     }
 
     window.showHistory = async function() {
+        // 🔥 NEW: Exam Lock Check
+        if(isExamActive) return alert("⚠️ Test chal raha hai! Pehle test submit karein.");
+
         hideAllScreens(); document.getElementById('historyScreen').classList.add('active-view');
         let container = document.getElementById('historyListContainer');
         container.innerHTML = `<h3 style="text-align:center; color:var(--text-muted); margin-top:30px;">Loading History from Cloud...</h3>`;
@@ -1063,13 +1158,28 @@
     }
 
     window.exitToDashboard = function() {
+        // 🔥 NEW: Block exit if exam is active
+        if (isExamActive) {
+            alert("❌ Test chal raha hai! Aap beech mein bahar nahi ja sakte. Pehle Submit karein.");
+            return;
+        }
+
         clearInterval(coreTimerLoop); dictationAudioPlayer.pause(); dictationAudioPlayer.currentTime = 0;
         hideAllScreens(); document.getElementById('dashboardScreen').classList.add('active-view');
     }
     
     window.exitResultScreen = function() { hideAllScreens(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); }
     
-    window.abortStenoTest = function() { if(confirm("Are you sure you want to abort this test?")) { clearInterval(coreTimerLoop); hideAllScreens(); document.getElementById('stenoSelectionScreen').classList.add('active-view'); renderStenoList(); } }
+    window.abortStenoTest = function() { 
+        if(confirm("Are you sure you want to abort this test?")) { 
+            // 🔥 NEW: Allow aborting if user really wants to, but reset flag
+            isExamActive = false;
+            clearInterval(coreTimerLoop); 
+            hideAllScreens(); 
+            document.getElementById('stenoSelectionScreen').classList.add('active-view'); 
+            renderStenoList(); 
+        } 
+    }
 
     function updateEvaluationModes() {
         examTargetSelector.innerHTML = currentMode === 'STENO' ? `
@@ -1231,6 +1341,9 @@
     window.skipDictationAndTranscribe = function() { dictationAudioPlayer.pause(); dictationAudioPlayer.currentTime = 0; enterStenoTranscriptionPhase(selectedStenoIndex); }
 
     function enterStenoTranscriptionPhase(index) {
+        // 🔥 NEW: Exam active kar do
+        isExamActive = true;
+
         hideAllScreens(); document.getElementById('examConsoleScreen').classList.add('active-view');
         applyUIMode(currentMode); 
 
@@ -1459,6 +1572,9 @@
 
     // 🔥 MAIN CORE EVALUATION SCRIPT
     window.finishEvaluationTest = function() {
+        // 🔥 NEW: Exam khatam, lock hata do
+        isExamActive = false;
+
         typingAreaInput.disabled = true; clearInterval(coreTimerLoop); 
         
         let rawTypedText = typingAreaInput.value.trim();
