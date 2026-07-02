@@ -764,6 +764,7 @@
         btn.innerText = "Send Request"; btn.disabled = false;
     }
 
+    // 🔑 UPDATED LOGIN FUNCTION (Wrong Password Alert Added)
     window.handleLoginSubmit = async function() {
         const lEmail = document.getElementById('loginEmail').value.trim();
         const lPass = document.getElementById('loginPass').value.trim();
@@ -815,7 +816,12 @@
                 }
             }
         } catch(error) { 
-            alert("❌ Login Failed: " + error.message); 
+            // 🚨 WRONG PASSWORD ALERT LOGIC ADDED HERE 
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                alert("❌ Wrong Password! Kripya sahi password enter karein.");
+            } else {
+                alert("❌ Login Failed: " + error.message); 
+            }
         }
         btn.innerText = "Login to Portal"; btn.disabled = false;
     }
